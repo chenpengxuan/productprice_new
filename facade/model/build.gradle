@@ -1,0 +1,37 @@
+description = "this is a model jar"
+
+jar {
+    baseName = "ordersync-facade-model"
+    version = "${facadeVersion}"
+}
+
+
+dependencies {
+    compile "org.jboss.resteasy:resteasy-jaxrs:${resteasyJaxrsVersion}"
+    compile "org.jboss.resteasy:resteasy-client:${resteasyJaxrsVersion}"
+    compile "org.hibernate:hibernate-validator:${hibernateValidatorVersion}"
+    compile "com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:${jacksonVersion}"
+    compile "com.alibaba:fastjson:${fastjsonVersion}"
+    compile "javax.el:el-api:${elApiVersion}"
+    compile "org.slf4j:jcl-over-slf4j:${slf4jVersion}"
+    compile "org.slf4j:slf4j-api:${slf4jVersion}"
+    compile "ch.qos.logback:logback-classic:${logbackVersion}"
+}
+
+//上传到nexus
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "http://172.16.100.98/nexus/content/repositories/releases")
+                    { authentication(userName: "admin", password: "admin123") }
+            snapshotRepository(url: "http://172.16.100.98/nexus/content/repositories/snapshots")
+                    { authentication(userName: "admin", password: "admin123") }
+            pom.version = "$project.version"
+            pom.artifactId = "productsync-facade-model"
+            pom.groupId = "$project.group"
+        }
+    }
+}
+
+
+

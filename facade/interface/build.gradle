@@ -1,0 +1,28 @@
+description = "this is a facade jar"
+
+jar {
+    baseName = 'productsync-facade-interface'
+    version = "${facadeVersion}"
+}
+
+
+dependencies {
+    compile(project(":facade:model"))
+}
+
+
+//上传到nexus
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "http://172.16.100.98/nexus/content/repositories/releases")
+                    { authentication(userName: "admin", password: "admin123") }
+            snapshotRepository(url: "http://172.16.100.98/nexus/content/repositories/snapshots")
+                    { authentication(userName: "admin", password: "admin123") }
+            pom.version = "$project.version"
+            pom.artifactId = "productsync-facade-interface"
+            pom.groupId = "$project.group"
+        }
+    }
+}
+

@@ -1,0 +1,56 @@
+description = "this is a infrastructure jar"
+
+jar {
+	baseName = "productprice-infrastructure"
+}
+
+dependencies {
+	compile(project(":facade:model"))
+	compile("org.springframework.boot:spring-boot-starter-web:$springBootVersion")
+	compile("joda-time:joda-time:$jodatimeVersion")
+	compile("org.springframework.boot:spring-boot-starter-data-mongodb:$springBootVersion")
+	compile("org.mybatis.spring.boot:mybatis-spring-boot-starter:$springBootMybatisVersion")
+	compile("org.springframework.boot:spring-boot-starter-jdbc:$springBootVersion")
+	compile "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+	compile "org.springframework:spring-context-support:${springContextSupportVresion}"
+
+	compile "net.sourceforge.jtds:jtds:${jtdsVersion}"
+	compile "org.jongo:jongo:${jongoVersion}"
+
+	compile "org.slf4j:jcl-over-slf4j:${slf4jVersion}"
+	compile "org.slf4j:slf4j-api:${slf4jVersion}"
+
+	compile "com.alibaba:dubbo:${dubboxVersion}"
+	compile "com.alibaba:druid:${druidVersion}"
+
+	compile "ch.qos.logback:logback-classic:${logbackVersion}"
+
+	compile "org.jboss.resteasy:resteasy-jaxrs:${resteasyJaxrsVersion}"
+	compile "org.jboss.resteasy:resteasy-client:${resteasyJaxrsVersion}"
+	compile "com.squareup.okhttp3:okhttp:${okhttpVersion}"
+
+	compile "org.apache.httpcomponents:httpclient:${httpclientVersion}"
+	compile "org.apache.httpcomponents:httpcore:${httpcoreVersion}"
+
+	compile ("com.github.sgroschupf:zkclient:${zkclientVersion}"){
+		exclude group: 'org.apache.zookeeper', module: 'zookeeper'
+	}
+
+	compile "com.esotericsoftware:kryo:${kryoVersion}"
+	compile "de.javakaffee:kryo-serializers:${kryoSerializersVersion}"
+
+	//ymatou
+	compile "com.ymatou:performancemonitorclient:${performanceMonitorClientVersion}"
+	compile "com.ymatou.errorreporter:errorreporter-logback:${errorreporterVersion}"
+	compile "com.ymatou.disconf:disconf-client:${disconfVersion}"
+
+	compile "com.ymatou.messagebus:messagebus-client:${messagebusVersion}"
+	compile "com.ymatou.messagebus:messagebus-facade:${messagebusVersion}"
+	compile "com.ymatou.messagebus:messagebus-facade-model:${messagebusVersion}"
+}
+
+configurations {
+
+	compile.exclude group: "junit" ,module:"junit"
+}
+

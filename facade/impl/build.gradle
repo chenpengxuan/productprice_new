@@ -1,0 +1,15 @@
+description = "this is a model jar"
+
+jar {
+    baseName = 'productsync-facade-impl'
+}
+
+
+dependencies {
+    compile(project(":domain"))
+    compile(project(":facade:interface"))
+    compile "org.apache.tomcat.embed:tomcat-embed-core:${tomcatEmbedVersion}"
+    compile "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatEmbedVersion}"
+}
+
+

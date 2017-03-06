@@ -1,0 +1,14 @@
+.settings/
+target/
+log/
+logs/
+*.classpath
+*.project
+/**/.idea
+/**/*.iml
+/**.idea
+/.idea
+/web/src/main/resources/disconf.properties
+build
+classes
+gradle
