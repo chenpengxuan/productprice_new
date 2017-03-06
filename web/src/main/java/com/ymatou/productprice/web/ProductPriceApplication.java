@@ -1,6 +1,5 @@
 package com.ymatou.productprice.web;
 
-import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.dao.PersistenceExceptionTranslationAutoConfiguration;
@@ -21,7 +20,7 @@ import org.springframework.context.annotation.ImportResource;
 				,JpaBaseConfiguration.class, HibernateJpaAutoConfiguration.class, PersistenceExceptionTranslationAutoConfiguration.class
 				, MongoAutoConfiguration.class, MongoDataAutoConfiguration.class
 		})
-@MapperScan(basePackages = {"com.ymatou.productprice.domain.sqlrepo"})
+//@MapperScan(basePackages = {"com.ymatou.productprice.domain.sqlrepo"})
 @ImportResource({"classpath:datasource-disconf.xml"})
 @ComponentScan("com.ymatou")
 public class ProductPriceApplication {
