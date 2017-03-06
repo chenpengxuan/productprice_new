@@ -3,8 +3,10 @@ package com.ymatou.productprice.infrastructure.util;
 import com.ymatou.productprice.infrastructure.config.props.BizProps;
 import okhttp3.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
@@ -13,6 +15,7 @@ import java.util.concurrent.TimeUnit;
  * Created by chenpengxuan on 2017/3/3.
  */
 @Component
+@DependsOn({"bizProps"})
 public class RestClient {
     @Autowired
     private BizProps bizProps;
@@ -25,10 +28,27 @@ public class RestClient {
     private static OkHttpClient.Builder builder;
 
     private static ConnectionPool pool;
+
+    /**
+     * 构造函数在set成员属性之前，所以需要显式传参
+     * @param bizProps
+     */
+    public RestClient(@Autowired BizProps bizProps){
+        pool = new ConnectionPool(bizProps.getRestconnectionpoolsize(),bizProps.getRestconnectionaliveduration(),TimeUnit.MINUTES);
+        builder = new OkHttpClient.Builder();
+        builder
+                .connectTimeout(bizProps.getRestconnectiontimeout(), TimeUnit.MILLISECONDS)
+                .connectionPool(pool)
+                .readTimeout(bizProps.getRestreadtimeout(),TimeUnit.MILLISECONDS)
+                .writeTimeout(bizProps.getRestwritetimeout(),TimeUnit.MILLISECONDS);
+        client = builder.build();
+    }
+
     /**
      * 构造函数
      */
-    public RestClient() {
+    @PostConstruct
+    public void init() {
         pool = new ConnectionPool(bizProps.getRestconnectionpoolsize(),bizProps.getRestconnectionaliveduration(),TimeUnit.MINUTES);
         builder = new OkHttpClient.Builder();
         builder

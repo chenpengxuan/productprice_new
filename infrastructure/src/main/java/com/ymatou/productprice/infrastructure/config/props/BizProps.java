@@ -11,6 +11,10 @@ import org.springframework.stereotype.Component;
 @Component
 @DisconfFile(fileName = "biz.properties")
 public class BizProps {
+    public BizProps() {
+        int a = 0;
+    }
+
     /**
      * 异常日志开关
      */

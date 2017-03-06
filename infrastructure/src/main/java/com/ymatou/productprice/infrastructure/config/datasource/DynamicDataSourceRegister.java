@@ -4,7 +4,6 @@ package com.ymatou.productprice.infrastructure.config.datasource;
  * Created by chenpengxuan on 2016/9/1.
  */
 
-import org.apache.log4j.Logger;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +34,6 @@ import java.util.Properties;
 @DependsOn({"disconfMgrBean2", "propertyPlaceholderConfigurer"})
 public class DynamicDataSourceRegister {
 
-    private static final Logger logger = Logger.getLogger(DynamicDataSourceRegister.class);
     private static final String datasourcePerfix = "spring.datasource.";
     private ConversionService conversionService = new DefaultConversionService();
     private PropertyValues dataSourcePropertyValues;

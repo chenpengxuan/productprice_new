@@ -71,7 +71,7 @@ public class MongoProcessor {
         }
         MongoCollection collection = jongoClient.getCollection(mongoQueryData.getTableName());
         List<Map<String, Object>> mapList = new ArrayList<>();
-        Map<String, Object> tempMap;
+        Map<String, Object> tempMap = new HashMap<>();
         Object[] paramList = processQueryCondition(mongoQueryData.getMatchCondition());
         String matchCondition = mongoQueryData.getMatchCondition() != null
                 ? MapUtil.makeJsonStringFromMapForJongo(mongoQueryData.getMatchCondition()):"{}";
@@ -87,7 +87,7 @@ public class MongoProcessor {
                 }
                 break;
             case SELECTMANY:
-                mapList = Lists.newArrayList(collection.find(matchCondition,paramList).projection(projection).map(x -> (HashMap<String,Object>)x.toMap()).iterator());
+                mapList = Lists.newArrayList((Iterator<? extends Map<String, Object>>)collection.find(matchCondition,paramList).projection(projection).as(tempMap.getClass()).iterator());
                 break;
         }
         return mapList;

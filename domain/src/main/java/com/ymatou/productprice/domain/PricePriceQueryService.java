@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -52,15 +51,14 @@ public class PricePriceQueryService {
      */
     public ProductPrice getPriceInfoByProductId(int buyerId, String productId, boolean isTradeIsolation) {
         ProductPrice productPrice = new ProductPrice();
-
         //查询商品规格信息列表
         List<Catalog> catalogList = mongoRepository.getCatalogList(productId).stream().map(x -> {
             Catalog tempCatalog = new Catalog();
             tempCatalog.CatalogId = x.get("cid") != null ? x.get("cid").toString() : "";
-            tempCatalog.EarnestPrice = x.get("earnest") != null ? Utils.decimalFormat((BigDecimal) x.get("earnest"), 2) : 0.f;
-            tempCatalog.QuotePrice = x.get("price") != null ? Utils.decimalFormat((BigDecimal) x.get("price"), 2) : 0.f;
-            tempCatalog.NewCustomerPrice = x.get("newp") != null ? Utils.decimalFormat((BigDecimal) x.get("newp"), 2) : 0.f;
-            tempCatalog.VipPrice = x.get("vip") != null ? Utils.decimalFormat((BigDecimal) x.get("vip"), 2) : 0.f;
+            tempCatalog.EarnestPrice = x.get("earnest") != null ? Utils.doubleFormat((double) x.get("earnest"), 2) : 0.f;
+            tempCatalog.QuotePrice = x.get("price") != null ? Utils.doubleFormat((double) x.get("price"), 2) : 0.f;
+            tempCatalog.NewCustomerPrice = x.get("newp") != null ? Utils.doubleFormat((double) x.get("newp"), 2) : 0.f;
+            tempCatalog.VipPrice = x.get("vip") != null ? Utils.doubleFormat((double) x.get("vip"), 2) : 0.f;
             tempCatalog.SubsidyPrice = 0.f;//活动新人价已经不存在，这里做兼容操作
             return tempCatalog;
         }).collect(Collectors.toList());
@@ -72,7 +70,7 @@ public class PricePriceQueryService {
 
         //查询sellerId
         Map<String, Object> tempSellerIdMap = mongoRepository.getSellerIdByProductId(productId);
-        long sellerId = tempSellerIdMap.get("sid") != null ? (long) tempSellerIdMap.get("sid") : 0;
+        long sellerId = tempSellerIdMap.get("sid") != null ? (int)tempSellerIdMap.get("sid") : 0;
         logWrapper.recordDebugLog("根据商品id获取价格信息_getPriceInfoByProductId:sellerId{}", sellerId);
 
         //查询活动商品信息
