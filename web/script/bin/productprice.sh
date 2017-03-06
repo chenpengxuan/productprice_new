@@ -3,7 +3,7 @@
 source "/etc/profile"
 GCLOGPATH="logs/gc.log"
 DISCONF_ENV=$1
-MAIN_CLASS="com.ymatou.productprice.web.ProductSyncApplication"
+MAIN_CLASS="com.ymatou.productprice.web.ProductPriceApplication"
 CLASS_PATH="lib/*:conf"
 JAVA_OPTS=" -server \
             -Ddisconf.env=${DISCONF_ENV}
@@ -13,10 +13,10 @@ JAVA_OPTS=" -server \
             -XX:+UseConcMarkSweepGC -XX:+CMSParallelRemarkEnabled \
             -XX:+UseCMSInitiatingOccupancyOnly -XX:CMSInitiatingOccupancyFraction=75 \
             -XX:+ScavengeBeforeFullGC -XX:+CMSScavengeBeforeRemark \
-            -XX:+PrintGCDateStamps -verbose:gc -XX:+PrintGCDetails -Xloggc:/usr/local/log/productsync.iapi.ymatou.com/gc.log \
+            -XX:+PrintGCDateStamps -verbose:gc -XX:+PrintGCDetails -Xloggc:/usr/local/log/productprice.iapi.ymatou.com/gc.log \
             -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=10 -XX:GCLogFileSize=100M \
             -Dsun.net.inetaddr.ttl=60 \
-            -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/usr/local/log/productsync.iapi.ymatou.com/heapdump.hprof"
+            -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/usr/local/log/productprice.iapi.ymatou.com/heapdump.hprof"
 
 if [ ! -d "logs" ]; then
     mkdir logs

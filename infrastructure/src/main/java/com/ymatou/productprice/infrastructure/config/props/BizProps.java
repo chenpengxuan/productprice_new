@@ -12,16 +12,6 @@ import org.springframework.stereotype.Component;
 @DisconfFile(fileName = "biz.properties")
 public class BizProps {
     /**
-     * 关注服务apiRoute
-     */
-    private String userAttentionApiUrl;
-
-    /**
-     * 关注服务开关
-     */
-    private Boolean userAttentionSwitch;
-
-    /**
      * 异常日志开关
      */
     private Boolean exceptionWarningSwitch;
@@ -50,24 +40,6 @@ public class BizProps {
      * restclient连接存活时间(单位分钟)
      */
     private long restconnectionaliveduration;
-
-    @DisconfFileItem(name = "userAttentionApiUrl")
-    public String getUserAttentionApiUrl() {
-        return userAttentionApiUrl;
-    }
-
-    public void setUserAttentionApiUrl(String userAttentionApiUrl) {
-        this.userAttentionApiUrl = userAttentionApiUrl;
-    }
-
-    @DisconfFileItem(name = "userAttentionSwitch")
-    public Boolean getUserAttentionSwitch() {
-        return userAttentionSwitch;
-    }
-
-    public void setUserAttentionSwitch(Boolean userAttentionSwitch) {
-        this.userAttentionSwitch = userAttentionSwitch;
-    }
 
     @DisconfFileItem(name = "exceptionWarningSwitch")
     public Boolean getExceptionWarningSwitch() {

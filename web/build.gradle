@@ -2,7 +2,7 @@ description = "this is a web jar"
 
 apply plugin: 'application'
 //bootRepackage {
-//    mainClass = 'com.ymatou.productsync.web.ProductSyncApplication'
+//    mainClass = 'com.ymatou.productprice.web.productpriceApplication'
 //}
 mainClassName = "com.ymatou.productprice.web.ProductPriceApplication"
 
@@ -45,6 +45,6 @@ task copyMeta(type: Copy) {
 
 //打包发布 发布为：gradle release 默认位置为：build/distributions
 task release(type: Zip, dependsOn: [copyScript, copyJars, copyConfig, copyMeta]) {
-    archiveName = "productsync-web.zip"
+    archiveName = "productprice-web.zip"
     from "$buildDir/dist"
 }

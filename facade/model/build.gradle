@@ -27,7 +27,7 @@ uploadArchives {
             snapshotRepository(url: "http://172.16.100.98/nexus/content/repositories/snapshots")
                     { authentication(userName: "admin", password: "admin123") }
             pom.version = "$project.version"
-            pom.artifactId = "productsync-facade-model"
+            pom.artifactId = "productprice-facade-model"
             pom.groupId = "$project.group"
         }
     }

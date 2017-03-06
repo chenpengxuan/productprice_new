@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MAIN_CLASS="com.ymatou.productprice.web.ProductSyncApplication"
+MAIN_CLASS="com.ymatou.productprice.web.productpriceApplication"
 
 ps aux | grep ${MAIN_CLASS} | grep -v grep | awk '{print $2}' | xargs kill -9 > /dev/null 2>&1
 ps aux | grep ${MAIN_CLASS} | grep -v grep > /dev/null 2>&1
