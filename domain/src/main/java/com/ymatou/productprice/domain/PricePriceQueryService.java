@@ -50,7 +50,10 @@ public class PricePriceQueryService {
      * @return
      */
     public ProductPrice getPriceInfoByProductId(int buyerId, String productId, boolean isTradeIsolation) {
+
         ProductPrice productPrice = new ProductPrice();
+        productPrice.ProductId = productId;
+
         //查询商品规格信息列表
         List<Catalog> catalogList = mongoRepository.getCatalogList(productId).stream().map(x -> {
             Catalog tempCatalog = new Catalog();
@@ -87,6 +90,7 @@ public class PricePriceQueryService {
 
         //设置商品价格
         decideProductRealPrice(buyerId,productPrice,activityProductInfo,resp,isTradeIsolation);
+
         return productPrice;
     }
 
@@ -101,9 +105,11 @@ public class PricePriceQueryService {
         if (buyerId <= 0) {
             return null;
         }
+
         GetBuyerOrderStatisticsReq req = new GetBuyerOrderStatisticsReq();
         req.setBuyerId(buyerId);
         req.setSellerIds(Arrays.asList(sellerId));
+
         try {
             GetBuyerOrderStatisticsResp resp = buyerOrderStatisticsFacade.getBuyerOrderStatistics(req);
             return resp;
@@ -190,12 +196,12 @@ public class PricePriceQueryService {
                         && isNewBuyer) {
                     catalog.ActivityPrice = (double) activityCatalog.get("price");
                     catalog.Price = catalog.ActivityPrice;
-                    catalog.PriceType = PriceEnum.YMTACTIVITYPRICE;
+                    catalog.PriceType = PriceEnum.YMTACTIVITYPRICE.getCode();
                     return;
                 }
                 catalog.ActivityPrice = (double) activityCatalog.get("price");
                 catalog.Price = catalog.ActivityPrice;
-                catalog.PriceType = PriceEnum.YMTACTIVITYPRICE;
+                catalog.PriceType = PriceEnum.YMTACTIVITYPRICE.getCode();
                 return;
             }
 
@@ -208,7 +214,7 @@ public class PricePriceQueryService {
                 priceMap.put(PriceEnum.VIPPRICE, catalog.VipPrice);
                 Map.Entry<PriceEnum, Double> entry = priceMap.entrySet().stream().min((x, y) -> Double.compare(x.getValue().doubleValue(), y.getValue().doubleValue())).get();
                 catalog.Price = entry.getValue();
-                catalog.PriceType = entry.getKey();
+                catalog.PriceType = entry.getKey().getCode();
                 return;
             }
 
@@ -219,7 +225,7 @@ public class PricePriceQueryService {
                     && catalog.VipPrice > 0
                     && catalog.VipPrice < catalog.QuotePrice) {
                 catalog.Price = catalog.VipPrice;
-                catalog.PriceType = PriceEnum.VIPPRICE;
+                catalog.PriceType = PriceEnum.VIPPRICE.getCode();
                 return;
             }
 
@@ -230,11 +236,11 @@ public class PricePriceQueryService {
                     && catalog.NewCustomerPrice > 0
                     && catalog.NewCustomerPrice < catalog.QuotePrice) {
                 catalog.Price = catalog.NewCustomerPrice;
-                catalog.PriceType = PriceEnum.NEWCUSTOMERPRICE;
+                catalog.PriceType = PriceEnum.NEWCUSTOMERPRICE.getCode();
                 return;
             }
 
-            catalog.PriceType = PriceEnum.QUOTEPRICE;
+            catalog.PriceType = PriceEnum.QUOTEPRICE.getCode();
             catalog.Price = catalog.QuotePrice;
         });
     }

@@ -48,5 +48,5 @@ public class Catalog {
     /**
      * 价格类型
      */
-    public PriceEnum PriceType;
+    public int PriceType;
 }

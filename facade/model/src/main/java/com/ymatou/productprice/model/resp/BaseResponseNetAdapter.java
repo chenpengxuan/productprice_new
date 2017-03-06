@@ -1,6 +1,7 @@
 package com.ymatou.productprice.model.resp;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * .net 返回风格匹配器
@@ -25,9 +26,45 @@ public class BaseResponseNetAdapter {
     /**
      * 数据
      */
-    public HashMap<String,Object> Data;
+    public Map<String,Object> Data;
 
-    public static BaseResponseNetAdapter newfailureInstance(){
+    /**
+     * 创建系统异常resp
+     * @return
+     */
+    public static BaseResponseNetAdapter newSystemFailureInstance(){
+        BaseResponseNetAdapter baseResponseNetAdapter = new BaseResponseNetAdapter();
+        baseResponseNetAdapter.BCode = 0;
+        baseResponseNetAdapter.Code = 500;
+        baseResponseNetAdapter.Msg = "系统出现异常";
+        baseResponseNetAdapter.Data = new HashMap<>();
+        return baseResponseNetAdapter;
+    }
 
+    /**
+     * 创建业务异常resp
+     * @return
+     */
+    public static BaseResponseNetAdapter newBusinessFailureInstance(String errorMsg){
+        BaseResponseNetAdapter baseResponseNetAdapter = new BaseResponseNetAdapter();
+        baseResponseNetAdapter.BCode = 500;
+        baseResponseNetAdapter.Code = 500;
+        baseResponseNetAdapter.Msg = "业务检查异常,异常原因为：" + errorMsg;
+        baseResponseNetAdapter.Data = new HashMap<>();
+        return baseResponseNetAdapter;
+    }
+
+    /**
+     * 创建成功resp
+     * @param data
+     * @return
+     */
+    public static BaseResponseNetAdapter newSuccessInstance(Map<String,Object> data){
+        BaseResponseNetAdapter baseResponseNetAdapter = new BaseResponseNetAdapter();
+        baseResponseNetAdapter.BCode = 200;
+        baseResponseNetAdapter.Code = 200;
+        baseResponseNetAdapter.Msg = "";
+        baseResponseNetAdapter.Data = data;
+        return baseResponseNetAdapter;
     }
 }

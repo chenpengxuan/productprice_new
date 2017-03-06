@@ -2,10 +2,9 @@ package com.ymatou.productprice.facade;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.ymatou.productprice.domain.PricePriceQueryService;
-import com.ymatou.productprice.infrastructure.dataprocess.sql.SyncStatusEnum;
+import com.ymatou.productprice.model.ProductPrice;
 import com.ymatou.productprice.model.req.GetPriceByProdIdRequest;
-import com.ymatou.productprice.model.resp.BaseResponse;
-import com.ymatou.productprice.model.resp.GetPriceByProdIdResponse;
+import com.ymatou.productprice.model.resp.BaseResponseNetAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +13,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 价格服务
@@ -48,18 +49,17 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade{
     @GET
     @Path("/{api:(?i:api)}/{Price:(?i:Price)}/{GetPriceByProdId:(?i:GetPriceByProdId)}")
     @Produces({MediaType.APPLICATION_JSON})
-    public BaseResponse getPriceByProdId(@BeanParam GetPriceByProdIdRequest request) {
+    public BaseResponseNetAdapter getPriceByProdId(@BeanParam GetPriceByProdIdRequest request) {
         if(request == null){
-            return BaseResponse.newFailInstance(SyncStatusEnum.IllegalArgEXCEPTION.getCode(),"request不能为空");
+            return BaseResponseNetAdapter.newBusinessFailureInstance("request不能为空");
         }
-        GetPriceByProdIdResponse response = new GetPriceByProdIdResponse();
         try{
-            response.PriceInfo = pricePriceQueryService.getPriceInfoByProductId(request.getBuyerId(),request.getProductId(),false);
-            response.setMessage("操作成功");
-            response.setSuccess(true);
-            return response;
+            ProductPrice productPrice = pricePriceQueryService.getPriceInfoByProductId(request.getBuyerId(),request.getProductId(),false);
+            Map<String,Object> priceInfo = new HashMap<>();
+            priceInfo.put("PriceInfo",productPrice);
+            return BaseResponseNetAdapter.newSuccessInstance(priceInfo);
         }catch (Exception ex){
-            return BaseResponse.newFailInstance(SyncStatusEnum.FAILED.getCode(),ex.getMessage());
+            return BaseResponseNetAdapter.newSystemFailureInstance();
         }
     }
 

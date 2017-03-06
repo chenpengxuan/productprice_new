@@ -1,7 +1,7 @@
 package com.ymatou.productprice.facade;
 
 import com.ymatou.productprice.model.req.GetPriceByProdIdRequest;
-import com.ymatou.productprice.model.resp.BaseResponse;
+import com.ymatou.productprice.model.resp.BaseResponseNetAdapter;
 
 /**
  * 商品价格服务
@@ -19,5 +19,5 @@ public interface ProductPriceFacade {
      * @param request
      * @return
      */
-    BaseResponse getPriceByProdId(GetPriceByProdIdRequest request);
+    BaseResponseNetAdapter getPriceByProdId(GetPriceByProdIdRequest request);
 }
