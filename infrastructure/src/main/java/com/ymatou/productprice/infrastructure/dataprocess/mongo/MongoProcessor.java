@@ -89,6 +89,8 @@ public class MongoProcessor {
             case SELECTMANY:
                 mapList = Lists.newArrayList((Iterator<? extends Map<String, Object>>)collection.find(matchCondition,paramList).projection(projection).as(tempMap.getClass()).iterator());
                 break;
+            default:
+                throw new IllegalArgumentException("mongo 操作类型不正确");
         }
         return mapList;
     }

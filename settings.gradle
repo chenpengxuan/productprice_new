@@ -1,5 +1,5 @@
 rootProject.name = 'productprice'
-include 'facade','infrastructure','domain','test','web'
+include 'facade','infrastructure','domain','intergration','test','web'
 include 'facade:model'
 include 'facade:interface'
 include 'facade:impl'

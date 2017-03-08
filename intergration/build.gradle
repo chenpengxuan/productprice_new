@@ -1,13 +1,12 @@
 description = "this is a domain jar"
 
 jar {
-    baseName = 'productprice-domain'
+    baseName = 'productprice-intergration'
 }
 
 
 dependencies {
     compile(project(":infrastructure"))
-    compile(project(":intergration"))
     //useranalysis
     compile "com.ymatou.useranalysis:useranalysis-facade-model:${ymatouUserAnalysisApiVersion}"
     compile "com.ymatou.useranalysis:useranalysis-facade:${ymatouUserAnalysisApiVersion}"

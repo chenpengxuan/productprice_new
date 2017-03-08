@@ -1,5 +1,8 @@
 package com.ymatou.productprice.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * 商品规格
  * Created by chenpengxuan on 2017/3/1.
@@ -8,45 +11,157 @@ public class Catalog {
     /**
      * 规格编号
      */
-    public String CatalogId;
+    @JsonProperty("CatalogId")
+    private String catalogId;
 
     /**
      * 价格
      */
-    public double Price;
+    @JsonProperty("Price")
+    private double price;
 
     /**
      * 原价
      */
-    public double QuotePrice;
+    @JsonProperty("QuotePrice")
+    private double quotePrice;
 
     /**
      * 新客价
      */
-    public double NewCustomerPrice;
+    @JsonProperty("NewCustomerPrice")
+    private double newCustomerPrice;
 
     /**
      * VIP价
      */
-    public double VipPrice;
+    @JsonProperty("VipPrice")
+    private double vipPrice;
 
     /**
      * 活动价
      */
-    public double ActivityPrice;
+    @JsonProperty("ActivityPrice")
+    private double activityPrice;
 
     /**
      * 活动新人价
      */
-    public double SubsidyPrice;
+    @JsonProperty("SubsidyPrice")
+    private double subsidyPrice;
 
     /**
      * 定金价
      */
-    public double EarnestPrice;
+    @JsonProperty("EarnestPrice")
+    private double earnestPrice;
 
     /**
      * 价格类型
      */
-    public int PriceType;
+    @JsonProperty("PriceType")
+    private int priceType;
+
+    @JsonIgnore
+    private String productId;
+
+    @JsonIgnore
+    public String getCatalogId() {
+        return catalogId;
+    }
+
+    @JsonIgnore
+    public void setCatalogId(String catalogId) {
+        this.catalogId = catalogId;
+    }
+
+    @JsonIgnore
+    public double getPrice() {
+        return price;
+    }
+
+    @JsonIgnore
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    @JsonIgnore
+    public double getQuotePrice() {
+        return quotePrice;
+    }
+
+    @JsonIgnore
+    public void setQuotePrice(double quotePrice) {
+        this.quotePrice = quotePrice;
+    }
+
+    @JsonIgnore
+    public double getNewCustomerPrice() {
+        return newCustomerPrice;
+    }
+
+    @JsonIgnore
+    public void setNewCustomerPrice(double newCustomerPrice) {
+        this.newCustomerPrice = newCustomerPrice;
+    }
+
+    @JsonIgnore
+    public double getVipPrice() {
+        return vipPrice;
+    }
+
+    @JsonIgnore
+    public void setVipPrice(double vipPrice) {
+        this.vipPrice = vipPrice;
+    }
+
+    @JsonIgnore
+    public double getActivityPrice() {
+        return activityPrice;
+    }
+
+    @JsonIgnore
+    public void setActivityPrice(double activityPrice) {
+        this.activityPrice = activityPrice;
+    }
+
+    @JsonIgnore
+    public double getSubsidyPrice() {
+        return subsidyPrice;
+    }
+
+    @JsonIgnore
+    public void setSubsidyPrice(double subsidyPrice) {
+        this.subsidyPrice = subsidyPrice;
+    }
+
+    @JsonIgnore
+    public double getEarnestPrice() {
+        return earnestPrice;
+    }
+
+    @JsonIgnore
+    public void setEarnestPrice(double earnestPrice) {
+        this.earnestPrice = earnestPrice;
+    }
+
+    @JsonIgnore
+    public int getPriceType() {
+        return priceType;
+    }
+
+    @JsonIgnore
+    public void setPriceType(int priceType) {
+        this.priceType = priceType;
+    }
+
+    @JsonIgnore
+    public String getProductId() {
+        return productId;
+    }
+
+    @JsonIgnore
+    public void setProductId(String productId) {
+        this.productId = productId;
+    }
 }

@@ -100,6 +100,18 @@ public class Utils {
     }
 
     /**
+     * 空转换器
+     * @param t
+     * @param defaultValue
+     * @param <T>
+     * @return
+     */
+    public static <T> T makeNullDefaultValue(T t, T defaultValue) {
+        //针对基本类型，不为nullable，则进行特殊处理
+        return t.getClass().isPrimitive() && t == null ? defaultValue : optional(t,defaultValue);
+    }
+
+    /**
      * 本机IP用于抢占定时任务，必须获取成功
      *
      * @return

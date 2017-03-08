@@ -1,5 +1,9 @@
 package com.ymatou.productprice.model.resp;
 
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,60 +15,107 @@ public class BaseResponseNetAdapter {
     /**
      * 系统状态码 成功为200 失败为500
      */
-    public int Code;
+    @JsonProperty("Code")
+    private int code;
 
     /**
      * 业务状态码
-      */
-    public int BCode;
+     */
+    @JsonProperty("BCode")
+    private int bCode;
 
     /**
      * 返回消息
      */
-    public String Msg;
+    @JsonProperty("Msg")
+    private String msg;
 
     /**
      * 数据
      */
-    public Map<String,Object> Data;
+    @JsonProperty("Data")
+    private Map<String, Object> Data;
+
+    @JsonIgnore
+    public int getCode() {
+        return code;
+    }
+
+    @JsonIgnore
+    public void setCode(int code) {
+        this.code = code;
+    }
+
+    @JsonIgnore
+    public int getBCode() {
+        return bCode;
+    }
+
+    @JsonIgnore
+    public void setBCode(int bCode) {
+        this.bCode = bCode;
+    }
+
+    @JsonIgnore
+    public String getMsg() {
+        return msg;
+    }
+
+    @JsonIgnore
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
+
+    @JsonIgnore
+    public Map<String, Object> getData() {
+        return Data;
+    }
+
+    @JsonIgnore
+    public void setData(Map<String, Object> data) {
+        Data = data;
+    }
 
     /**
      * 创建系统异常resp
+     *
      * @return
      */
-    public static BaseResponseNetAdapter newSystemFailureInstance(){
+    public static BaseResponseNetAdapter newSystemFailureInstance(String errorMsg, Throwable throwable) {
         BaseResponseNetAdapter baseResponseNetAdapter = new BaseResponseNetAdapter();
-        baseResponseNetAdapter.BCode = 0;
-        baseResponseNetAdapter.Code = 500;
-        baseResponseNetAdapter.Msg = "系统出现异常";
-        baseResponseNetAdapter.Data = new HashMap<>();
+        baseResponseNetAdapter.setBCode(0);
+        baseResponseNetAdapter.setCode(500);
+        baseResponseNetAdapter.setMsg("系统出现异常" + errorMsg + throwable);
+        baseResponseNetAdapter.setData(new HashMap<>());
         return baseResponseNetAdapter;
     }
 
     /**
      * 创建业务异常resp
+     *
      * @return
      */
-    public static BaseResponseNetAdapter newBusinessFailureInstance(String errorMsg){
+    public static BaseResponseNetAdapter newBusinessFailureInstance(String errorMsg) {
         BaseResponseNetAdapter baseResponseNetAdapter = new BaseResponseNetAdapter();
-        baseResponseNetAdapter.BCode = 500;
-        baseResponseNetAdapter.Code = 500;
-        baseResponseNetAdapter.Msg = "业务检查异常,异常原因为：" + errorMsg;
-        baseResponseNetAdapter.Data = new HashMap<>();
+        baseResponseNetAdapter.setBCode(0);
+        baseResponseNetAdapter.setCode(500);
+        baseResponseNetAdapter.setMsg("业务检查异常,异常原因为：" + errorMsg);
+        baseResponseNetAdapter.setData(new HashMap<>());
         return baseResponseNetAdapter;
     }
 
     /**
      * 创建成功resp
+     *
      * @param data
      * @return
      */
-    public static BaseResponseNetAdapter newSuccessInstance(Map<String,Object> data){
+    public static BaseResponseNetAdapter newSuccessInstance(Map<String, Object> data) {
         BaseResponseNetAdapter baseResponseNetAdapter = new BaseResponseNetAdapter();
-        baseResponseNetAdapter.BCode = 200;
-        baseResponseNetAdapter.Code = 200;
-        baseResponseNetAdapter.Msg = "";
-        baseResponseNetAdapter.Data = data;
+        baseResponseNetAdapter.setBCode(200);
+        baseResponseNetAdapter.setCode(200);
+        baseResponseNetAdapter.setMsg("");
+        baseResponseNetAdapter.setData(data);
         return baseResponseNetAdapter;
     }
 }

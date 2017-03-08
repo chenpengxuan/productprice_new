@@ -95,6 +95,16 @@ public class MapUtil {
         return Stream.of(map).collect(Collectors.toList());
     }
 
+    /**
+     *
+     * @param map
+     * @param key
+     * @param defaultValue
+     * @return
+     */
+    public static Object getMapKeyValueWithDefault(Map map,String key,Object defaultValue){
+        return Optional.ofNullable(map.get(key)).orElse(defaultValue);
+    }
 
     /**
      * 将maplist中的字符串转换为数组

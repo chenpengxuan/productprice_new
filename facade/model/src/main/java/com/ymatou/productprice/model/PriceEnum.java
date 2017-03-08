@@ -24,12 +24,7 @@ public enum  PriceEnum {
     /**
      * 码头活动价
      */
-    YMTACTIVITYPRICE(3),
-
-    /**
-     * 码头新人价
-     */
-    YMTNEWCUSTOMERPRICE(6)
+    YMTACTIVITYPRICE(3)
     ;
 
     PriceEnum(int code) {
