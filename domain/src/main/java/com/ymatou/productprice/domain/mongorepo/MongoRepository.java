@@ -92,6 +92,42 @@ public class MongoRepository {
     }
 
     /**
+     * 获取活动商品信息列表
+     *
+     * @param productIdList
+     * @return
+     */
+    public List<Map<String, Object>> getActivityProductList(List<String> productIdList) {
+        MongoQueryData queryData = new MongoQueryData();
+        Map<String, Boolean> projectionMap = new HashMap<>();
+        projectionMap.put("spid", true);
+        projectionMap.put("inaid", true);
+        projectionMap.put("isolation", true);
+        projectionMap.put("catalogs", true);
+        projectionMap.put("nbuyer", true);
+        queryData.setProjection(projectionMap);
+
+        Map<String, Object> matchConditionMap = new HashMap<>();
+        Map<String, Object> tempProductIdMap = new HashMap<>();
+        tempProductIdMap.put("$in",productIdList);
+        matchConditionMap.put("spid", tempProductIdMap);
+        Map<String, Object> tempGteMap = new HashMap<>();
+        tempGteMap.put("$gte", new Date());
+        Map<String, Object> tempLteMap = new HashMap<>();
+        tempGteMap.put("$lte", new Date());
+        matchConditionMap.put("start", tempLteMap);
+        matchConditionMap.put("end", tempGteMap);
+        queryData.setMatchCondition(matchConditionMap);
+
+
+        queryData.setTableName(Constants.ActivityProductDb);
+
+        queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
+
+        return mongoProcessor.queryMongo(queryData);
+    }
+
+    /**
      * 根据商品id查询买手id
      *
      * @param productId
@@ -117,10 +153,11 @@ public class MongoRepository {
      * @param productIdList
      * @return
      */
-    public List<Long> getSellerIdListByProductIdList(List<String> productIdList) {
+    public List<Map<String,Object>> getSellerIdListByProductIdList(List<String> productIdList) {
         MongoQueryData queryData = new MongoQueryData();
         Map<String, Boolean> projectionMap = new HashMap<>();
         projectionMap.put("sid", true);
+        projectionMap.put("spid",true);
         queryData.setProjection(projectionMap);
 
         Map<String, Object> matchConditionMap = new HashMap<>();
@@ -130,9 +167,7 @@ public class MongoRepository {
         queryData.setMatchCondition(matchConditionMap);
         queryData.setTableName(Constants.ProductDb);
         queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
-        return mongoProcessor.queryMongo(queryData)
-                .stream().map(x -> Optional.ofNullable((Long) x.get("sid")).orElse(Long.valueOf("0")))
-                .collect(Collectors.toList());
+        return mongoProcessor.queryMongo(queryData);
     }
 
     /**

@@ -29,4 +29,11 @@ public interface ProductPriceFacade {
      * @return
      */
     BaseResponseNetAdapter getPriceByProductIdList(GetPriceByProductIdListRequest request);
+
+    /**
+     * 根据商品id列表获取交易隔离价格信息
+     * @param request
+     * @return
+     */
+    BaseResponseNetAdapter getPriceByProductIdListWithTradeIsolation(GetPriceByProductIdListRequest request);
 }

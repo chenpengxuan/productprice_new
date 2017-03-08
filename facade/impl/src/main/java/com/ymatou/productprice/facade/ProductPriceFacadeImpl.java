@@ -9,12 +9,10 @@ import com.ymatou.productprice.model.resp.BaseResponseNetAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -83,16 +81,41 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
      * @return
      */
     @Override
+    @POST
+    @Path("/{api:(?i:api)}/{Price:(?i:Price)}/{GetPriceByProdIds:(?i:GetPriceByProdIds)}")
     public BaseResponseNetAdapter getPriceByProductIdList(GetPriceByProductIdListRequest request) {
         if (request == null) {
             return BaseResponseNetAdapter.newBusinessFailureInstance("request不能为空");
         }
         try {
-            return BaseResponseNetAdapter.newSuccessInstance(null);
+            List<ProductPrice> productPriceList = pricePriceQueryService.getPriceInfoByProductIdList(request.getBuyerId(),request.getProductIdList(),false);
+            Map<String, Object> priceInfoList = new HashMap<>();
+            priceInfoList.put("ProductPriceList", productPriceList);
+            return BaseResponseNetAdapter.newSuccessInstance(priceInfoList);
         } catch (Exception ex) {
             return BaseResponseNetAdapter.newSystemFailureInstance(ex.getLocalizedMessage(), ex);
         }
     }
 
-
+    /**
+     * 根据商品id列表获取交易隔离价格信息
+     * @param request
+     * @return
+     */
+    @Override
+    @POST
+    @Path("/{api:(?i:api)}/{Price:(?i:Price)}/{GetPriceByProdIdsTradeIsolation:(?i:GetPriceByProdIdsTradeIsolation)}")
+    public BaseResponseNetAdapter getPriceByProductIdListWithTradeIsolation(GetPriceByProductIdListRequest request) {
+        if (request == null) {
+            return BaseResponseNetAdapter.newBusinessFailureInstance("request不能为空");
+        }
+        try {
+            List<ProductPrice> productPriceList = pricePriceQueryService.getPriceInfoByProductIdList(request.getBuyerId(),request.getProductIdList(),true);
+            Map<String, Object> priceInfoList = new HashMap<>();
+            priceInfoList.put("ProductPriceList", productPriceList);
+            return BaseResponseNetAdapter.newSuccessInstance(priceInfoList);
+        } catch (Exception ex) {
+            return BaseResponseNetAdapter.newSystemFailureInstance(ex.getLocalizedMessage(), ex);
+        }
+    }
 }

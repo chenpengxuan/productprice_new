@@ -36,6 +36,12 @@ public class ProductPrice {
     @JsonProperty("HasConfirmedOrders")
     private Boolean hasConfirmedOrders;
 
+    /**
+     * 买手id
+     */
+    @JsonIgnore
+    private Long sellerId;
+
     @JsonIgnore
     public String getProductId() {
         return productId;
@@ -74,5 +80,15 @@ public class ProductPrice {
     @JsonIgnore
     public void setHasConfirmedOrders(Boolean hasConfirmedOrders) {
         this.hasConfirmedOrders = hasConfirmedOrders;
+    }
+
+    @JsonIgnore
+    public Long getSellerId() {
+        return sellerId;
+    }
+
+    @JsonIgnore
+    public void setSellerId(Long sellerId) {
+        this.sellerId = sellerId;
     }
 }
