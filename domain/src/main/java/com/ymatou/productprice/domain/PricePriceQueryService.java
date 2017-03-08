@@ -83,7 +83,7 @@ public class PricePriceQueryService {
         }
 
         //设置商品价格
-        decideProductRealPrice(buyerId, Arrays.asList(productPrice), Arrays.asList(activityProductInfo), resp, isTradeIsolation);
+        decideProductRealPrice(buyerId,sellerId, Arrays.asList(productPrice), Arrays.asList(activityProductInfo), resp, isTradeIsolation);
 
         return productPrice;
     }
@@ -117,9 +117,12 @@ public class PricePriceQueryService {
             ).collect(Collectors.toList()).isEmpty()
         ).collect(Collectors.toList());
         if(!needsCalculateVipAndNewCustomerPriceList.isEmpty()){
-//            //查询SellerIdList
-//            List<String>
-//            mongoRepository.getSellerIdListByProductIdList();
+            //查询SellerIdList
+            List<Long> sellerIdList = mongoRepository.getSellerIdListByProductIdList(needsCalculateVipAndNewCustomerPriceList
+                    .stream().map(x -> x.getProductId())
+                    .collect(Collectors.toList()));
+            GetBuyerOrderStatisticsResp resp = userBehaviorAnalysisService.getBuyerBehavior(sellerIdList,buyerId);
+
         }
         return productPriceList;
     }
@@ -168,14 +171,15 @@ public class PricePriceQueryService {
 
     /**
      * 决定最终价格
-     *
      * @param buyerId
+     * @param sellerId
      * @param productPriceList
      * @param activityProductInfoList
      * @param resp
      * @param isTradeIsolation
      */
     private void decideProductRealPrice(long buyerId,
+                                        long sellerId,
                                         List<ProductPrice> productPriceList,
                                         List<Map<String, Object>> activityProductInfoList,
                                         GetBuyerOrderStatisticsResp resp,
@@ -202,10 +206,10 @@ public class PricePriceQueryService {
                 tempPriceEnum = decideVistorPriceAsRealPriceLogic(buyerId, resp, catalog);
                 if (tempPriceEnum != null) return;
                 //vip价格逻辑
-                tempPriceEnum = decideVipPriceAsRealPriceLogic(buyerId, resp, catalog);
+                tempPriceEnum = decideVipPriceAsRealPriceLogic(sellerId, resp, catalog);
                 if (tempPriceEnum != null) return;
                 //直播新客价格逻辑
-                tempPriceEnum = decideNewCustomerPriceAsRealPriceLogic(buyerId, resp, catalog);
+                tempPriceEnum = decideNewCustomerPriceAsRealPriceLogic(sellerId, resp, catalog);
                 if (tempPriceEnum != null) return;
                 //原价价格逻辑
                 tempPriceEnum = decideQuotePriceAsRealPriceLogic(catalog);
@@ -285,16 +289,16 @@ public class PricePriceQueryService {
 
     /**
      * 决定vip价格是否作为最终价格
-     *
-     * @param buyerId
+     * @param sellerId
      * @param resp
      * @param catalog
+     * @return
      */
-    private PriceEnum decideVipPriceAsRealPriceLogic(Long buyerId, GetBuyerOrderStatisticsResp resp, Catalog catalog) {
+    private PriceEnum decideVipPriceAsRealPriceLogic(Long sellerId, GetBuyerOrderStatisticsResp resp, Catalog catalog) {
         //买家已经有确认的订单
         if (resp != null
-                && resp.getFromSeller().get(buyerId) != null
-                && resp.getFromSeller().get(buyerId).isHasConfirmedOrders()
+                && resp.getFromSeller().get(sellerId) != null
+                && resp.getFromSeller().get(sellerId).isHasConfirmedOrders()
                 && catalog.getVipPrice() > 0
                 && catalog.getVipPrice() < catalog.getQuotePrice()) {
             catalog.setPrice(catalog.getVipPrice());
@@ -307,15 +311,15 @@ public class PricePriceQueryService {
     /**
      * 决定新客价格是否作为最终价格
      *
-     * @param buyerId
+     * @param sellerId
      * @param resp
      * @param catalog
      */
-    private PriceEnum decideNewCustomerPriceAsRealPriceLogic(Long buyerId, GetBuyerOrderStatisticsResp resp, Catalog catalog) {
+    private PriceEnum decideNewCustomerPriceAsRealPriceLogic(Long sellerId, GetBuyerOrderStatisticsResp resp, Catalog catalog) {
         //买家如果没有订单或订单全部取消
         if (resp != null
-                && resp.getFromSeller().get(buyerId) != null
-                && resp.getFromSeller().get(buyerId).isNoOrdersOrAllCancelled()
+                && resp.getFromSeller().get(sellerId) != null
+                && resp.getFromSeller().get(sellerId).isNoOrdersOrAllCancelled()
                 && catalog.getNewCustomerPrice() > 0
                 && catalog.getNewCustomerPrice() < catalog.getQuotePrice()) {
             catalog.setPrice(catalog.getNewCustomerPrice());
