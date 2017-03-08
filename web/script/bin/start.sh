@@ -3,7 +3,7 @@
 source "/etc/profile"
 GCLOGPATH="logs/gc.log"
 DISCONF_ENV=$1
-MAIN_CLASS="com.ymatou.productprice.web.productpriceApplication"
+MAIN_CLASS="com.ymatou.productprice.web.ProductPriceApplication"
 CLASS_PATH="lib/*:conf"
 JAVA_OPTS=" -server \
             -Ddisconf.env=${DISCONF_ENV}
