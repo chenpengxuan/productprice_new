@@ -41,7 +41,7 @@ public class PriceQueryService {
 
         //查询sellerId
         Map<String, Object> tempSellerIdMap = mongoRepository.getSellerIdByProductId(productId);
-        long sellerId = Optional.ofNullable(Long.valueOf(tempSellerIdMap.get("sid").toString())).orElse(Long.valueOf("0"));
+        long sellerId = Optional.ofNullable((Integer)tempSellerIdMap.get("sid")).orElse(0);
         productPrice.setSellerId(sellerId);
 
         //查询活动商品信息

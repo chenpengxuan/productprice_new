@@ -69,7 +69,7 @@ public class MongoData{
         String output= operationType+"   "+tableName+"  ";
         if(!CollectionUtils.isEmpty(matchCondition))
         {
-            output += matchCondition.toString();
+            output += matchCondition;
         }else
         {
             output += "conditions is empty";

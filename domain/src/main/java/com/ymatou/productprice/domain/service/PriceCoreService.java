@@ -3,7 +3,6 @@ package com.ymatou.productprice.domain.service;
 import com.ymatou.productprice.domain.mongorepo.MongoRepository;
 import com.ymatou.productprice.infrastructure.util.LogWrapper;
 import com.ymatou.productprice.infrastructure.util.MapUtil;
-import com.ymatou.productprice.infrastructure.util.Utils;
 import com.ymatou.productprice.intergration.client.UserBehaviorAnalysisService;
 import com.ymatou.productprice.model.Catalog;
 import com.ymatou.productprice.model.PriceEnum;
@@ -90,7 +89,6 @@ public class PriceCoreService {
             Map<String, Long> tempMap = mongoRepository.getSellerIdListByProductIdList(needsCalculateVipAndNewCustomerPriceList
                     .stream().map(x -> x.getProductId())
                     .collect(Collectors.toList()));
-
 
             List<Long> sellerIdList = tempMap.values().stream().collect(Collectors.toList());
             resp = userBehaviorAnalysisService.getBuyerBehavior(sellerIdList, buyerId);
@@ -226,19 +224,20 @@ public class PriceCoreService {
          * 是否需要计算活动价格
          */
         boolean needsCalculateActivityProductPrice = activityProductInfo != null
-                && (!(Optional.ofNullable((Boolean) activityProductInfo.get("isolation")).orElse(false))
+                && (!Optional.ofNullable((Boolean) activityProductInfo.get("isolation")).orElse(false)
                 || isTradeIsolation);
         Map<String, Object> activityCatalog = ((List<Map<String, Object>>) MapUtil.getMapKeyValueWithDefault(activityProductInfo, "catalogs", new ArrayList<Map<String, Object>>()))
-                .stream().filter(x -> Utils.makeNullDefaultValue((String) x.get("cid"), "").equals(catalog.getCatalogId()))
+                .stream().filter(x -> Optional.ofNullable(x.get("cid")).orElse("").equals(catalog.getCatalogId()))
                 .findFirst().orElse(Collections.emptyMap());
 
         if (needsCalculateActivityProductPrice
                 && activityCatalog != null
                 && !activityCatalog.isEmpty()
-                && (activityCatalog.get("price") != null ? (double) activityCatalog.get("price") : 0) > 0
-                && (activityCatalog.get("stock") != null ? (int) activityCatalog.get("stock") : 0) > 0) {
+                && Optional.ofNullable((Double)activityCatalog.get("price")).orElse(0D) > 0
+                && Optional.ofNullable((Integer)activityCatalog.get("stock")).orElse(0) > 0
+                ) {
             //新人活动
-            if (Utils.makeNullDefaultValue((boolean) activityProductInfo.get("nbuyer"), false)
+            if (Optional.ofNullable((Boolean)activityProductInfo.get("nbuyer")).orElse(false)
                     && isNewBuyer) {
                 catalog.setActivityPrice((double) activityCatalog.get("price"));
                 catalog.setPrice(catalog.getActivityPrice());

@@ -20,6 +20,11 @@ public class MongoRepository {
     private MongoProcessor mongoProcessor;
 
     /**
+     * 针对单次查询数量过大的情况 做出查询数量限制
+     */
+    private static final int countLimit = 30;
+
+    /**
      * 获取规格信息列表
      *
      * @param productId
@@ -118,7 +123,7 @@ public class MongoRepository {
         Map<String, Object> tempGteMap = new HashMap<>();
         tempGteMap.put("$gte", new Date());
         Map<String, Object> tempLteMap = new HashMap<>();
-        tempGteMap.put("$lte", new Date());
+        tempLteMap.put("$lte", new Date());
         matchConditionMap.put("start", tempLteMap);
         matchConditionMap.put("end", tempGteMap);
         queryData.setMatchCondition(matchConditionMap);
@@ -220,7 +225,7 @@ public class MongoRepository {
         mapList.stream()
                 .forEach(x ->
                         resultMap.put(Optional.ofNullable((String)x.get("spid")).orElse("")
-                                ,Optional.ofNullable(Long.valueOf(x.get("sid").toString())).orElse(Long.valueOf("0"))));
+                                ,Long.valueOf(Optional.ofNullable((Integer)(x.get("sid"))).orElse(0))));
         return resultMap;
     }
 
@@ -233,11 +238,11 @@ public class MongoRepository {
     private Catalog convertMapToCatalog(Map<String, Object> catalogMap) {
         Catalog tempCatalog = new Catalog();
         tempCatalog.setProductId(Optional.ofNullable((String) catalogMap.get("spid")).orElse(""));
-        tempCatalog.setCatalogId(Utils.makeNullDefaultValue((String) catalogMap.get("cid"), ""));
+        tempCatalog.setCatalogId(Optional.ofNullable((String)catalogMap.get("cid")).orElse(""));
         tempCatalog.setEarnestPrice(0.0d);//已经不存在定金价逻辑 这里只是做兼容处理
-        tempCatalog.setQuotePrice(Utils.doubleFormat(Utils.makeNullDefaultValue((double) catalogMap.get("price"), 0.0d), 2));
-        tempCatalog.setNewCustomerPrice(Utils.doubleFormat(Utils.makeNullDefaultValue((double) catalogMap.get("newp"), 0.0d), 2));
-        tempCatalog.setVipPrice(Utils.doubleFormat(Utils.makeNullDefaultValue((double) catalogMap.get("vip"), 0.0d), 2));
+        tempCatalog.setQuotePrice(Utils.doubleFormat(Optional.ofNullable((Double)catalogMap.get("price")).orElse(0D),2));
+        tempCatalog.setNewCustomerPrice(Utils.doubleFormat(Optional.ofNullable(Double.valueOf(catalogMap.get("newp").toString())).orElse(0D),2));
+        tempCatalog.setVipPrice(Utils.doubleFormat(Optional.ofNullable(Double.valueOf(catalogMap.get("vip").toString())).orElse(0D),2));
         tempCatalog.setSubsidyPrice(0.0d);//活动新人价已经不存在，这里做兼容操作
         return tempCatalog;
     }
