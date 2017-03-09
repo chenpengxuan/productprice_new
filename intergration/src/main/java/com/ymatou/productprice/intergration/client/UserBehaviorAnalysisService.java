@@ -50,6 +50,11 @@ public class UserBehaviorAnalysisService {
 
         try {
             GetBuyerOrderStatisticsResp resp = buyerOrderStatisticsFacade.getBuyerOrderStatistics(req);
+            if (resp == null
+                    || resp.getFromSeller() == null) {
+                logWrapper.recordErrorLog("用户行为服务_getBuyerOrderStatistics接口返回值不正确,response：{},buyerId:{},sellerIdList{}",
+                        resp,buyerId, JSON.toJSONString(Optional.ofNullable(sellerIdList).orElse(Arrays.asList())));
+            }
             return resp;
         } catch (Exception ex) {
             logWrapper.recordErrorLog("获取用户特征_getBuyerOrderStatistics发生异常,sellerIdList:{},buyerId:{}", JSON.toJSONString(Optional.ofNullable(sellerIdList).orElse(Arrays.asList())) , buyerId, ex);

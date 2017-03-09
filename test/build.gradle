@@ -1,0 +1,12 @@
+description = "this is a test jar"
+
+jar {
+	baseName = "productprice-test"
+}
+
+dependencies {
+	compile(project(":web"))
+	compile "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+}
+
+

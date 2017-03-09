@@ -29,7 +29,7 @@ public class FacadeAspect {
     @Autowired
     private LogWrapper logWrapper;
 
-    @Pointcut("execution(* com.ymatou.productprice.facade.*Facade.*(*)) && args(req)")
+    @Pointcut("execution(com.ymatou.productprice.model.resp.BaseResponseNetAdapter com.ymatou.productprice.facade.ProductPriceFacade.*(*)) && args(req)")
     public void executeFacade(BaseRequest req) {
     }
 

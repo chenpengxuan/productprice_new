@@ -1,8 +1,10 @@
 package com.ymatou.productprice.facade;
 
 import com.alibaba.dubbo.config.annotation.Service;
-import com.ymatou.productprice.domain.PricePriceQueryService;
+import com.ymatou.productprice.domain.service.PriceQueryService;
+import com.ymatou.productprice.model.CatalogPrice;
 import com.ymatou.productprice.model.ProductPrice;
+import com.ymatou.productprice.model.req.GetPriceByCatalogIdListRequest;
 import com.ymatou.productprice.model.req.GetPriceByProdIdRequest;
 import com.ymatou.productprice.model.req.GetPriceByProductIdListRequest;
 import com.ymatou.productprice.model.resp.BaseResponseNetAdapter;
@@ -14,6 +16,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 价格服务
@@ -26,7 +29,7 @@ import java.util.Map;
 public class ProductPriceFacadeImpl implements ProductPriceFacade {
 
     @Autowired
-    private PricePriceQueryService pricePriceQueryService;
+    private PriceQueryService priceQueryService;
 
     /**
      * 根据商品id获取价格信息
@@ -42,18 +45,20 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
         if (request == null) {
             return BaseResponseNetAdapter.newBusinessFailureInstance("request不能为空");
         }
-        try {
-            ProductPrice productPrice = pricePriceQueryService.getPriceInfoByProductId(request.getBuyerId(), request.getProductId(), false);
-            Map<String, Object> priceInfo = new HashMap<>();
-            priceInfo.put("PriceInfo", productPrice);
-            return BaseResponseNetAdapter.newSuccessInstance(priceInfo);
-        } catch (Exception ex) {
-            return BaseResponseNetAdapter.newSystemFailureInstance(ex.getLocalizedMessage(), ex);
-        }
+
+        ProductPrice productPrice = priceQueryService.getPriceInfoByProductId(request.getBuyerId(),
+                request.getProductId(),
+                false);
+
+        Map<String, Object> priceInfo = new HashMap<>();
+        priceInfo.put("PriceInfo", productPrice);
+
+        return BaseResponseNetAdapter.newSuccessInstance(priceInfo);
     }
 
     /**
      * 根据商品id获取交易隔离价格信息
+     *
      * @param request
      * @return
      */
@@ -65,18 +70,19 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
         if (request == null) {
             return BaseResponseNetAdapter.newBusinessFailureInstance("request不能为空");
         }
-        try {
-            ProductPrice productPrice = pricePriceQueryService.getPriceInfoByProductId(request.getBuyerId(), request.getProductId(), true);
-            Map<String, Object> priceInfo = new HashMap<>();
-            priceInfo.put("PriceInfo", productPrice);
-            return BaseResponseNetAdapter.newSuccessInstance(priceInfo);
-        } catch (Exception ex) {
-            return BaseResponseNetAdapter.newSystemFailureInstance(ex.getLocalizedMessage(), ex);
-        }
+
+        ProductPrice productPrice = priceQueryService.getPriceInfoByProductId(request.getBuyerId(),
+                request.getProductId(),
+                true);
+
+        Map<String, Object> priceInfo = new HashMap<>();
+        priceInfo.put("PriceInfo", productPrice);
+        return BaseResponseNetAdapter.newSuccessInstance(priceInfo);
     }
 
     /**
      * 根据商品id列表获取价格信息
+     *
      * @param request
      * @return
      */
@@ -87,18 +93,20 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
         if (request == null) {
             return BaseResponseNetAdapter.newBusinessFailureInstance("request不能为空");
         }
-        try {
-            List<ProductPrice> productPriceList = pricePriceQueryService.getPriceInfoByProductIdList(request.getBuyerId(),request.getProductIdList(),false);
-            Map<String, Object> priceInfoList = new HashMap<>();
-            priceInfoList.put("ProductPriceList", productPriceList);
-            return BaseResponseNetAdapter.newSuccessInstance(priceInfoList);
-        } catch (Exception ex) {
-            return BaseResponseNetAdapter.newSystemFailureInstance(ex.getLocalizedMessage(), ex);
-        }
+
+        List<ProductPrice> productPriceList = priceQueryService.getPriceInfoByProductIdList(request.getBuyerId(),
+                request.getProductIdList()
+                        .stream().distinct().collect(Collectors.toList()),
+                false);
+
+        Map<String, Object> priceInfoList = new HashMap<>();
+        priceInfoList.put("ProductPriceList", productPriceList);
+        return BaseResponseNetAdapter.newSuccessInstance(priceInfoList);
     }
 
     /**
      * 根据商品id列表获取交易隔离价格信息
+     *
      * @param request
      * @return
      */
@@ -109,13 +117,68 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
         if (request == null) {
             return BaseResponseNetAdapter.newBusinessFailureInstance("request不能为空");
         }
-        try {
-            List<ProductPrice> productPriceList = pricePriceQueryService.getPriceInfoByProductIdList(request.getBuyerId(),request.getProductIdList(),true);
-            Map<String, Object> priceInfoList = new HashMap<>();
-            priceInfoList.put("ProductPriceList", productPriceList);
-            return BaseResponseNetAdapter.newSuccessInstance(priceInfoList);
-        } catch (Exception ex) {
-            return BaseResponseNetAdapter.newSystemFailureInstance(ex.getLocalizedMessage(), ex);
+
+        List<ProductPrice> productPriceList = priceQueryService.getPriceInfoByProductIdList(request.getBuyerId(),
+                request.getProductIdList()
+                        .stream().distinct().collect(Collectors.toList()),
+                true);
+
+        Map<String, Object> priceInfoList = new HashMap<>();
+        priceInfoList.put("ProductPriceList", productPriceList);
+
+        return BaseResponseNetAdapter.newSuccessInstance(priceInfoList);
+    }
+
+
+    /**
+     * 根据规格id列表获取价格信息
+     *
+     * @param request
+     * @return
+     */
+    @Override
+    @POST
+    @Path("/{api:(?i:api)}/{Price:(?i:Price)}/{GetPriceByCatalogIds:(?i:GetPriceByCatalogIds)}")
+    public BaseResponseNetAdapter getPriceByCatalogIdList(GetPriceByCatalogIdListRequest request) {
+        if (request == null) {
+            return BaseResponseNetAdapter.newBusinessFailureInstance("request不能为空");
         }
+
+        List<CatalogPrice> catalogPriceList = priceQueryService.getPriceInfoByCatalogIdList(
+                request.getBuyerId(),
+                request.getCatalogIdList()
+                        .stream().distinct().collect(Collectors.toList()),
+                false);
+
+        Map<String, Object> priceInfoList = new HashMap<>();
+        priceInfoList.put("CatalogPriceList", catalogPriceList);
+
+        return BaseResponseNetAdapter.newSuccessInstance(priceInfoList);
+    }
+
+    /**
+     * 根据规格id列表获取交易隔离价格信息
+     *
+     * @param request
+     * @return
+     */
+    @Override
+    @POST
+    @Path("/{api:(?i:api)}/{Price:(?i:Price)}/{GetPriceByCatalogIdsTradeIsolation:(?i:GetPriceByCatalogIdsTradeIsolation)}")
+    public BaseResponseNetAdapter getPriceByCatalogIdListWithTradeIsolation(GetPriceByCatalogIdListRequest request) {
+        if (request == null) {
+            return BaseResponseNetAdapter.newBusinessFailureInstance("request不能为空");
+        }
+
+        List<CatalogPrice> catalogPriceList = priceQueryService.getPriceInfoByCatalogIdList(
+                request.getBuyerId(),
+                request.getCatalogIdList()
+                        .stream().distinct().collect(Collectors.toList()),
+                true);
+
+        Map<String, Object> priceInfoList = new HashMap<>();
+        priceInfoList.put("CatalogPriceList", catalogPriceList);
+
+        return BaseResponseNetAdapter.newSuccessInstance(priceInfoList);
     }
 }

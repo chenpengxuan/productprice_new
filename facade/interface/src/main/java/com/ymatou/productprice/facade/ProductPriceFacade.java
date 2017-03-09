@@ -1,5 +1,6 @@
 package com.ymatou.productprice.facade;
 
+import com.ymatou.productprice.model.req.GetPriceByCatalogIdListRequest;
 import com.ymatou.productprice.model.req.GetPriceByProdIdRequest;
 import com.ymatou.productprice.model.req.GetPriceByProductIdListRequest;
 import com.ymatou.productprice.model.resp.BaseResponseNetAdapter;
@@ -36,4 +37,18 @@ public interface ProductPriceFacade {
      * @return
      */
     BaseResponseNetAdapter getPriceByProductIdListWithTradeIsolation(GetPriceByProductIdListRequest request);
+
+    /**
+     * 根据规格id列表获取价格信息
+     * @param request
+     * @return
+     */
+    BaseResponseNetAdapter getPriceByCatalogIdList(GetPriceByCatalogIdListRequest request);
+
+    /**
+     * 根据规格id列表获取交易隔离价格信息
+     * @param request
+     * @return
+     */
+    BaseResponseNetAdapter getPriceByCatalogIdListWithTradeIsolation(GetPriceByCatalogIdListRequest request);
 }

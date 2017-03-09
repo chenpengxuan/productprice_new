@@ -1,4 +1,4 @@
-package com.ymatou.productprice.domain;
+package com.ymatou.productprice.domain.service;
 
 import com.ymatou.productprice.domain.mongorepo.MongoRepository;
 import com.ymatou.productprice.infrastructure.util.LogWrapper;
@@ -18,11 +18,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * 商品价格服务相关
- * Created by chenpengxuan on 2017/3/2.
+ * 价格服务核心服务 重度内聚核心逻辑
+ * Created by chenpengxuan on 2017/3/8.
  */
 @Component
-public class PricePriceQueryService {
+public class PriceCoreService {
 
     @Autowired
     private MongoRepository mongoRepository;
@@ -34,118 +34,81 @@ public class PricePriceQueryService {
     private UserBehaviorAnalysisService userBehaviorAnalysisService;
 
     /**
-     * 根据商品id获取价格信息
+     * 价格服务核心逻辑
      *
      * @param buyerId
-     * @param productId
+     * @param catalogList
+     * @param productPriceList
+     * @param activityProductList
      * @param isTradeIsolation
-     * @return
      */
-    public ProductPrice getPriceInfoByProductId(int buyerId, String productId, boolean isTradeIsolation) {
-
-        ProductPrice productPrice = new ProductPrice();
-        productPrice.setProductId(productId);
-
-        //查询商品规格信息列表
-        List<Catalog> catalogList = mongoRepository.getCatalogList(productId);
-
-        if (catalogList == null || catalogList.isEmpty()) {
-            logWrapper.recordErrorLog("根据商品id获取价格信息_getPriceInfoByProductId获取商品规格信息列表为空,buyerId为{},productId为{}", buyerId, productId);
-            return null;
-        }
-        productPrice.setCatalogs(catalogList);
-
-        //查询sellerId
-        Map<String, Object> tempSellerIdMap = mongoRepository.getSellerIdByProductId(productId);
-        long sellerId = tempSellerIdMap.get("sid") != null ? (int) tempSellerIdMap.get("sid") : 0;
-        logWrapper.recordDebugLog("根据商品id获取价格信息_getPriceInfoByProductId:sellerId{}", sellerId);
-        productPrice.setSellerId(sellerId);
-        //查询活动商品信息
-        Map<String, Object> activityProductInfo = mongoRepository.getActivityProduct(productId);
-
-        //查询用户特征信息
-        //vip 和 新客价 如果为0 则不用调用用户行为服务
-        GetBuyerOrderStatisticsResp resp = null;
-        if (!catalogList.stream()
-                .filter(catalog -> catalog.getVipPrice() > 0 && catalog.getNewCustomerPrice() > 0)
-                .collect(Collectors.toList()).isEmpty()) {
-            resp = userBehaviorAnalysisService.getBuyerBehavior(Arrays.asList(sellerId), buyerId);
-            productPrice.setHasConfirmedOrders(
-                    (resp != null
-                            && resp.getFromSeller() != null
-                            && resp.getFromSeller().get(sellerId) != null)
-                            && resp.getFromSeller().get(sellerId).isHasConfirmedOrders());
-            productPrice.setNoOrdersOrAllCancelled(
-                    (resp != null
-                            && resp.getFromSeller() != null
-                            && resp.getFromSeller().get(sellerId) != null)
-                            && resp.getFromSeller().get(sellerId).isNoOrdersOrAllCancelled());
-        }
-
-        //设置商品价格
-        decideProductRealPrice(buyerId, Arrays.asList(productPrice), Arrays.asList(activityProductInfo), resp, isTradeIsolation);
-
-        return productPrice;
-    }
-
-    /**
-     * 根据商品id获取价格信息
-     *
-     * @param buyerId
-     * @param productIdList
-     * @param isTradeIsolation
-     * @return
-     */
-    public List<ProductPrice> getPriceInfoByProductIdList(int buyerId, List<String> productIdList, boolean isTradeIsolation) {
-        List<ProductPrice> productPriceList = productIdList.stream().map(x -> {
-            ProductPrice tempProductPrice = new ProductPrice();
-            tempProductPrice.setProductId(x);
-            return tempProductPrice;
-        }).collect(Collectors.toList());
-
-        //查询所有商品的规格信息
-        List<Catalog> catalogList = mongoRepository.getCatalogList(productIdList);
-        if (catalogList == null || catalogList.isEmpty()) {
-            logWrapper.recordErrorLog("根据商品id列表获取价格信息_getPriceInfoByProductIdList获取商品规格信息列表为空,buyerId为{},productIdList为{}", buyerId, productIdList);
-            return null;
-        }
-
-        //查询活动商品列表
-        List<Map<String,Object>> activityProductList = mongoRepository.getActivityProductList(productIdList);
-
+    public void calculateRealPriceCoreLogic(int buyerId,
+                                            List<Catalog> catalogList,
+                                            List<ProductPrice> productPriceList,
+                                            List<Map<String, Object>> activityProductList,
+                                            boolean isTradeIsolation) {
+        //填充catalogs
         productPriceList.stream().forEach(productPrice -> productPrice.setCatalogs(catalogList
                 .stream().filter(x -> x.getProductId().equals(productPrice.getProductId()))
                 .collect(Collectors.toList())));
 
+        //决定当前买家对不同的买手而言是新客还是老客
+        GetBuyerOrderStatisticsResp resp = determineVipOrNewCustomer(buyerId, productPriceList);
+
+        //设置最终商品价格
+        decideProductRealPrice(buyerId, productPriceList, activityProductList, resp, isTradeIsolation);
+    }
+
+    /**
+     * vip价与新客价的前置检查
+     *
+     * @param catalogList
+     * @return
+     */
+    private boolean preCheckVipAndNewCustomer(List<Catalog> catalogList) {
+        return catalogList.stream().anyMatch(catalog ->
+                catalog.getNewCustomerPrice() > 0 || catalog.getVipPrice() > 0
+        );
+    }
+
+    /**
+     * 决定当前买家对不同的买手而言是新客还是老客
+     *
+     * @param buyerId
+     * @param productPriceList
+     * @return
+     */
+    private GetBuyerOrderStatisticsResp determineVipOrNewCustomer(int buyerId, List<ProductPrice> productPriceList) {
         //过滤掉vip和新客价都为0的商品，如果全部都是0则不用查询sellerId也不用调用用户行为服务
         List<ProductPrice> needsCalculateVipAndNewCustomerPriceList = productPriceList.stream().filter(productPrice ->
-            !productPrice.getCatalogs().stream().filter(catalog ->
-                catalog.getNewCustomerPrice() > 0 && catalog.getVipPrice() > 0
-            ).collect(Collectors.toList()).isEmpty()
+                preCheckVipAndNewCustomer(productPrice.getCatalogs())
         ).collect(Collectors.toList());
         GetBuyerOrderStatisticsResp resp = null;
-        if(!needsCalculateVipAndNewCustomerPriceList.isEmpty()) {
+        if (!needsCalculateVipAndNewCustomerPriceList.isEmpty()) {
 
-            //查询SellerIdList
-            List<Map<String, Object>> sellerIdAndProductIdMapList = mongoRepository.getSellerIdListByProductIdList(needsCalculateVipAndNewCustomerPriceList
+            //查询ProductId --> SellerId map
+            Map<String, Long> tempMap = mongoRepository.getSellerIdListByProductIdList(needsCalculateVipAndNewCustomerPriceList
                     .stream().map(x -> x.getProductId())
                     .collect(Collectors.toList()));
-            resp = userBehaviorAnalysisService.getBuyerBehavior(sellerIdAndProductIdMapList
-                    .stream().map(x -> Optional.ofNullable((Long) x.get("sid")).orElse(Long.valueOf("0"))).collect(Collectors.toList()), buyerId);
+
+
+            List<Long> sellerIdList = tempMap.values().stream().collect(Collectors.toList());
+            resp = userBehaviorAnalysisService.getBuyerBehavior(sellerIdList, buyerId);
 
             //填充sellerId及对应用户行为信息
             GetBuyerOrderStatisticsResp finalResp = resp;
             productPriceList
                     .stream().forEach(x -> {
-                Map<String, Object> sellerIdAndProductIdMap = sellerIdAndProductIdMapList.stream().filter(y -> Optional.ofNullable((String) y.get("spid")).orElse("").equals(x.getProductId()))
-                        .findFirst().orElse(Collections.emptyMap());
-                Long tempSellerId = Optional.ofNullable((Long) sellerIdAndProductIdMap.get("sid")).orElse(Long.valueOf("0"));
+
+                Long tempSellerId = Optional.ofNullable(tempMap.get(x.getProductId())).orElse(Long.valueOf("0"));
                 x.setSellerId(tempSellerId);
+
                 x.setHasConfirmedOrders(
                         (finalResp != null
                                 && finalResp.getFromSeller() != null
                                 && finalResp.getFromSeller().get(tempSellerId) != null)
                                 && finalResp.getFromSeller().get(tempSellerId).isHasConfirmedOrders());
+
                 x.setNoOrdersOrAllCancelled(
                         (finalResp != null
                                 && finalResp.getFromSeller() != null
@@ -153,10 +116,7 @@ public class PricePriceQueryService {
                                 && finalResp.getFromSeller().get(tempSellerId).isNoOrdersOrAllCancelled());
             });
         }
-
-        //设置商品价格
-        decideProductRealPrice(buyerId, productPriceList,activityProductList , resp, isTradeIsolation);
-        return productPriceList;
+        return resp;
     }
 
     /**
@@ -170,17 +130,18 @@ public class PricePriceQueryService {
         List<Map<String, Object>> newBuyerActivityProductList = activityProductInfoList.stream()
                 .filter(x -> Optional.ofNullable((Boolean) x.get("nbuyer")).orElse(false))
                 .collect(Collectors.toList());
-        boolean isNewBuyer = buyerId > 0
+        boolean isNewBuyerActivityProduct = buyerId > 0
                 && !activityProductInfoList.isEmpty()
                 && newBuyerActivityProductList != null
                 && !newBuyerActivityProductList.isEmpty();
         //如果前置条件都不符合，则没有必要调用用户行为服务
-        if (!isNewBuyer) {
-            return isNewBuyer;
+        if (!isNewBuyerActivityProduct) {
+            return isNewBuyerActivityProduct;
         }
         GetBuyerFirstOrderInfoReq req = new GetBuyerFirstOrderInfoReq();
         req.setBuyerIds(Arrays.asList(buyerId));
 
+        boolean isNewBuyer;
         try {
             GetBuyerFirstOrderInfoResp resp = userBehaviorAnalysisService.getBuyerFirstOrderInfo(buyerId);
             if (resp == null
@@ -188,14 +149,15 @@ public class PricePriceQueryService {
                     || resp.getFirstOrderInfos().get(buyerId) == null) {
                 logWrapper.recordErrorLog("用户行为服务_getBuyerFirstOrderInfo接口返回值不正确,response：{}", resp);
             }
-            isNewBuyer = isNewBuyer
-                    && resp != null
-                    && resp.getFirstOrderInfos() != null
-                    && resp.getFirstOrderInfos().get(buyerId) != null
-                    && resp.getFirstOrderInfos().get(buyerId).isNewCustomer();
+            isNewBuyer =
+                    resp != null
+                            && resp.getFirstOrderInfos() != null
+                            && resp.getFirstOrderInfos().get(buyerId) != null
+                            && resp.getFirstOrderInfos().get(buyerId).isNewCustomer();
+
         } catch (Exception ex) {
-            isNewBuyer = false;
             logWrapper.recordErrorLog("获取用户特征_发生异常,buyerId:{}", buyerId, ex);
+            return false;
         }
         return isNewBuyer;
     }
@@ -203,6 +165,7 @@ public class PricePriceQueryService {
 
     /**
      * 决定最终价格
+     *
      * @param buyerId
      * @param productPriceList
      * @param activityProductInfoList
@@ -321,6 +284,7 @@ public class PricePriceQueryService {
 
     /**
      * 决定vip价格是否作为最终价格
+     *
      * @param sellerId
      * @param resp
      * @param catalog

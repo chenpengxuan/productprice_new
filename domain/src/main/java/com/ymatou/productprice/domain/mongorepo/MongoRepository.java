@@ -25,7 +25,7 @@ public class MongoRepository {
      * @param productId
      * @return
      */
-    public List<Catalog> getCatalogList(String productId) {
+    public List<Catalog> getCatalogListByProduct(String productId) {
         return mongoProcessor
                 .queryMongo(MongoDataBuilder.queryCatalogList(MongoQueryBuilder.queryProductId(productId)))
                 .stream().map(x -> convertMapToCatalog(x)).collect(Collectors.toList());
@@ -37,12 +37,56 @@ public class MongoRepository {
      * @param productIdList
      * @return
      */
-    public List<Catalog> getCatalogList(List<String> productIdList) {
+    public List<Catalog> getCatalogListByProduct(List<String> productIdList) {
         MongoQueryData queryData = new MongoQueryData();
         Map<String, Object> matchConditionMap = new HashMap<>();
         Map<String, Object> tempMap = new HashMap<>();
         tempMap.put("$in", productIdList);
         matchConditionMap.put("spid", tempMap);
+        queryData.setMatchCondition(matchConditionMap);
+        queryData.setTableName(Constants.CatalogDb);
+
+        queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
+
+        return mongoProcessor
+                .queryMongo(queryData)
+                .stream().map(x -> convertMapToCatalog(x)).collect(Collectors.toList());
+    }
+
+    /**
+     * 根据规格id获取规格信息
+     *
+     * @param catalogId
+     * @return
+     */
+    public Catalog getCatalogByCatalogId(String catalogId) {
+        MongoQueryData queryData = new MongoQueryData();
+
+        Map<String, Object> matchConditionMap = new HashMap<>();
+        matchConditionMap.put("cid", catalogId);
+        queryData.setMatchCondition(matchConditionMap);
+
+        queryData.setTableName(Constants.CatalogDb);
+
+        queryData.setOperationType(MongoOperationTypeEnum.SELECTSINGLE);
+
+        return mongoProcessor
+                .queryMongo(queryData)
+                .stream().map(x -> convertMapToCatalog(x)).findFirst().orElse(new Catalog());
+    }
+
+    /**
+     * 根据规格id获取规格信息列表
+     *
+     * @param catalogIdList
+     * @return
+     */
+    public List<Catalog> getCatalogByCatalogId(List<String> catalogIdList) {
+        MongoQueryData queryData = new MongoQueryData();
+        Map<String, Object> matchConditionMap = new HashMap<>();
+        Map<String, Object> tempMap = new HashMap<>();
+        tempMap.put("$in", catalogIdList);
+        matchConditionMap.put("cid", tempMap);
         queryData.setMatchCondition(matchConditionMap);
         queryData.setTableName(Constants.CatalogDb);
 
@@ -109,7 +153,7 @@ public class MongoRepository {
 
         Map<String, Object> matchConditionMap = new HashMap<>();
         Map<String, Object> tempProductIdMap = new HashMap<>();
-        tempProductIdMap.put("$in",productIdList);
+        tempProductIdMap.put("$in", productIdList);
         matchConditionMap.put("spid", tempProductIdMap);
         Map<String, Object> tempGteMap = new HashMap<>();
         tempGteMap.put("$gte", new Date());
@@ -153,11 +197,11 @@ public class MongoRepository {
      * @param productIdList
      * @return
      */
-    public List<Map<String,Object>> getSellerIdListByProductIdList(List<String> productIdList) {
+    public  Map<String, Long> getSellerIdListByProductIdList(List<String> productIdList) {
         MongoQueryData queryData = new MongoQueryData();
         Map<String, Boolean> projectionMap = new HashMap<>();
         projectionMap.put("sid", true);
-        projectionMap.put("spid",true);
+        projectionMap.put("spid", true);
         queryData.setProjection(projectionMap);
 
         Map<String, Object> matchConditionMap = new HashMap<>();
@@ -167,7 +211,13 @@ public class MongoRepository {
         queryData.setMatchCondition(matchConditionMap);
         queryData.setTableName(Constants.ProductDb);
         queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
-        return mongoProcessor.queryMongo(queryData);
+
+        Map<String, Long> resultMap = new HashMap<>();
+
+        List<Map<String, Object>> mapList = mongoProcessor.queryMongo(queryData);
+
+        mapList.stream().forEach(x -> x.forEach((y, z) -> resultMap.put((String) z, Long.valueOf(y.toString()))));
+        return resultMap;
     }
 
     /**
