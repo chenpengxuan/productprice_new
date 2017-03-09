@@ -217,7 +217,10 @@ public class MongoRepository {
 
         List<Map<String, Object>> mapList = mongoProcessor.queryMongo(queryData);
 
-        mapList.stream().forEach(x -> x.forEach((y, z) -> resultMap.put((String) z, Long.valueOf(y.toString()))));
+        mapList.stream()
+                .forEach(x ->
+                        resultMap.put(Optional.ofNullable((String)x.get("spid")).orElse("")
+                                ,Optional.ofNullable(Long.valueOf(x.get("sid").toString())).orElse(Long.valueOf("0"))));
         return resultMap;
     }
 
