@@ -42,10 +42,6 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
     @Path("/{api:(?i:api)}/{Price:(?i:Price)}/{GetPriceByProdId:(?i:GetPriceByProdId)}")
     @Produces({MediaType.APPLICATION_JSON})
     public BaseResponseNetAdapter getPriceByProdId(@BeanParam GetPriceByProdIdRequest request) {
-        if (request == null) {
-            return BaseResponseNetAdapter.newBusinessFailureInstance("request不能为空");
-        }
-
         ProductPrice productPrice = priceQueryService.getPriceInfoByProductId(request.getBuyerId(),
                 request.getProductId(),
                 false);
@@ -67,10 +63,6 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
     @Path("/{api:(?i:api)}/{Price:(?i:Price)}/{GetPriceByProdIdTradeIsolation:(?i:GetPriceByProdIdTradeIsolation)}")
     @Produces({MediaType.APPLICATION_JSON})
     public BaseResponseNetAdapter getPriceByProdIdWithTradeIsolation(@BeanParam GetPriceByProdIdRequest request) {
-        if (request == null) {
-            return BaseResponseNetAdapter.newBusinessFailureInstance("request不能为空");
-        }
-
         ProductPrice productPrice = priceQueryService.getPriceInfoByProductId(request.getBuyerId(),
                 request.getProductId(),
                 true);
@@ -90,10 +82,6 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
     @POST
     @Path("/{api:(?i:api)}/{Price:(?i:Price)}/{GetPriceByProdIds:(?i:GetPriceByProdIds)}")
     public BaseResponseNetAdapter getPriceByProductIdList(GetPriceByProductIdListRequest request) {
-        if (request == null) {
-            return BaseResponseNetAdapter.newBusinessFailureInstance("request不能为空");
-        }
-
         List<ProductPrice> productPriceList = priceQueryService.getPriceInfoByProductIdList(request.getBuyerId(),
                 request.getProductIdList()
                         .stream().distinct().collect(Collectors.toList()),
@@ -114,10 +102,6 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
     @POST
     @Path("/{api:(?i:api)}/{Price:(?i:Price)}/{GetPriceByProdIdsTradeIsolation:(?i:GetPriceByProdIdsTradeIsolation)}")
     public BaseResponseNetAdapter getPriceByProductIdListWithTradeIsolation(GetPriceByProductIdListRequest request) {
-        if (request == null) {
-            return BaseResponseNetAdapter.newBusinessFailureInstance("request不能为空");
-        }
-
         List<ProductPrice> productPriceList = priceQueryService.getPriceInfoByProductIdList(request.getBuyerId(),
                 request.getProductIdList()
                         .stream().distinct().collect(Collectors.toList()),
@@ -140,10 +124,6 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
     @POST
     @Path("/{api:(?i:api)}/{Price:(?i:Price)}/{GetPriceByCatalogIds:(?i:GetPriceByCatalogIds)}")
     public BaseResponseNetAdapter getPriceByCatalogIdList(GetPriceByCatalogIdListRequest request) {
-        if (request == null) {
-            return BaseResponseNetAdapter.newBusinessFailureInstance("request不能为空");
-        }
-
         List<CatalogPrice> catalogPriceList = priceQueryService.getPriceInfoByCatalogIdList(
                 request.getBuyerId(),
                 request.getCatalogIdList()
@@ -166,10 +146,6 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
     @POST
     @Path("/{api:(?i:api)}/{Price:(?i:Price)}/{GetPriceByCatalogIdsTradeIsolation:(?i:GetPriceByCatalogIdsTradeIsolation)}")
     public BaseResponseNetAdapter getPriceByCatalogIdListWithTradeIsolation(GetPriceByCatalogIdListRequest request) {
-        if (request == null) {
-            return BaseResponseNetAdapter.newBusinessFailureInstance("request不能为空");
-        }
-
         List<CatalogPrice> catalogPriceList = priceQueryService.getPriceInfoByCatalogIdList(
                 request.getBuyerId(),
                 request.getCatalogIdList()

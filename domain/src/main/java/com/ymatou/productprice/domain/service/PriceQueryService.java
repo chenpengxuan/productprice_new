@@ -1,17 +1,13 @@
 package com.ymatou.productprice.domain.service;
 
 import com.ymatou.productprice.domain.mongorepo.MongoRepository;
-import com.ymatou.productprice.infrastructure.util.LogWrapper;
 import com.ymatou.productprice.model.Catalog;
 import com.ymatou.productprice.model.CatalogPrice;
 import com.ymatou.productprice.model.ProductPrice;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -23,9 +19,6 @@ public class PriceQueryService {
 
     @Autowired
     private MongoRepository mongoRepository;
-
-    @Autowired
-    private LogWrapper logWrapper;
 
     @Autowired
     private PriceCoreService priceCoreService;
@@ -48,8 +41,7 @@ public class PriceQueryService {
 
         //查询sellerId
         Map<String, Object> tempSellerIdMap = mongoRepository.getSellerIdByProductId(productId);
-        long sellerId = tempSellerIdMap.get("sid") != null ? (int) tempSellerIdMap.get("sid") : 0;
-        logWrapper.recordDebugLog("根据商品id获取价格信息_getPriceInfoByProductId:sellerId{}", sellerId);
+        long sellerId = Optional.ofNullable(Long.valueOf(tempSellerIdMap.get("sid").toString())).orElse(Long.valueOf("0"));
         productPrice.setSellerId(sellerId);
 
         //查询活动商品信息
