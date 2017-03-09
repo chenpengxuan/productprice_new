@@ -69,6 +69,12 @@ public class MongoProcessor {
         if (mongoQueryData.getTableName().isEmpty()) {
             throw new IllegalArgumentException("mongo table name 不能为空");
         }
+        //不需要取_id
+        if(mongoQueryData.getProjection() != null){
+            Map<String,Boolean> tempProjectionMap = mongoQueryData.getProjection();
+            tempProjectionMap.put("_id",false);
+            mongoQueryData.setProjection(tempProjectionMap);
+        }
         MongoCollection collection = jongoClient.getCollection(mongoQueryData.getTableName());
         List<Map<String, Object>> mapList = new ArrayList<>();
         Map<String, Object> tempMap = new HashMap<>();

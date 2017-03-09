@@ -181,6 +181,7 @@ public class MongoRepository {
         MongoQueryData queryData = new MongoQueryData();
         Map<String, Boolean> projectionMap = new HashMap<>();
         projectionMap.put("sid", true);
+        projectionMap.put("_id", false);
         queryData.setProjection(projectionMap);
 
         Map<String, Object> matchConditionMap = new HashMap<>();
