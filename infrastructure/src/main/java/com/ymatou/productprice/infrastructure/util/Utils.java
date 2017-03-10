@@ -3,6 +3,7 @@ package com.ymatou.productprice.infrastructure.util;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.google.common.base.Optional;
+import com.ymatou.productprice.infrastructure.constants.Constants;
 import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -14,9 +15,8 @@ import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Enumeration;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by zhangyifan on 2016/12/14.
@@ -97,6 +97,33 @@ public class Utils {
 
     private static <T> T optional(T t, T defaultValue) {
         return Optional.fromNullable(t).or(defaultValue);
+    }
+
+    /**
+     * 将一个集合拆分成等量子集合
+     * @param objectList
+     * @param splitNum
+     * @return
+     */
+    public static <T> List<List<T>> splitCollectionToCollectionList(List<T> objectList
+            ,Integer... splitNum){
+
+        Integer splitLimitNum = optional(splitNum.length > 0 ? splitNum[0]:null,Constants.FORK_COUNT_LIMIT)
+                > objectList.size()
+                ? objectList.size():optional(splitNum.length > 0 ? splitNum[0]:null,Constants.FORK_COUNT_LIMIT);
+
+        objectList = optional(objectList, Collections.emptyList());
+
+        int splitTimes = (objectList.size() + splitLimitNum - 1) /splitLimitNum;
+
+        List<List<T>> resultCollection = new ArrayList<>();
+
+        for(int i = 0; i < splitTimes; i ++){
+            List<T> subObjectList = objectList.stream().skip(splitLimitNum * i).limit(splitLimitNum).collect(Collectors.toList());
+            resultCollection.add(subObjectList);
+        }
+
+        return resultCollection;
     }
 
     /**

@@ -86,9 +86,10 @@ public class PriceCoreService {
         if (!needsCalculateVipAndNewCustomerPriceList.isEmpty()) {
 
             //查询ProductId --> SellerId map
-            Map<String, Long> tempMap = mongoRepository.getSellerIdListByProductIdList(needsCalculateVipAndNewCustomerPriceList
-                    .stream().map(x -> x.getProductId())
-                    .collect(Collectors.toList()));
+            Map<String, Long> tempMap = mongoRepository
+                    .getSellerIdListByProductIdList(needsCalculateVipAndNewCustomerPriceList
+                            .stream().map(x -> x.getProductId())
+                            .collect(Collectors.toList()));
 
             List<Long> sellerIdList = tempMap.values().stream().collect(Collectors.toList());
             resp = userBehaviorAnalysisService.getBuyerBehavior(sellerIdList, buyerId);
@@ -160,7 +161,6 @@ public class PriceCoreService {
         return isNewBuyer;
     }
 
-
     /**
      * 决定最终价格
      *
@@ -195,15 +195,19 @@ public class PriceCoreService {
                         catalog,
                         tempActivityProduct);
                 if (tempPriceEnum != null) return;
+
                 //访客价格逻辑
                 tempPriceEnum = decideVistorPriceAsRealPriceLogic(buyerId, resp, catalog);
                 if (tempPriceEnum != null) return;
+
                 //vip价格逻辑
                 tempPriceEnum = decideVipPriceAsRealPriceLogic(productPrice.getSellerId(), resp, catalog);
                 if (tempPriceEnum != null) return;
+
                 //直播新客价格逻辑
                 tempPriceEnum = decideNewCustomerPriceAsRealPriceLogic(productPrice.getSellerId(), resp, catalog);
                 if (tempPriceEnum != null) return;
+
                 //原价价格逻辑
                 tempPriceEnum = decideQuotePriceAsRealPriceLogic(catalog);
             });
@@ -219,7 +223,10 @@ public class PriceCoreService {
      * @param catalog
      * @param activityProductInfo
      */
-    private PriceEnum decideActivityPriceAsRealPriceLogic(boolean isNewBuyer, boolean isTradeIsolation, Catalog catalog, Map<String, Object> activityProductInfo) {
+    private PriceEnum decideActivityPriceAsRealPriceLogic(boolean isNewBuyer,
+                                                          boolean isTradeIsolation,
+                                                          Catalog catalog,
+                                                          Map<String, Object> activityProductInfo) {
         /**
          * 是否需要计算活动价格
          */
@@ -233,16 +240,20 @@ public class PriceCoreService {
         if (needsCalculateActivityProductPrice
                 && activityCatalog != null
                 && !activityCatalog.isEmpty()
-                && Optional.ofNullable((Double)activityCatalog.get("price")).orElse(0D) > 0
-                && Optional.ofNullable((Integer)activityCatalog.get("stock")).orElse(0) > 0
+                && Optional.ofNullable((Double) activityCatalog.get("price")).orElse(0D) > 0
+                && Optional.ofNullable((Integer) activityCatalog.get("stock")).orElse(0) > 0
                 ) {
             //新人活动
-            if (Optional.ofNullable((Boolean)activityProductInfo.get("nbuyer")).orElse(false)
+            if (Optional.ofNullable((Boolean) activityProductInfo.get("nbuyer")).orElse(false)
                     && isNewBuyer) {
                 catalog.setActivityPrice((double) activityCatalog.get("price"));
                 catalog.setPrice(catalog.getActivityPrice());
                 catalog.setPriceType(PriceEnum.YMTACTIVITYPRICE.getCode());
                 return PriceEnum.YMTACTIVITYPRICE;
+            }
+            else if(Optional.ofNullable((Boolean) activityProductInfo.get("nbuyer")).orElse(false)
+                    && !isNewBuyer){
+                return null;
             }
             catalog.setActivityPrice((double) activityCatalog.get("price"));
             catalog.setPrice(catalog.getActivityPrice());

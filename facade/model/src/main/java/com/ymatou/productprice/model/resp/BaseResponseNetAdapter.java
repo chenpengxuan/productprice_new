@@ -4,7 +4,6 @@ package com.ymatou.productprice.model.resp;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -83,10 +82,10 @@ public class BaseResponseNetAdapter {
      */
     public static BaseResponseNetAdapter newSystemFailureInstance(String errorMsg, Throwable throwable) {
         BaseResponseNetAdapter baseResponseNetAdapter = new BaseResponseNetAdapter();
-        baseResponseNetAdapter.setBCode(0);
+        baseResponseNetAdapter.setBCode(-1);
         baseResponseNetAdapter.setCode(500);
         baseResponseNetAdapter.setMsg("系统出现异常" + errorMsg + throwable);
-        baseResponseNetAdapter.setData(new HashMap<>());
+        baseResponseNetAdapter.setData(null);
         return baseResponseNetAdapter;
     }
 
@@ -97,10 +96,10 @@ public class BaseResponseNetAdapter {
      */
     public static BaseResponseNetAdapter newBusinessFailureInstance(String errorMsg) {
         BaseResponseNetAdapter baseResponseNetAdapter = new BaseResponseNetAdapter();
-        baseResponseNetAdapter.setBCode(0);
-        baseResponseNetAdapter.setCode(500);
-        baseResponseNetAdapter.setMsg("业务检查异常,异常原因为：" + errorMsg);
-        baseResponseNetAdapter.setData(new HashMap<>());
+        baseResponseNetAdapter.setBCode(-2);
+        baseResponseNetAdapter.setCode(201);
+        baseResponseNetAdapter.setMsg(errorMsg);
+        baseResponseNetAdapter.setData(null);
         return baseResponseNetAdapter;
     }
 

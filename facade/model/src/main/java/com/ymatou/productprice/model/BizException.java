@@ -16,26 +16,17 @@ package com.ymatou.productprice.model;
 public class BizException extends RuntimeException {
     private static final long serialVersionUID = 1857440708804128584L;
 
-    public BizException(int errorCode, String msg) {
+    public BizException(String msg) {
 
-        this(errorCode, msg, null);
+        this(msg, null);
     }
 
 
-    public BizException(int errorCode) {
-        this(errorCode, "业务异常", null);
-    }
-
-
-    public BizException(int errorCode, String msg, Throwable cause) {
+    public BizException(String msg, Throwable cause) {
         super(msg, cause);
     }
 
-    public static void throwBizException(int errorCode, String message, Throwable cause) {
-        throw new BizException(errorCode, message, cause);
-    }
-
-    public static void throwBizException(int errorCode, String message) {
-        throwBizException(errorCode, message, null);
+    public static void throwBizException(String message) {
+        throw new BizException(message);
     }
 }

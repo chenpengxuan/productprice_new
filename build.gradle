@@ -57,6 +57,7 @@ allprojects {
 
         jodatimeVersion="2.9.7"
 
+        cyclopsReactVersion="2.0.0-MI4"
 
         mybatisVersion = "3.4.1"
         mybatisSpringVersion = "1.3.0"

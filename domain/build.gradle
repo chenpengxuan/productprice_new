@@ -8,7 +8,10 @@ jar {
 dependencies {
     compile(project(":infrastructure"))
     compile(project(":intergration"))
-    //useranalysis
+    compile ("com.aol.simplereact:cyclops-react:${cyclopsReactVersion}"){
+        exclude group:'org.slf4j',module:'slf4j-simple'
+    }
+//    useranalysis
     compile "com.ymatou.useranalysis:useranalysis-facade-model:${ymatouUserAnalysisApiVersion}"
     compile "com.ymatou.useranalysis:useranalysis-facade:${ymatouUserAnalysisApiVersion}"
 }

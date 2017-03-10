@@ -14,6 +14,11 @@ public class Constants {
     public static final String SNAPSHOP_MQ_CODE = "snapshotmq_from_apollo";
 
     /**
+     * 针对单次查询数量过大的情况 做出查询数量限制
+     */
+    public static final Integer FORK_COUNT_LIMIT = 30;
+
+    /**
      * Mongo商品库名
      */
     public static final String ProductDb = "Products";

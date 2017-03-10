@@ -94,6 +94,7 @@ public class PriceQueryServiceTest {
         List<ProductPrice> productPriceList = priceQueryService.getPriceInfoByProductIdList(buyerId, productIdList, true);
         Assert.assertNotNull(productPriceList);
         Assert.assertTrue(productPriceList.stream().allMatch(x -> x.getCatalogs().stream().allMatch(y -> y.getPrice() > 0 && y.getPriceType() >= 0)));
+        Assert.assertEquals(productIdList.size(),productPriceList.size());
     }
 
     /**
@@ -480,6 +481,7 @@ public class PriceQueryServiceTest {
         catalogIdList.add("6d9fbc07-7eee-489e-8ab0-bde845a268da");
         List<CatalogPrice> catalogPriceList = priceQueryService.getPriceInfoByCatalogIdList(buyerId,catalogIdList,false);
         Assert.assertNotNull(catalogPriceList);
+        Assert.assertEquals(catalogIdList.size(),catalogPriceList.size());
         Assert.assertTrue(catalogPriceList.stream().allMatch(x -> x.getCatalogInfo().getPrice() > 0));
     }
 }
