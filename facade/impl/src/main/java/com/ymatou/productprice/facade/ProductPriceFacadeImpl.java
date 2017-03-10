@@ -81,6 +81,8 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
     @Override
     @POST
     @Path("/{api:(?i:api)}/{Price:(?i:Price)}/{GetPriceByProdIds:(?i:GetPriceByProdIds)}")
+    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON})
     public BaseResponseNetAdapter getPriceByProductIdList(GetPriceByProductIdListRequest request) {
         List<ProductPrice> productPriceList = priceQueryService.getPriceInfoByProductIdList(request.getBuyerId(),
                 request.getProductIdList()
@@ -101,6 +103,8 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
     @Override
     @POST
     @Path("/{api:(?i:api)}/{Price:(?i:Price)}/{GetPriceByProdIdsTradeIsolation:(?i:GetPriceByProdIdsTradeIsolation)}")
+    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON})
     public BaseResponseNetAdapter getPriceByProductIdListWithTradeIsolation(GetPriceByProductIdListRequest request) {
         List<ProductPrice> productPriceList = priceQueryService.getPriceInfoByProductIdList(request.getBuyerId(),
                 request.getProductIdList()
@@ -123,6 +127,8 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
     @Override
     @POST
     @Path("/{api:(?i:api)}/{Price:(?i:Price)}/{GetPriceByCatalogIds:(?i:GetPriceByCatalogIds)}")
+    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON})
     public BaseResponseNetAdapter getPriceByCatalogIdList(GetPriceByCatalogIdListRequest request) {
         List<CatalogPrice> catalogPriceList = priceQueryService.getPriceInfoByCatalogIdList(
                 request.getBuyerId(),
@@ -145,6 +151,8 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
     @Override
     @POST
     @Path("/{api:(?i:api)}/{Price:(?i:Price)}/{GetPriceByCatalogIdsTradeIsolation:(?i:GetPriceByCatalogIdsTradeIsolation)}")
+    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON})
     public BaseResponseNetAdapter getPriceByCatalogIdListWithTradeIsolation(GetPriceByCatalogIdListRequest request) {
         List<CatalogPrice> catalogPriceList = priceQueryService.getPriceInfoByCatalogIdList(
                 request.getBuyerId(),
