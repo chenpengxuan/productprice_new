@@ -1,5 +1,6 @@
 package com.ymatou.productprice.infrastructure.dataprocess.mongo;
 
+import com.ymatou.productprice.model.PrintFriendliness;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Map;
@@ -8,7 +9,7 @@ import java.util.Map;
  * mongo 查询操作抽象
  * Created by chenpengxuan on 2017/2/17.
  */
-public class MongoQueryData {
+public class MongoQueryData extends PrintFriendliness{
     /**
      * mongo表名
      */

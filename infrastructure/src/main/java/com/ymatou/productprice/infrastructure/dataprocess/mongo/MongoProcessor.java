@@ -76,8 +76,8 @@ public class MongoProcessor {
             mongoQueryData.setProjection(tempProjectionMap);
         }
         MongoCollection collection = jongoClient.getCollection(mongoQueryData.getTableName());
-        List<Map<String, Object>> mapList = new ArrayList<>();
-        Map<String, Object> tempMap = new HashMap<>();
+
+
         Object[] paramList = processQueryCondition(mongoQueryData.getMatchCondition());
         String matchCondition = mongoQueryData.getMatchCondition() != null
                 ? MapUtil.makeJsonStringFromMapForJongo(mongoQueryData.getMatchCondition()):"{}";
@@ -85,20 +85,27 @@ public class MongoProcessor {
                 ? MapUtil.makeJsonStringFromMapForJongo(Maps.transformEntries(mongoQueryData.getProjection(),(x,y)-> y ? 1:0)):"{}";
         String sort = mongoQueryData.getSort() != null
                 ? MapUtil.makeJsonStringFromMapForJongo(Maps.transformEntries(mongoQueryData.getSort(),(x,y)-> y ? 1:-1)):"{}";
-        switch (mongoQueryData.getOperationType()) {
-            case SELECTSINGLE:
-                tempMap = collection.findOne(matchCondition,paramList).projection(projection).orderBy(sort).as(HashMap.class);
-                if (tempMap != null) {
-                    mapList.add(tempMap);
-                }
-                break;
-            case SELECTMANY:
-                mapList = Lists.newArrayList((Iterator<? extends Map<String, Object>>)collection.find(matchCondition,paramList).projection(projection).as(tempMap.getClass()).iterator());
-                break;
-            default:
-                throw new IllegalArgumentException("mongo 操作类型不正确");
-        }
-        return mapList;
+        //增加定制化性能监控汇报
+        List<Map<String, Object>> result = PerformanceStatisticContainer.addWithReturn(() -> {
+            Map<String, Object> tempMap = new HashMap<>();
+            List<Map<String, Object>> mapList = new ArrayList<>();
+            switch (mongoQueryData.getOperationType()) {
+                case SELECTSINGLE:
+                    tempMap = collection.findOne(matchCondition, paramList).projection(projection).orderBy(sort).as(HashMap.class);
+                    if (tempMap != null) {
+                        mapList.add(tempMap);
+                    }
+                    break;
+                case SELECTMANY:
+                    mapList = Lists.newArrayList((Iterator<? extends Map<String, Object>>) collection.find(matchCondition, paramList).projection(projection).as(tempMap.getClass()).iterator());
+                    break;
+                default:
+                    throw new IllegalArgumentException("mongo 操作类型不正确");
+            }
+            return mapList;
+        },"processMongoData_" + mongoQueryData.getOperationType().name() + "_" + mongoQueryData.getTableName(), Constants.APP_ID);
+        logger.info("mongo查询信息为{}",mongoQueryData);
+        return result;
     }
 
     /**

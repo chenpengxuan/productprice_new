@@ -11,7 +11,7 @@ import java.util.List;
  * 根据商品id列表获取价格信息
  * Created by chenpengxuan on 2017/3/8.
  */
-public class GetPriceByProductIdListRequest {
+public class GetPriceByProductIdListRequest extends BaseRequest{
     /**
      * 买手id
      *
