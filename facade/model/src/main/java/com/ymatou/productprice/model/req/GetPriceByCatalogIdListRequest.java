@@ -20,7 +20,7 @@ public class GetPriceByCatalogIdListRequest extends BaseRequest{
     @Min(value = 0,message = "买家id必须大于或者等于0,当等于0时表示当前买家尚未登录")
     private int buyerId;
 
-    @JsonProperty("BuyerId")
+    @JsonProperty("CatalogIds")
     @NotNull(message = "规格id列表不能为空")
     private List<String> catalogIdList;
 

@@ -1,5 +1,7 @@
 package com.ymatou.productprice.model.req;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.QueryParam;
@@ -24,18 +26,22 @@ public class GetPriceByProdIdRequest extends BaseRequest {
     @NotNull(message = "商品id不能为空")
     private String productId;
 
+    @JsonIgnore
     public int getBuyerId() {
         return buyerId;
     }
 
+    @JsonIgnore
     public void setBuyerId(int buyerId) {
         this.buyerId = buyerId;
     }
 
+    @JsonIgnore
     public String getProductId() {
         return productId;
     }
 
+    @JsonIgnore
     public void setProductId(String productId) {
         this.productId = productId;
     }
