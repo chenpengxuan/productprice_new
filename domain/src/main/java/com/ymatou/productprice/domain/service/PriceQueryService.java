@@ -79,7 +79,7 @@ public class PriceQueryService {
             BizException.throwBizException("商品信息不存在");
         }
         //查询活动商品列表
-        List<Map<String, Object>> activityProductList = mongoRepository.getActivityProductList(productIdList);
+        List<Map<String, Object>> activityProductList = mongoRepository.getActivityProductListParallelWrapper(productIdList);
 
         //价格核心逻辑
         priceCoreService.calculateRealPriceCoreLogic(buyerId, catalogList, productPriceList, activityProductList, isTradeIsolation);
@@ -115,7 +115,7 @@ public class PriceQueryService {
         }).collect(Collectors.toList());
 
         //查询活动商品列表
-        List<Map<String, Object>> activityProductList = mongoRepository.getActivityProductList(productIdList);
+        List<Map<String, Object>> activityProductList = mongoRepository.getActivityProductListParallelWrapper(productIdList);
 
         //价格核心逻辑
         priceCoreService.calculateRealPriceCoreLogic(buyerId, catalogList, productPriceList, activityProductList, isTradeIsolation);

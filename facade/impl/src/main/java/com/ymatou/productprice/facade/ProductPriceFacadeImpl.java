@@ -34,8 +34,8 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
     /**
      * 根据商品id获取价格信息
      *
-     * @param request
-     * @return
+     * @param request buyerId and ProductId
+     * @return productPriceInfo
      */
     @Override
     @GET
@@ -55,8 +55,8 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
     /**
      * 根据商品id获取交易隔离价格信息
      *
-     * @param request
-     * @return
+     * @param request buyerId and ProductId
+     * @return productPriceInfo
      */
     @Override
     @GET
@@ -75,8 +75,8 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
     /**
      * 根据商品id列表获取价格信息
      *
-     * @param request
-     * @return
+     * @param request buyerId and ProductIdList
+     * @return productPriceList
      */
     @Override
     @POST
@@ -97,8 +97,8 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
     /**
      * 根据商品id列表获取交易隔离价格信息
      *
-     * @param request
-     * @return
+     * @param request buyerId and productIdList
+     * @return productPriceList
      */
     @Override
     @POST
@@ -121,8 +121,8 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
     /**
      * 根据规格id列表获取价格信息
      *
-     * @param request
-     * @return
+     * @param request buyerId and catalogIdList
+     * @return catalogPriceList
      */
     @Override
     @POST
@@ -145,8 +145,8 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
     /**
      * 根据规格id列表获取交易隔离价格信息
      *
-     * @param request
-     * @return
+     * @param request buyerId and catalogIdList
+     * @return catalogPriceList
      */
     @Override
     @POST

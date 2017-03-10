@@ -191,7 +191,7 @@ public class MongoRepository {
         Map<String, Object> tempGteMap = new HashMap<>();
         tempGteMap.put("$gte", new Date());
         Map<String, Object> tempLteMap = new HashMap<>();
-        tempGteMap.put("$lte", new Date());
+        tempLteMap.put("$lte", new Date());
         matchConditionMap.put("start", tempLteMap);
         matchConditionMap.put("end", tempGteMap);
         queryData.setMatchCondition(matchConditionMap);
@@ -202,6 +202,22 @@ public class MongoRepository {
         queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
 
         return mongoProcessor.queryMongo(queryData);
+    }
+
+    /**
+     * 获取活动商品信息列表
+     *
+     * @param productIdList
+     * @return
+     */
+    public List<Map<String, Object>> getActivityProductListParallelWrapper(List<String> productIdList) {
+        List<List<String>> productIdListWrapperList = Utils.splitCollectionToCollectionList(productIdList);
+        List<Map<String, Object>> productResultList = new ArrayList<>();
+        ReactiveSeq.of(productIdListWrapperList).parallel(new ForkJoinPool(6),productIdListWrapper ->
+                productIdListWrapper.map(tempProductIdList -> tempProductIdList.stream().map(products ->
+                        getActivityProductList(products))
+                )).collect(Collectors.toList()).get(0).forEach(x -> productResultList.addAll(x));
+        return productResultList;
     }
 
     /**
@@ -254,6 +270,22 @@ public class MongoRepository {
                 resultMap.put(Optional.ofNullable((String) x.get("spid")).orElse("")
                         , Long.valueOf(Optional.ofNullable((Integer) (x.get("sid"))).orElse(0))));
         return resultMap;
+    }
+
+    /**
+     * 根据商品id列表查询买手id
+     *
+     * @param productIdList
+     * @return
+     */
+    public Map<String, Long> getSellerIdListByProductIdListParallelWrapper(List<String> productIdList) {
+        List<List<String>> productIdListWrapperList = Utils.splitCollectionToCollectionList(productIdList);
+        Map<String, Long> productResultMap = new HashMap<>();
+        ReactiveSeq.of(productIdListWrapperList).parallel(new ForkJoinPool(6),productIdListWrapper ->
+                productIdListWrapper.map(tempProductIdList -> tempProductIdList.stream().map(products ->
+                        getSellerIdListByProductIdList(products))
+                )).collect(Collectors.toList()).get(0).forEach(x -> productResultMap.putAll(x));
+        return productResultMap;
     }
 
     /**
