@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
  * 实现与业务无关的通用操作。
  * 1，日志
  * 2，异常处理等
- *
+ * <p>
  * Created by chenpengxuan on 2017/3/7.
  */
 @Aspect
@@ -59,7 +59,7 @@ public class FacadeAspect {
         // log日志配有"logPrefix"占位符
         MDC.put(Constants.LOG_PREFIX, getRequestFlag(req));
 
-        logWrapper.recordInfoLog("RequestInfo:" + req);
+        logWrapper.recordInfoLog("RequestInfo:{}", req);
 
         Object resp = null;
 
@@ -76,20 +76,20 @@ public class FacadeAspect {
             //前端可能将错误msg直接抛给用户
             resp = BaseResponseNetAdapter.newBusinessFailureInstance(e.getLocalizedMessage());
             logWrapper.recordErrorLog("Failed to execute request: {}, Error:{}", req.getRequestId(),
-                   e.getMessage(), e);
+                    e.getMessage(), e);
         } catch (Throwable e) {
             //前端可能将错误msg直接抛给用户
-            resp = BaseResponseNetAdapter.newSystemFailureInstance(e.getLocalizedMessage(),e);
+            resp = BaseResponseNetAdapter.newSystemFailureInstance(e.getLocalizedMessage(), e);
             logWrapper.recordErrorLog("Unknown error in executing request:{}", req, e);
         } finally {
             long consumedTime = System.currentTimeMillis() - startTime;
 
-            if ( consumedTime >= 300L) {
+            if (consumedTime >= 300L) {
                 logWrapper.recordErrorLog("Slow query({}ms). Req:{}", consumedTime, req);
             }
             MDC.clear();
         }
-
+        logWrapper.recordInfoLog("ResponseInfo:{}", resp);
         return resp;
     }
 

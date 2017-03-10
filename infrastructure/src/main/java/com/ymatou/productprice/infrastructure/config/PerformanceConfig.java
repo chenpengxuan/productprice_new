@@ -45,6 +45,7 @@ public class PerformanceConfig {
                         + "|| execution(* com.ymatou.productprice.domain.mongorepo.MongoRepository.excuteMongo(..))"
                         + "|| execution(* com.ymatou.productprice.domain.service.PriceQueryService.*(..))"
                         + "|| execution(* com.ymatou.productprice.facade.ProductPriceFacade.*(..))"
+                        + "|| execution(* com.ymatou.productprice.intergration.client.UserBehaviorAnalysisService.*(..))"
         );
 
         return aspectJExpressionPointcut;

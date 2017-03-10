@@ -25,8 +25,14 @@ dependencies {
 
 	compile "ch.qos.logback:logback-classic:${logbackVersion}"
 
-	compile "org.jboss.resteasy:resteasy-jaxrs:${resteasyJaxrsVersion}"
-	compile "org.jboss.resteasy:resteasy-client:${resteasyJaxrsVersion}"
+
+	compile("com.ymatou.resteasy:resteasy-jackson2-provider:${resteasyJaxrsVersion}"){
+		exclude group: 'com.fasterxml.jackson.core', module: 'jackson-core'
+		exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
+		exclude group: 'com.fasterxml.jackson.core', module: 'jackson-annotations'
+	}
+	compile "com.ymatou.resteasy:resteasy-jaxrs:${resteasyJaxrsVersion}"
+	compile "com.ymatou.resteasy:resteasy-client:${resteasyJaxrsVersion}"
 	compile "com.squareup.okhttp3:okhttp:${okhttpVersion}"
 
 	compile "org.apache.httpcomponents:httpclient:${httpclientVersion}"
