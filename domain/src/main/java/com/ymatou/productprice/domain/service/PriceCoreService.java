@@ -180,7 +180,7 @@ public class PriceCoreService {
         productPriceList.stream().forEach(productPrice -> {
             Map<String, Object> tempActivityProduct = activityProductInfoList.stream()
                     .filter(x -> Optional.ofNullable(x.get("spid")).orElse("").equals(productPrice.getProductId()))
-                    .findFirst().orElse(Collections.emptyMap());
+                    .findAny().orElse(Collections.emptyMap());
 
             productPrice.getCatalogs().stream().forEach(catalog -> {
                 PriceEnum tempPriceEnum;
@@ -233,9 +233,12 @@ public class PriceCoreService {
         boolean needsCalculateActivityProductPrice = activityProductInfo != null
                 && (!Optional.ofNullable((Boolean) activityProductInfo.get("isolation")).orElse(false)
                 || isTradeIsolation);
-        Map<String, Object> activityCatalog = ((List<Map<String, Object>>) MapUtil.getMapKeyValueWithDefault(activityProductInfo, "catalogs", new ArrayList<Map<String, Object>>()))
+        Map<String, Object> activityCatalog = ((List<Map<String, Object>>)
+                MapUtil.getMapKeyValueWithDefault(activityProductInfo,
+                        "catalogs",
+                        new ArrayList<Map<String, Object>>()))
                 .stream().filter(x -> Optional.ofNullable(x.get("cid")).orElse("").equals(catalog.getCatalogId()))
-                .findFirst().orElse(Collections.emptyMap());
+                .findAny().orElse(Collections.emptyMap());
 
         if (needsCalculateActivityProductPrice
                 && activityCatalog != null

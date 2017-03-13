@@ -165,7 +165,7 @@ public class MapUtil {
                 tempDataList.add(tempMap);
             } else {
                 List<Map<String, Object>> tempNestedDataList = (List<Map<String, Object>>) tempDataList.stream()
-                        .filter(x -> x.containsValue(data.get(checkKey))).findFirst()
+                        .filter(x -> x.containsValue(data.get(checkKey))).findAny()
                         .orElse(Collections.emptyMap()).get(nestedObjKey);
                 Map<String, Object> tempPropertyMap = new HashMap<>();
                 if(!tempNestedDataList.isEmpty())

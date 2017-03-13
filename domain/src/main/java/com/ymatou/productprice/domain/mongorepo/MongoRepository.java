@@ -90,7 +90,7 @@ public class MongoRepository {
 
         return mongoProcessor
                 .queryMongo(queryData)
-                .stream().map(x -> convertMapToCatalog(x)).findFirst().orElse(new Catalog());
+                .stream().map(x -> convertMapToCatalog(x)).findAny().orElse(new Catalog());
     }
 
     /**
@@ -165,7 +165,7 @@ public class MongoRepository {
 
         queryData.setOperationType(MongoOperationTypeEnum.SELECTSINGLE);
 
-        return mongoProcessor.queryMongo(queryData).stream().findFirst().orElse(Collections.emptyMap());
+        return mongoProcessor.queryMongo(queryData).stream().findAny().orElse(Collections.emptyMap());
     }
 
     /**
@@ -238,7 +238,7 @@ public class MongoRepository {
         queryData.setMatchCondition(matchConditionMap);
         queryData.setTableName(Constants.ProductDb);
         queryData.setOperationType(MongoOperationTypeEnum.SELECTSINGLE);
-        return mongoProcessor.queryMongo(queryData).stream().findFirst().orElse(Collections.emptyMap());
+        return mongoProcessor.queryMongo(queryData).stream().findAny().orElse(Collections.emptyMap());
     }
 
     /**
