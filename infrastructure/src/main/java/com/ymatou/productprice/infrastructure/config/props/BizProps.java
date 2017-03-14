@@ -109,7 +109,7 @@ public class BizProps {
         this.restconnectionaliveduration = restconnectionaliveduration;
     }
 
-    @DisconfFileItem(name = "isUseParallel")
+    @DisconfFileItem(name = "useParallel")
     public boolean isUseParallel() {
         return useParallel;
     }
