@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @DisconfFile(fileName = "biz.properties")
 public class BizProps {
     public BizProps() {
-        int a = 0;
+
     }
 
     /**
@@ -44,6 +44,16 @@ public class BizProps {
      * restclient连接存活时间(单位分钟)
      */
     private long restconnectionaliveduration;
+
+    /**
+     * 是否使用并行
+     */
+    private boolean useParallel;
+
+    /**
+     * 并行数
+     */
+    private int parallelCount;
 
     @DisconfFileItem(name = "exceptionWarningSwitch")
     public Boolean getExceptionWarningSwitch() {
@@ -97,5 +107,23 @@ public class BizProps {
 
     public void setRestconnectionaliveduration(long restconnectionaliveduration) {
         this.restconnectionaliveduration = restconnectionaliveduration;
+    }
+
+    @DisconfFileItem(name = "isUseParallel")
+    public boolean isUseParallel() {
+        return useParallel;
+    }
+
+    public void setUseParallel(boolean useParallel) {
+        this.useParallel = useParallel;
+    }
+
+    @DisconfFileItem(name = "parallelCount")
+    public int getParallelCount() {
+        return parallelCount;
+    }
+
+    public void setParallelCount(int parallelCount) {
+        this.parallelCount = parallelCount;
     }
 }

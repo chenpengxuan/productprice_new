@@ -1,6 +1,7 @@
 package com.ymatou.productprice.domain.service;
 
 import com.ymatou.productprice.domain.mongorepo.MongoRepository;
+import com.ymatou.productprice.infrastructure.config.props.BizProps;
 import com.ymatou.productprice.infrastructure.util.LogWrapper;
 import com.ymatou.productprice.infrastructure.util.MapUtil;
 import com.ymatou.productprice.intergration.client.UserBehaviorAnalysisService;
@@ -31,6 +32,9 @@ public class PriceCoreService {
 
     @Autowired
     private UserBehaviorAnalysisService userBehaviorAnalysisService;
+
+    @Autowired
+    private BizProps bizProps;
 
     /**
      * 价格服务核心逻辑
@@ -86,10 +90,13 @@ public class PriceCoreService {
         if (!needsCalculateVipAndNewCustomerPriceList.isEmpty()) {
 
             //查询ProductId --> SellerId map
-            Map<String, Long> tempMap = mongoRepository
+            Map<String, Long> tempMap = bizProps.isUseParallel() ? mongoRepository
                     .getSellerIdListByProductIdListParallelWrapper(needsCalculateVipAndNewCustomerPriceList
                             .stream().map(x -> x.getProductId())
-                            .collect(Collectors.toList()));
+                            .collect(Collectors.toList()))
+                    : mongoRepository.getSellerIdListByProductIdList(needsCalculateVipAndNewCustomerPriceList
+                    .stream().map(x -> x.getProductId())
+                    .collect(Collectors.toList()));
 
             List<Long> sellerIdList = tempMap.values().stream().collect(Collectors.toList());
             resp = userBehaviorAnalysisService.getBuyerBehavior(sellerIdList, buyerId);
@@ -253,9 +260,8 @@ public class PriceCoreService {
                 catalog.setPrice(catalog.getActivityPrice());
                 catalog.setPriceType(PriceEnum.YMTACTIVITYPRICE.getCode());
                 return PriceEnum.YMTACTIVITYPRICE;
-            }
-            else if(Optional.ofNullable((Boolean) activityProductInfo.get("nbuyer")).orElse(false)
-                    && !isNewBuyer){
+            } else if (Optional.ofNullable((Boolean) activityProductInfo.get("nbuyer")).orElse(false)
+                    && !isNewBuyer) {
                 return null;
             }
             catalog.setActivityPrice((double) activityCatalog.get("price"));

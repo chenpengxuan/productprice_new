@@ -1,5 +1,6 @@
 package com.ymatou.productprice.domain.mongorepo;
 
+import com.ymatou.productprice.infrastructure.config.props.BizProps;
 import com.ymatou.productprice.infrastructure.constants.Constants;
 import com.ymatou.productprice.infrastructure.dataprocess.mongo.*;
 import com.ymatou.productprice.infrastructure.util.Utils;
@@ -20,6 +21,9 @@ import java.util.stream.Collectors;
 public class MongoRepository {
     @Autowired
     private MongoProcessor mongoProcessor;
+
+    @Autowired
+    private BizProps bizProps;
 
     /**
      * 获取规格信息列表
@@ -64,7 +68,7 @@ public class MongoRepository {
     public List<Catalog> getCatalogListByProductParallelWrapper(List<String> productIdList) {
         List<List<String>> productIdListWrapperList = Utils.splitCollectionToCollectionList(productIdList);
         List<Catalog> catalogResultList = new ArrayList<>();
-        ReactiveSeq.of(productIdListWrapperList).parallel(new ForkJoinPool(6),productIdListWrapper ->
+        ReactiveSeq.of(productIdListWrapperList).parallel(new ForkJoinPool(bizProps.getParallelCount()),productIdListWrapper ->
                 productIdListWrapper.map(tempProductIdList -> tempProductIdList.stream().map(products ->
                         getCatalogListByProduct(products))
                 )).collect(Collectors.toList()).get(0).forEach(x -> catalogResultList.addAll(x));
@@ -123,7 +127,7 @@ public class MongoRepository {
     public List<Catalog> getCatalogByCatalogIdParallelWrapper(List<String> catalogIdList){
         List<List<String>> catalogIdListWrapperList = Utils.splitCollectionToCollectionList(catalogIdList);
         List<Catalog> catalogResultList = new ArrayList<>();
-        ReactiveSeq.of(catalogIdListWrapperList).parallel(new ForkJoinPool(6),catalogIdListWrapper ->
+        ReactiveSeq.of(catalogIdListWrapperList).parallel(new ForkJoinPool(bizProps.getParallelCount()),catalogIdListWrapper ->
                 catalogIdListWrapper.map(tempCatalogIdList -> tempCatalogIdList.stream().map(catalogs ->
                         getCatalogByCatalogId(catalogs))
                 )).collect(Collectors.toList()).get(0).forEach(x -> catalogResultList.addAll(x));
@@ -213,7 +217,7 @@ public class MongoRepository {
     public List<Map<String, Object>> getActivityProductListParallelWrapper(List<String> productIdList) {
         List<List<String>> productIdListWrapperList = Utils.splitCollectionToCollectionList(productIdList);
         List<Map<String, Object>> productResultList = new ArrayList<>();
-        ReactiveSeq.of(productIdListWrapperList).parallel(new ForkJoinPool(6),productIdListWrapper ->
+        ReactiveSeq.of(productIdListWrapperList).parallel(new ForkJoinPool(bizProps.getParallelCount()),productIdListWrapper ->
                 productIdListWrapper.map(tempProductIdList -> tempProductIdList.stream().map(products ->
                         getActivityProductList(products))
                 )).collect(Collectors.toList()).get(0).forEach(x -> productResultList.addAll(x));
@@ -281,7 +285,7 @@ public class MongoRepository {
     public Map<String, Long> getSellerIdListByProductIdListParallelWrapper(List<String> productIdList) {
         List<List<String>> productIdListWrapperList = Utils.splitCollectionToCollectionList(productIdList);
         Map<String, Long> productResultMap = new HashMap<>();
-        ReactiveSeq.of(productIdListWrapperList).parallel(new ForkJoinPool(6),productIdListWrapper ->
+        ReactiveSeq.of(productIdListWrapperList).parallel(new ForkJoinPool(bizProps.getParallelCount()),productIdListWrapper ->
                 productIdListWrapper.map(tempProductIdList -> tempProductIdList.stream().map(products ->
                         getSellerIdListByProductIdList(products))
                 )).collect(Collectors.toList()).get(0).forEach(x -> productResultMap.putAll(x));
