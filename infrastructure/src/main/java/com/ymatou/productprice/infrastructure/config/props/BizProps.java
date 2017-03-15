@@ -55,6 +55,11 @@ public class BizProps {
      */
     private int parallelCount;
 
+    /**
+     * 并行阀值
+     */
+    private int parallelThresHoldCount;
+
     @DisconfFileItem(name = "exceptionWarningSwitch")
     public Boolean getExceptionWarningSwitch() {
         return exceptionWarningSwitch;
@@ -121,6 +126,15 @@ public class BizProps {
     @DisconfFileItem(name = "parallelCount")
     public int getParallelCount() {
         return parallelCount;
+    }
+
+    @DisconfFileItem(name = "parallelThresHoldCount")
+    public int getParallelThresHoldCount() {
+        return parallelThresHoldCount;
+    }
+
+    public void setParallelThresHoldCount(int parallelThresHoldCount) {
+        this.parallelThresHoldCount = parallelThresHoldCount;
     }
 
     public void setParallelCount(int parallelCount) {

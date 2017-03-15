@@ -91,8 +91,9 @@ public class PriceCoreService {
 
             //查询ProductId --> SellerId map
             Map<String, Long> tempMap = bizProps.isUseParallel() ? mongoRepository
-                    .getSellerIdListByProductIdListParallelWrapper(needsCalculateVipAndNewCustomerPriceList
+                    .getSellerIdListByProductIdList(needsCalculateVipAndNewCustomerPriceList
                             .stream().map(x -> x.getProductId())
+                            .distinct()
                             .collect(Collectors.toList()))
                     : mongoRepository.getSellerIdListByProductIdList(needsCalculateVipAndNewCustomerPriceList
                     .stream().map(x -> x.getProductId())

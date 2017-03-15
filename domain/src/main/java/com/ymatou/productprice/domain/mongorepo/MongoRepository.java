@@ -3,14 +3,13 @@ package com.ymatou.productprice.domain.mongorepo;
 import com.ymatou.productprice.infrastructure.config.props.BizProps;
 import com.ymatou.productprice.infrastructure.constants.Constants;
 import com.ymatou.productprice.infrastructure.dataprocess.mongo.*;
+import com.ymatou.productprice.infrastructure.util.ParallelUtil.ParallelProcessor;
 import com.ymatou.productprice.infrastructure.util.Utils;
 import com.ymatou.productprice.model.Catalog;
-import cyclops.stream.ReactiveSeq;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 
 /**
@@ -24,6 +23,9 @@ public class MongoRepository {
 
     @Autowired
     private BizProps bizProps;
+
+    @Autowired
+    private ParallelProcessor parallelProcessor;
 
     /**
      * 获取规格信息列表
@@ -66,13 +68,7 @@ public class MongoRepository {
      * @return
      */
     public List<Catalog> getCatalogListByProductParallelWrapper(List<String> productIdList) {
-        List<List<String>> productIdListWrapperList = Utils.splitCollectionToCollectionList(productIdList);
-        List<Catalog> catalogResultList = new ArrayList<>();
-        ReactiveSeq.of(productIdListWrapperList).parallel(new ForkJoinPool(bizProps.getParallelCount()),productIdListWrapper ->
-                productIdListWrapper.map(tempProductIdList -> tempProductIdList.stream().map(products ->
-                        getCatalogListByProduct(products))
-                )).collect(Collectors.toList()).get(0).forEach(x -> catalogResultList.addAll(x));
-        return catalogResultList;
+        return parallelProcessor.doParallelProcess(productIdList, obj-> getCatalogListByProduct((List<String>) obj));
     }
 
     /**
@@ -125,13 +121,7 @@ public class MongoRepository {
      * @return
      */
     public List<Catalog> getCatalogByCatalogIdParallelWrapper(List<String> catalogIdList){
-        List<List<String>> catalogIdListWrapperList = Utils.splitCollectionToCollectionList(catalogIdList);
-        List<Catalog> catalogResultList = new ArrayList<>();
-        ReactiveSeq.of(catalogIdListWrapperList).parallel(new ForkJoinPool(bizProps.getParallelCount()),catalogIdListWrapper ->
-                catalogIdListWrapper.map(tempCatalogIdList -> tempCatalogIdList.stream().map(catalogs ->
-                        getCatalogByCatalogId(catalogs))
-                )).collect(Collectors.toList()).get(0).forEach(x -> catalogResultList.addAll(x));
-        return catalogResultList;
+        return parallelProcessor.doParallelProcess(catalogIdList, obj -> getCatalogByCatalogId((List<String>)obj));
     }
 
     /**
@@ -215,13 +205,7 @@ public class MongoRepository {
      * @return
      */
     public List<Map<String, Object>> getActivityProductListParallelWrapper(List<String> productIdList) {
-        List<List<String>> productIdListWrapperList = Utils.splitCollectionToCollectionList(productIdList);
-        List<Map<String, Object>> productResultList = new ArrayList<>();
-        ReactiveSeq.of(productIdListWrapperList).parallel(new ForkJoinPool(bizProps.getParallelCount()),productIdListWrapper ->
-                productIdListWrapper.map(tempProductIdList -> tempProductIdList.stream().map(products ->
-                        getActivityProductList(products))
-                )).collect(Collectors.toList()).get(0).forEach(x -> productResultList.addAll(x));
-        return productResultList;
+        return parallelProcessor.doParallelProcess(productIdList, obj -> getActivityProductList((List<String>)obj));
     }
 
     /**
@@ -274,22 +258,6 @@ public class MongoRepository {
                 resultMap.put(Optional.ofNullable((String) x.get("spid")).orElse("")
                         , Long.valueOf(Optional.ofNullable((Integer) (x.get("sid"))).orElse(0))));
         return resultMap;
-    }
-
-    /**
-     * 根据商品id列表查询买手id
-     *
-     * @param productIdList
-     * @return
-     */
-    public Map<String, Long> getSellerIdListByProductIdListParallelWrapper(List<String> productIdList) {
-        List<List<String>> productIdListWrapperList = Utils.splitCollectionToCollectionList(productIdList);
-        Map<String, Long> productResultMap = new HashMap<>();
-        ReactiveSeq.of(productIdListWrapperList).parallel(new ForkJoinPool(bizProps.getParallelCount()),productIdListWrapper ->
-                productIdListWrapper.map(tempProductIdList -> tempProductIdList.stream().map(products ->
-                        getSellerIdListByProductIdList(products))
-                )).collect(Collectors.toList()).get(0).forEach(x -> productResultMap.putAll(x));
-        return productResultMap;
     }
 
     /**

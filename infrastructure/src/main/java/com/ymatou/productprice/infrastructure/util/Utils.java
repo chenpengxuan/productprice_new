@@ -101,27 +101,53 @@ public class Utils {
 
     /**
      * 将一个集合拆分成等量子集合
+     *
      * @param objectList
      * @param splitNum
      * @return
      */
     public static <T> List<List<T>> splitCollectionToCollectionList(List<T> objectList
-            ,Integer... splitNum){
+            , Integer... splitNum) {
 
-        Integer splitLimitNum = optional(splitNum.length > 0 ? splitNum[0]:null,Constants.FORK_COUNT_LIMIT)
+        Integer splitLimitNum = optional(splitNum.length > 0 ? splitNum[0] : null, Constants.FORK_COUNT_LIMIT)
                 > objectList.size()
-                ? objectList.size():optional(splitNum.length > 0 ? splitNum[0]:null,Constants.FORK_COUNT_LIMIT);
+                ? objectList.size() : optional(splitNum.length > 0 ? splitNum[0] : null, Constants.FORK_COUNT_LIMIT);
 
         objectList = optional(objectList, Collections.emptyList());
 
-        int splitTimes = (objectList.size() + splitLimitNum - 1) /splitLimitNum;
+        int splitTimes = (objectList.size() + splitLimitNum - 1) / splitLimitNum;
 
         List<List<T>> resultCollection = new ArrayList<>();
 
-        for(int i = 0; i < splitTimes; i ++){
+        for (int i = 0; i < splitTimes; i++) {
             List<T> subObjectList = objectList.stream().skip(splitLimitNum * i).limit(splitLimitNum).collect(Collectors.toList());
             resultCollection.add(subObjectList);
         }
+
+        return resultCollection;
+    }
+
+    /**
+     * 将一个集合拆分成2个子集合
+     *
+     * @param objectList
+     * @param splitNum
+     * @return
+     */
+    public static <T> List<List<T>> splitCollectionToTwoList(List<T> objectList
+            , Integer... splitNum) {
+
+        Integer splitLimitNum = optional(splitNum.length > 0 ? splitNum[0] : null, Constants.FORK_COUNT_LIMIT)
+                > objectList.size()
+                ? objectList.size() : optional(splitNum.length > 0 ? splitNum[0] : null, Constants.FORK_COUNT_LIMIT);
+
+        objectList = optional(objectList, Collections.emptyList());
+
+        List<List<T>> resultCollection = new ArrayList<>();
+        List<T> sub1ObjectList = objectList.stream().skip(0).limit(splitLimitNum).collect(Collectors.toList());
+        List<T> sub2ObjectList = objectList.stream().skip(splitLimitNum).limit(objectList.size() - splitLimitNum).collect(Collectors.toList());
+        resultCollection.add(sub1ObjectList);
+        resultCollection.add(sub2ObjectList);
 
         return resultCollection;
     }
@@ -190,18 +216,20 @@ public class Utils {
 
     /**
      * 获取当前时间时间戳
+     *
      * @return
      */
-    public static Timestamp getNow(){
+    public static Timestamp getNow() {
         return new Timestamp(new Date().getTime());
     }
 
     /**
      * 根据指定时间获取对应时间戳
+     *
      * @param dateTime
      * @return
      */
-    public static Timestamp getTimestamp(String dateTime){
+    public static Timestamp getTimestamp(String dateTime) {
         return Timestamp.valueOf(dateTime);
     }
 
@@ -220,6 +248,7 @@ public class Utils {
 
     /**
      * decimal格式化，保留几位小数
+     *
      * @param value
      * @param digit
      * @return
@@ -231,11 +260,12 @@ public class Utils {
 
     /**
      * 日期处理
+     *
      * @param dateTime
      * @return
      */
-    public static DateTime parseDateTime(String dateTime){
+    public static DateTime parseDateTime(String dateTime) {
         DateTimeFormatter format = DateTimeFormat.forPattern(DEFAULT_DATE_FORMAT);
-        return DateTime.parse(dateTime,format);
+        return DateTime.parse(dateTime, format);
     }
 }
