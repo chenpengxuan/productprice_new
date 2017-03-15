@@ -110,16 +110,26 @@ public class PriceCoreService {
                 x.setSellerId(tempSellerId);
 
                 x.setHasConfirmedOrders(
-                        (finalResp != null
+                        (Optional.of(finalResp != null
                                 && finalResp.getFromSeller() != null
-                                && finalResp.getFromSeller().get(tempSellerId) != null)
-                                && finalResp.getFromSeller().get(tempSellerId).isHasConfirmedOrders());
+                                && finalResp.getFromSeller().get(tempSellerId) != null
+                                && finalResp.getFromSeller().get(tempSellerId).isHasConfirmedOrders())
+                                .orElse(false))
+                );
 
                 x.setNoOrdersOrAllCancelled(
-                        (finalResp != null
+                        (Optional.of(finalResp != null
                                 && finalResp.getFromSeller() != null
-                                && finalResp.getFromSeller().get(tempSellerId) != null)
-                                && finalResp.getFromSeller().get(tempSellerId).isNoOrdersOrAllCancelled());
+                                && finalResp.getFromSeller().get(tempSellerId) != null
+                                && finalResp.getFromSeller().get(tempSellerId).isNoOrdersOrAllCancelled())
+                                .orElse(false))
+                );
+            });
+        }else{
+            productPriceList
+                    .stream().forEach(x -> {
+                x.setNoOrdersOrAllCancelled(false);
+                x.setHasConfirmedOrders(false);
             });
         }
         return resp;
