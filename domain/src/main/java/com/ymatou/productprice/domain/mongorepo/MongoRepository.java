@@ -47,11 +47,22 @@ public class MongoRepository {
      */
     public List<Catalog> getCatalogListByProduct(List<String> productIdList) {
         MongoQueryData queryData = new MongoQueryData();
+
         Map<String, Object> matchConditionMap = new HashMap<>();
         Map<String, Object> tempMap = new HashMap<>();
         tempMap.put("$in", productIdList);
         matchConditionMap.put("spid", tempMap);
         queryData.setMatchCondition(matchConditionMap);
+
+        Map<String, Boolean> projectionMap = new HashMap<>();
+        projectionMap.put("cid", true);
+        projectionMap.put("newp", true);
+        projectionMap.put("price", true);
+        projectionMap.put("vip", true);
+        projectionMap.put("spid", true);
+        projectionMap.put("_id", false);
+        queryData.setProjection(projectionMap);
+
         queryData.setTableName(Constants.CatalogDb);
 
         queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
@@ -68,7 +79,7 @@ public class MongoRepository {
      * @return
      */
     public List<Catalog> getCatalogListByProductParallelWrapper(List<String> productIdList) {
-        return parallelProcessor.doParallelProcess(productIdList, obj-> getCatalogListByProduct((List<String>) obj));
+        return parallelProcessor.doParallelProcess(productIdList, obj -> getCatalogListByProduct((List<String>) obj));
     }
 
     /**
@@ -100,28 +111,38 @@ public class MongoRepository {
      * @return
      */
     public List<Catalog> getCatalogByCatalogId(List<String> catalogIdList) {
-            MongoQueryData queryData = new MongoQueryData();
-            Map<String, Object> matchConditionMap = new HashMap<>();
-            Map<Object, Object> tempMap = new HashMap<>();
-            tempMap.put("$in", catalogIdList);
-            matchConditionMap.put("cid", tempMap);
-            queryData.setMatchCondition(matchConditionMap);
-            queryData.setTableName(Constants.CatalogDb);
+        MongoQueryData queryData = new MongoQueryData();
+        Map<String, Object> matchConditionMap = new HashMap<>();
+        Map<Object, Object> tempMap = new HashMap<>();
+        tempMap.put("$in", catalogIdList);
+        matchConditionMap.put("cid", tempMap);
+        queryData.setMatchCondition(matchConditionMap);
+        Map<String, Boolean> projectionMap = new HashMap<>();
+        projectionMap.put("cid", true);
+        projectionMap.put("newp", true);
+        projectionMap.put("price", true);
+        projectionMap.put("vip", true);
+        projectionMap.put("spid", true);
+        projectionMap.put("_id", false);
+        queryData.setProjection(projectionMap);
 
-            queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
+        queryData.setTableName(Constants.CatalogDb);
 
-            return mongoProcessor
-                    .queryMongo(queryData)
-                    .stream().map(x -> convertMapToCatalog(x)).collect(Collectors.toList());
+        queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
+
+        return mongoProcessor
+                .queryMongo(queryData)
+                .stream().map(x -> convertMapToCatalog(x)).collect(Collectors.toList());
     }
 
     /**
      * 根据规格id获取规格信息列表
+     *
      * @param catalogIdList
      * @return
      */
-    public List<Catalog> getCatalogByCatalogIdParallelWrapper(List<String> catalogIdList){
-        return parallelProcessor.doParallelProcess(catalogIdList, obj -> getCatalogByCatalogId((List<String>)obj));
+    public List<Catalog> getCatalogByCatalogIdParallelWrapper(List<String> catalogIdList) {
+        return parallelProcessor.doParallelProcess(catalogIdList, obj -> getCatalogByCatalogId((List<String>) obj));
     }
 
     /**
@@ -138,6 +159,7 @@ public class MongoRepository {
         projectionMap.put("isolation", true);
         projectionMap.put("catalogs", true);
         projectionMap.put("nbuyer", true);
+        projectionMap.put("_id", false);
         queryData.setProjection(projectionMap);
 
         Map<String, Object> matchConditionMap = new HashMap<>();
@@ -176,6 +198,7 @@ public class MongoRepository {
         projectionMap.put("isolation", true);
         projectionMap.put("catalogs", true);
         projectionMap.put("nbuyer", true);
+        projectionMap.put("_id", false);
         queryData.setProjection(projectionMap);
 
         Map<String, Object> matchConditionMap = new HashMap<>();
@@ -205,7 +228,7 @@ public class MongoRepository {
      * @return
      */
     public List<Map<String, Object>> getActivityProductListParallelWrapper(List<String> productIdList) {
-        return parallelProcessor.doParallelProcess(productIdList, obj -> getActivityProductList((List<String>)obj));
+        return parallelProcessor.doParallelProcess(productIdList, obj -> getActivityProductList((List<String>) obj));
     }
 
     /**
