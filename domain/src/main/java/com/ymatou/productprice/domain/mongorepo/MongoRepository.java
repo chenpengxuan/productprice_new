@@ -1,8 +1,9 @@
 package com.ymatou.productprice.domain.mongorepo;
 
-import com.ymatou.productprice.infrastructure.config.props.BizProps;
 import com.ymatou.productprice.infrastructure.constants.Constants;
-import com.ymatou.productprice.infrastructure.dataprocess.mongo.*;
+import com.ymatou.productprice.infrastructure.dataprocess.mongo.MongoOperationTypeEnum;
+import com.ymatou.productprice.infrastructure.dataprocess.mongo.MongoProcessor;
+import com.ymatou.productprice.infrastructure.dataprocess.mongo.MongoQueryData;
 import com.ymatou.productprice.infrastructure.util.ParallelUtil.ParallelProcessor;
 import com.ymatou.productprice.infrastructure.util.Utils;
 import com.ymatou.productprice.model.Catalog;
@@ -22,9 +23,6 @@ public class MongoRepository {
     private MongoProcessor mongoProcessor;
 
     @Autowired
-    private BizProps bizProps;
-
-    @Autowired
     private ParallelProcessor parallelProcessor;
 
     /**
@@ -34,8 +32,26 @@ public class MongoRepository {
      * @return
      */
     public List<Catalog> getCatalogListByProduct(String productId) {
+        MongoQueryData queryData = new MongoQueryData();
+
+        Map<String, Object> matchConditionMap = new HashMap<>();
+        matchConditionMap.put("spid", productId);
+        queryData.setMatchCondition(matchConditionMap);
+
+        Map<String, Boolean> projectionMap = new HashMap<>();
+        projectionMap.put("cid", true);
+        projectionMap.put("newp", true);
+        projectionMap.put("price", true);
+        projectionMap.put("vip", true);
+        projectionMap.put("spid", true);
+        projectionMap.put("_id", false);
+        queryData.setProjection(projectionMap);
+
+        queryData.setTableName(Constants.CatalogDb);
+
+        queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
         return mongoProcessor
-                .queryMongo(MongoDataBuilder.queryCatalogList(MongoQueryBuilder.queryProductId(productId)))
+                .queryMongo(queryData)
                 .stream().map(x -> convertMapToCatalog(x)).collect(Collectors.toList());
     }
 
@@ -117,6 +133,7 @@ public class MongoRepository {
         tempMap.put("$in", catalogIdList);
         matchConditionMap.put("cid", tempMap);
         queryData.setMatchCondition(matchConditionMap);
+
         Map<String, Boolean> projectionMap = new HashMap<>();
         projectionMap.put("cid", true);
         projectionMap.put("newp", true);
@@ -281,6 +298,102 @@ public class MongoRepository {
                 resultMap.put(Optional.ofNullable((String) x.get("spid")).orElse("")
                         , Long.valueOf(Optional.ofNullable((Integer) (x.get("sid"))).orElse(0))));
         return resultMap;
+    }
+
+    /**
+     * 获取商品部分字段 用于性能测试
+     *
+     * @param productIdList
+     * @return
+     */
+    public List<Map<String, Object>> getSellerOneFieldForTest(List<String> productIdList) {
+        MongoQueryData queryData = new MongoQueryData();
+
+        Map<String, Boolean> projectionMap = new HashMap<>();
+        projectionMap.put("sid", true);
+        projectionMap.put("start", true);
+        projectionMap.put("_id", false);
+
+        queryData.setProjection(projectionMap);
+
+        Map<String, Object> matchConditionMap = new HashMap<>();
+        Map<String, Object> tempMap = new HashMap<>();
+        tempMap.put("$in", productIdList);
+        matchConditionMap.put("spid", tempMap);
+        queryData.setMatchCondition(matchConditionMap);
+        queryData.setTableName(Constants.ProductDb);
+        queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
+
+        Map<String, Long> resultMap = new HashMap<>();
+
+        List<Map<String, Object>> mapList = mongoProcessor.queryMongo(queryData);
+
+        return mapList;
+    }
+
+    /**
+     * 获取商品部分字段 用于性能测试
+     *
+     * @param productIdList
+     * @return
+     */
+    public List<Map<String, Object>> getSellerTwoFieldForTest(List<String> productIdList) {
+        MongoQueryData queryData = new MongoQueryData();
+
+        Map<String, Boolean> projectionMap = new HashMap<>();
+        projectionMap.put("sid", true);
+        projectionMap.put("start", true);
+        projectionMap.put("end", true);
+        projectionMap.put("_id", false);
+
+        queryData.setProjection(projectionMap);
+
+        Map<String, Object> matchConditionMap = new HashMap<>();
+        Map<String, Object> tempMap = new HashMap<>();
+        tempMap.put("$in", productIdList);
+        matchConditionMap.put("spid", tempMap);
+        queryData.setMatchCondition(matchConditionMap);
+        queryData.setTableName(Constants.ProductDb);
+        queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
+
+        Map<String, Long> resultMap = new HashMap<>();
+
+        List<Map<String, Object>> mapList = mongoProcessor.queryMongo(queryData);
+
+        return mapList;
+    }
+
+    /**
+     * 获取商品部分字段 用于性能测试
+     *
+     * @param productIdList
+     * @return
+     */
+    public List<Map<String, Object>> getSellerThreeFieldForTest(List<String> productIdList) {
+        MongoQueryData queryData = new MongoQueryData();
+
+        Map<String, Boolean> projectionMap = new HashMap<>();
+        projectionMap.put("sid", true);
+        projectionMap.put("start", true);
+        projectionMap.put("end", true);
+        projectionMap.put("addtime", true);
+        projectionMap.put("_id", false);
+
+        queryData.setProjection(projectionMap);
+
+        Map<String, Object> matchConditionMap = new HashMap<>();
+        Map<String, Object> tempMap = new HashMap<>();
+        tempMap.put("$in", productIdList);
+        matchConditionMap.put("spid", tempMap);
+        queryData.setMatchCondition(matchConditionMap);
+        queryData.setTableName(Constants.ProductDb);
+        queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
+
+        Map<String, Long> resultMap = new HashMap<>();
+
+        List<Map<String, Object>> mapList = mongoProcessor.queryMongo(queryData);
+
+        return mapList;
     }
 
     /**

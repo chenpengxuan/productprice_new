@@ -1,6 +1,7 @@
 package com.ymatou.productprice.facade;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.ymatou.productprice.domain.mongorepo.MongoRepository;
 import com.ymatou.productprice.domain.service.PriceQueryService;
 import com.ymatou.productprice.model.CatalogPrice;
 import com.ymatou.productprice.model.ProductPrice;
@@ -30,6 +31,9 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
 
     @Autowired
     private PriceQueryService priceQueryService;
+
+    @Autowired
+    private MongoRepository mongoRepository;
 
     /**
      * 根据商品id获取价格信息
@@ -162,6 +166,57 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
 
         Map<String, Object> priceInfoList = new HashMap<>();
         priceInfoList.put("CatalogPriceList", catalogPriceList);
+
+        return BaseResponseNetAdapter.newSuccessInstance(priceInfoList);
+    }
+
+    @Override
+    @POST
+    @Path("/{api:(?i:api)}/{Price:(?i:Price)}/{GetPriceByProductIdListForTestOneField:(?i:GetPriceByProductIdListForTestOneField)}")
+    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON})
+    public BaseResponseNetAdapter getPriceByProductIdListForTestOneField(GetPriceByProductIdListRequest request) {
+        List<Map<String, Object>> productPriceList = mongoRepository.getSellerOneFieldForTest(
+                request.getProductIdList()
+                        .stream().distinct().collect(Collectors.toList())
+                );
+
+        Map<String, Object> priceInfoList = new HashMap<>();
+        priceInfoList.put("ProductPriceList", productPriceList);
+
+        return BaseResponseNetAdapter.newSuccessInstance(priceInfoList);
+    }
+
+    @Override
+    @POST
+    @Path("/{api:(?i:api)}/{Price:(?i:Price)}/{GetPriceByProductIdListForTestTwoField:(?i:GetPriceByProductIdListForTestTwoField)}")
+    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON})
+    public BaseResponseNetAdapter getPriceByProductIdListForTestTwoField(GetPriceByProductIdListRequest request) {
+        List<Map<String, Object>> productPriceList = mongoRepository.getSellerTwoFieldForTest(
+                request.getProductIdList()
+                        .stream().distinct().collect(Collectors.toList())
+        );
+
+        Map<String, Object> priceInfoList = new HashMap<>();
+        priceInfoList.put("ProductPriceList", productPriceList);
+
+        return BaseResponseNetAdapter.newSuccessInstance(priceInfoList);
+    }
+
+    @Override
+    @POST
+    @Path("/{api:(?i:api)}/{Price:(?i:Price)}/{GetPriceByProductIdListForTestThreeField:(?i:GetPriceByProductIdListForTestThreeField)}")
+    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON})
+    public BaseResponseNetAdapter getPriceByProductIdListForTestThreeField(GetPriceByProductIdListRequest request) {
+        List<Map<String, Object>> productPriceList = mongoRepository.getSellerThreeFieldForTest(
+                request.getProductIdList()
+                        .stream().distinct().collect(Collectors.toList())
+        );
+
+        Map<String, Object> priceInfoList = new HashMap<>();
+        priceInfoList.put("ProductPriceList", productPriceList);
 
         return BaseResponseNetAdapter.newSuccessInstance(priceInfoList);
     }
