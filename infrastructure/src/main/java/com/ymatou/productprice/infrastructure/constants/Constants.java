@@ -34,6 +34,11 @@ public class Constants {
     public static final String ActivityProductDb = "ActivityProducts";
 
     /**
+     * 商品变更边界时间戳库名
+     */
+    public static final String ProductTimeStampDb = "ProductTimeStamp";
+
+    /**
      * 活动商品库名
      */
     public static final String ProductDescriptionDb = "ProductDescriptions";

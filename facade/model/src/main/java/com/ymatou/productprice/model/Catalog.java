@@ -62,8 +62,17 @@ public class Catalog {
     @JsonProperty("PriceType")
     private int priceType;
 
+    /**
+     * 商品id
+     */
     @JsonIgnore
     private String productId;
+
+    /**
+     * 买手id
+     */
+    @JsonIgnore
+    private Integer SellerId;
 
     @JsonIgnore
     public String getCatalogId() {
@@ -163,5 +172,15 @@ public class Catalog {
     @JsonIgnore
     public void setProductId(String productId) {
         this.productId = productId;
+    }
+
+    @JsonIgnore
+    public Integer getSellerId() {
+        return SellerId;
+    }
+
+    @JsonIgnore
+    public void setSellerId(Integer sellerId) {
+        SellerId = sellerId;
     }
 }

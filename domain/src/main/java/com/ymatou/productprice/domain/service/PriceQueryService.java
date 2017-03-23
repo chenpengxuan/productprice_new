@@ -47,11 +47,6 @@ public class PriceQueryService {
             BizException.throwBizException("商品信息不存在");
         }
 
-        //查询sellerId
-        Map<String, Object> tempSellerIdMap = mongoRepository.getSellerIdByProductId(productId);
-        long sellerId = Optional.ofNullable((Integer) tempSellerIdMap.get("sid")).orElse(0);
-        productPrice.setSellerId(sellerId);
-
         //查询活动商品信息
         Map<String, Object> activityProductInfo = mongoRepository.getActivityProduct(productId);
 

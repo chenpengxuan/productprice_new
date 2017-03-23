@@ -51,26 +51,4 @@ public interface ProductPriceFacade {
      * @return
      */
     BaseResponseNetAdapter getPriceByCatalogIdListWithTradeIsolation(GetPriceByCatalogIdListRequest request);
-
-    /**
-     * 根据商品id列表获取价格信息 (用于性能压测)
-     * @param request
-     * @return
-     */
-    BaseResponseNetAdapter getPriceByProductIdListForTestOneField(GetPriceByProductIdListRequest request);
-
-    /**
-     * 根据商品id列表获取价格信息 (用于性能压测)
-     * @param request
-     * @return
-     */
-    BaseResponseNetAdapter getPriceByProductIdListForTestTwoField(GetPriceByProductIdListRequest request);
-
-    /**
-     * 根据商品id列表获取价格信息 (用于性能压测)
-     * @param request
-     * @return
-     */
-    BaseResponseNetAdapter getPriceByProductIdListForTestThreeField(GetPriceByProductIdListRequest request);
-
 }

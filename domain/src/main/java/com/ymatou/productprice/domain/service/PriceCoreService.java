@@ -1,7 +1,6 @@
 package com.ymatou.productprice.domain.service;
 
-import com.ymatou.productprice.domain.mongorepo.MongoRepository;
-import com.ymatou.productprice.infrastructure.config.props.BizProps;
+import com.google.common.primitives.Longs;
 import com.ymatou.productprice.infrastructure.util.LogWrapper;
 import com.ymatou.productprice.infrastructure.util.MapUtil;
 import com.ymatou.productprice.intergration.client.UserBehaviorAnalysisService;
@@ -25,16 +24,10 @@ import java.util.stream.Collectors;
 public class PriceCoreService {
 
     @Autowired
-    private MongoRepository mongoRepository;
-
-    @Autowired
     private LogWrapper logWrapper;
 
     @Autowired
     private UserBehaviorAnalysisService userBehaviorAnalysisService;
-
-    @Autowired
-    private BizProps bizProps;
 
     /**
      * 价格服务核心逻辑
@@ -90,25 +83,25 @@ public class PriceCoreService {
         if (!needsCalculateVipAndNewCustomerPriceList.isEmpty()) {
 
             //查询ProductId --> SellerId map
-            Map<String, Long> tempMap = bizProps.isUseParallel() ? mongoRepository
-                    .getSellerIdListByProductIdList(needsCalculateVipAndNewCustomerPriceList
-                            .stream().map(x -> x.getProductId())
-                            .distinct()
-                            .collect(Collectors.toList()))
-                    : mongoRepository.getSellerIdListByProductIdList(needsCalculateVipAndNewCustomerPriceList
-                    .stream().map(x -> x.getProductId())
-                    .collect(Collectors.toList()));
+            List<Catalog> tempCatalogList = new ArrayList<>();
 
-            List<Long> sellerIdList = tempMap.values().stream().collect(Collectors.toList());
-            resp = userBehaviorAnalysisService.getBuyerBehavior(sellerIdList, buyerId);
+            needsCalculateVipAndNewCustomerPriceList.stream()
+                    .forEach(x -> tempCatalogList.addAll(x.getCatalogs()));
+            Map<String,Integer> tempMap = tempCatalogList
+                    .stream()
+                    .collect(Collectors.toMap(Catalog::getProductId,Catalog::getSellerId,(key1,key2) -> key2));
+
+            long[] sellerIdList = tempMap.values().stream().mapToLong(z -> (long)z).toArray();
+
+            resp = userBehaviorAnalysisService.getBuyerBehavior(Longs.asList(sellerIdList), buyerId);
 
             //填充sellerId及对应用户行为信息
             GetBuyerOrderStatisticsResp finalResp = resp;
             productPriceList
                     .stream().forEach(x -> {
 
-                Long tempSellerId = Optional.ofNullable(tempMap.get(x.getProductId())).orElse(Long.valueOf("0"));
-                x.setSellerId(tempSellerId);
+                Integer tempSellerId = Optional.ofNullable(tempMap.get(x.getSellerId())).orElse(0);
+                x.setSellerId(new Long(tempSellerId));
 
                 x.setHasConfirmedOrders(
                         (Optional.of(finalResp != null
@@ -126,7 +119,7 @@ public class PriceCoreService {
                                 .orElse(false))
                 );
             });
-        }else{
+        } else {
             productPriceList
                     .stream().forEach(x -> {
                 x.setNoOrdersOrAllCancelled(false);
