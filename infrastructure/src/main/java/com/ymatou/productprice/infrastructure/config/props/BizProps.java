@@ -60,6 +60,11 @@ public class BizProps {
      */
     private int parallelThresHoldCount;
 
+    /**
+     * 是否使用缓存
+     */
+    private boolean useCache;
+
     @DisconfFileItem(name = "exceptionWarningSwitch")
     public Boolean getExceptionWarningSwitch() {
         return exceptionWarningSwitch;
@@ -135,6 +140,15 @@ public class BizProps {
 
     public void setParallelThresHoldCount(int parallelThresHoldCount) {
         this.parallelThresHoldCount = parallelThresHoldCount;
+    }
+
+    @DisconfFileItem(name = "useCache")
+    public boolean isUseCache() {
+        return useCache;
+    }
+
+    public void setUseCache(boolean useCache) {
+        this.useCache = useCache;
     }
 
     public void setParallelCount(int parallelCount) {

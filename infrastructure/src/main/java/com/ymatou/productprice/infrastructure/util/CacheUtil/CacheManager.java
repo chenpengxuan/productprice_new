@@ -4,13 +4,11 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Maps;
 import com.ymatou.productprice.infrastructure.config.props.CacheProps;
-import com.ymatou.productprice.infrastructure.util.LogWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -25,24 +23,21 @@ public class CacheManager<K, V> {
     @Autowired
     private CacheProps cacheProps;
 
-    @Autowired
-    private LogWrapper logWrapper;
+    private Cache<K, V> singleKeyCacheFactory;
 
-    private Cache<K, V> singleResultCacheFactory;
-
-    private Cache<K, List<V>> listResultCacheFactory;
+    private Cache<K, List<V>> listKeyCacheFactory;
 
     @PostConstruct
     public void init() {
         switch (CacheTypeEnum.valueOf(cacheProps.getCacheType().toUpperCase())) {
             case GUAVACACHE:
-                singleResultCacheFactory = CacheBuilder.newBuilder()
+                singleKeyCacheFactory = CacheBuilder.newBuilder()
                         .maximumSize(cacheProps.getCacheSize())
                         .expireAfterAccess(cacheProps.getExpireTime(), TimeUnit.HOURS)
                         .concurrencyLevel(cacheProps.getWriteConcurrencyNum())
                         .recordStats()
                         .build();
-                listResultCacheFactory = CacheBuilder.newBuilder()
+                listKeyCacheFactory = CacheBuilder.newBuilder()
                         .maximumSize(cacheProps.getCacheSize())
                         .expireAfterAccess(cacheProps.getExpireTime(), TimeUnit.HOURS)
                         .concurrencyLevel(cacheProps.getWriteConcurrencyNum())
@@ -64,17 +59,14 @@ public class CacheManager<K, V> {
      * @param repositoryFunc
      * @return
      */
-    public V getWithSingleKey(K queryParam, Function<K, K> generateKeyFunc, Function<K, V> repositoryFunc) {
+    public V get(K queryParam, Function<K, K> generateKeyFunc, Function<K, V> repositoryFunc) {
         K cacheKey = generateKeyFunc.apply(queryParam);
-        V cacheResult = null;
-        try {
-            cacheResult = singleResultCacheFactory.get(cacheKey, null);
-        } catch (ExecutionException e) {
-            logWrapper.recordErrorLog("获取缓存发生异常_getWithSingleKey{}", e);
-        }
+
+        V cacheResult = singleKeyCacheFactory.getIfPresent(cacheKey);
+
         if (cacheResult == null) {
             cacheResult = repositoryFunc.apply(queryParam);
-            singleResultCacheFactory.put(cacheKey, cacheResult);
+            singleKeyCacheFactory.put(cacheKey, cacheResult);
         }
         return cacheResult;
     }
@@ -88,20 +80,22 @@ public class CacheManager<K, V> {
      * @param mapperFunc
      * @return
      */
-    public List<V> getWithMultipleKey(List<K> queryParamList,
-                                      Function<List<K>, Map<K, K>> generateKeyFunc,
-                                      Function<List<K>, List<V>> repositoryFunc,
-                                      BiFunction<K, List<V>, List<V>> mapperFunc) {
+    public List<V> get(List<K> queryParamList,
+                       Function<List<K>, Map<K, K>> generateKeyFunc,
+                       Function<List<K>, List<V>> repositoryFunc,
+                       BiFunction<K, List<V>, List<V>> mapperFunc) {
         Map<K, K> cacheKeyMap = generateKeyFunc.apply(queryParamList);
         List<V> cacheResultList = new ArrayList<>();
 
-        Map<K,List<V>> cacheResultMap = listResultCacheFactory.getAllPresent(cacheKeyMap.values());
+        Map<K, List<V>> cacheResultMap = listKeyCacheFactory.getAllPresent(cacheKeyMap.values());
         cacheResultList.addAll(Arrays.asList((V[]) cacheResultMap.values().toArray()));
 
         Set<K> cachedKeyList = cacheResultMap.keySet();
-        Map<K, K> needReloadMap = cacheResultMap.isEmpty() ? cacheKeyMap : Maps.filterEntries(cacheKeyMap, kkEntry -> !cachedKeyList.contains(kkEntry.getValue()));
+        Map<K, K> needReloadMap = cacheResultMap.isEmpty() ?
+                cacheKeyMap :
+                Maps.filterEntries(cacheKeyMap, kkEntry -> !cachedKeyList.contains(kkEntry.getValue()));
 
-        if(!needReloadMap.isEmpty()) {
+        if (!needReloadMap.isEmpty()) {
             List<V> repositoryResultList = repositoryFunc.apply(Arrays.asList((K[]) needReloadMap.keySet().toArray()));
             cacheResultList.addAll(repositoryResultList);
 
@@ -109,7 +103,7 @@ public class CacheManager<K, V> {
 
                 List<V> mapResult = mapperFunc.apply(reload.getKey(), repositoryResultList);
 
-                listResultCacheFactory.put(reload.getValue(), mapResult);
+                listKeyCacheFactory.put(reload.getValue(), mapResult);
             });
         }
         return cacheResultList;

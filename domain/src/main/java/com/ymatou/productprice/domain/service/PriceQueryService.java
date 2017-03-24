@@ -1,7 +1,7 @@
 package com.ymatou.productprice.domain.service;
 
-import com.ymatou.productprice.domain.mongorepo.MongoRepository;
-import com.ymatou.productprice.infrastructure.config.props.BizProps;
+import com.ymatou.productprice.domain.RepositoryProxy;
+import com.ymatou.productprice.domain.repo.Repository;
 import com.ymatou.productprice.model.BizException;
 import com.ymatou.productprice.model.Catalog;
 import com.ymatou.productprice.model.CatalogPrice;
@@ -9,7 +9,11 @@ import com.ymatou.productprice.model.ProductPrice;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import javax.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -18,15 +22,18 @@ import java.util.stream.Collectors;
  */
 @Component
 public class PriceQueryService {
-
     @Autowired
-    private MongoRepository mongoRepository;
+    RepositoryProxy repositoryProxy;
 
     @Autowired
     private PriceCoreService priceCoreService;
 
-    @Autowired
-    private BizProps bizProps;
+    private Repository repository;
+
+    @PostConstruct
+    public void  init(){
+        repository = repositoryProxy.getRepository();
+    }
 
     /**
      * 根据商品id获取价格信息
@@ -42,13 +49,13 @@ public class PriceQueryService {
         productPrice.setProductId(productId);
 
         //查询商品规格信息列表
-        List<Catalog> catalogList = mongoRepository.getCatalogListByProduct(productId);
+        List<Catalog> catalogList = repository.getCatalogListByProduct(productId);
         if (catalogList == null || catalogList.isEmpty()) {
             BizException.throwBizException("商品信息不存在");
         }
 
         //查询活动商品信息
-        Map<String, Object> activityProductInfo = mongoRepository.getActivityProduct(productId);
+        Map<String, Object> activityProductInfo = repository.getActivityProduct(productId);
 
         //价格核心逻辑
         priceCoreService.calculateRealPriceCoreLogic(buyerId, catalogList, Arrays.asList(productPrice), Arrays.asList(activityProductInfo), isTradeIsolation);
@@ -73,17 +80,14 @@ public class PriceQueryService {
         }).collect(Collectors.toList());
 
         //查询所有商品的规格信息
-        List<Catalog> catalogList = bizProps.isUseParallel() ? mongoRepository.getCatalogListByProductParallelWrapper
-                (productIdList.stream().distinct().collect(Collectors.toList()))
-                : mongoRepository.getCatalogListByProduct
+        List<Catalog> catalogList = repository.getCatalogListByProduct
                 (productIdList.stream().distinct().collect(Collectors.toList()));
 
         if (catalogList == null || catalogList.isEmpty()) {
             BizException.throwBizException("商品信息不存在");
         }
         //查询活动商品列表
-        List<Map<String, Object>> activityProductList = bizProps.isUseParallel() ? mongoRepository.getActivityProductListParallelWrapper(productIdList)
-                :mongoRepository.getActivityProductList(productIdList);
+        List<Map<String, Object>> activityProductList = repository.getActivityProductList(productIdList);
 
         //价格核心逻辑
         priceCoreService.calculateRealPriceCoreLogic(buyerId, catalogList, productPriceList, activityProductList, isTradeIsolation);
@@ -103,8 +107,7 @@ public class PriceQueryService {
         catalogIdList = catalogIdList.stream().distinct().collect(Collectors.toList());
 
         //获取规格信息
-        List<Catalog> catalogList = bizProps.isUseParallel() ? mongoRepository.getCatalogByCatalogIdParallelWrapper(catalogIdList)
-                : mongoRepository.getCatalogByCatalogId(catalogIdList);
+        List<Catalog> catalogList = repository.getCatalogByCatalogId(catalogIdList);
         if (catalogList == null || catalogList.isEmpty()) {
             BizException.throwBizException("商品信息不存在");
         }
@@ -119,8 +122,7 @@ public class PriceQueryService {
         }).collect(Collectors.toList());
 
         //查询活动商品列表
-        List<Map<String, Object>> activityProductList = bizProps.isUseParallel() ? mongoRepository.getActivityProductListParallelWrapper(productIdList)
-                : mongoRepository.getActivityProductList(productIdList);
+        List<Map<String, Object>> activityProductList = repository.getActivityProductList(productIdList);
 
         //价格核心逻辑
         priceCoreService.calculateRealPriceCoreLogic(buyerId, catalogList, productPriceList, activityProductList, isTradeIsolation);

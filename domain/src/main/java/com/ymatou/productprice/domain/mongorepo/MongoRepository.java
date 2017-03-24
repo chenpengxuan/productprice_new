@@ -1,5 +1,6 @@
 package com.ymatou.productprice.domain.mongorepo;
 
+import com.ymatou.productprice.domain.repo.Repository;
 import com.ymatou.productprice.infrastructure.constants.Constants;
 import com.ymatou.productprice.infrastructure.dataprocess.mongo.MongoOperationTypeEnum;
 import com.ymatou.productprice.infrastructure.dataprocess.mongo.MongoProcessor;
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
  * Created by chenpengxuan on 2017/3/2.
  */
 @Component
-public class MongoRepository {
+public class MongoRepository implements Repository{
     @Autowired
     private MongoProcessor mongoProcessor;
 
@@ -82,6 +83,65 @@ public class MongoRepository {
                 .queryMongo(queryData)
                 .stream()
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 根据商品id列表与时间戳列名获取对应时间戳
+     * @param catalogIdList
+     * @param stampKeyList
+     * @return
+     */
+    public List<Map<String,Object>> getTimeStampByCatalogIdList(List<String> catalogIdList,List<String> stampKeyList){
+        MongoQueryData queryData = new MongoQueryData();
+
+        Map<String, Object> matchConditionMap = new HashMap<>();
+        Map<String, Object> tempMap = new HashMap<>();
+        tempMap.put("$in", catalogIdList);
+        matchConditionMap.put("cid", tempMap);
+        queryData.setMatchCondition(matchConditionMap);
+
+        Map<String, Boolean> projectionMap = new HashMap<>();
+        stampKeyList.stream().forEach(key -> projectionMap.put(key, true));
+        projectionMap.put("cid", true);
+        projectionMap.put("_id", false);
+        queryData.setProjection(projectionMap);
+
+        queryData.setTableName(Constants.CatalogDb);
+
+        queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
+        return mongoProcessor
+                .queryMongo(queryData)
+                .stream()
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 根据商品id列表获取价格边界信息
+     * @param productIdList
+     * @return
+     */
+    public List<Map<String,Object>> getPriceRangeListByProduct(List<String> productIdList){
+        MongoQueryData queryData = new MongoQueryData();
+
+        Map<String, Object> matchConditionMap = new HashMap<>();
+        Map<String, Object> tempMap = new HashMap<>();
+        tempMap.put("$in", productIdList);
+        matchConditionMap.put("spid", tempMap);
+        queryData.setMatchCondition(matchConditionMap);
+
+        Map<String, Boolean> projectionMap = new HashMap<>();
+        projectionMap.put("maxp", true);
+        projectionMap.put("minp", true);
+        projectionMap.put("spid", true);
+        projectionMap.put("_id", false);
+        queryData.setProjection(projectionMap);
+
+        queryData.setTableName(Constants.CatalogDb);
+
+        queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
+        return mongoProcessor
+                .queryMongo(queryData)
+                .stream().collect(Collectors.toList());
     }
 
     /**

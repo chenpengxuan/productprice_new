@@ -47,8 +47,24 @@ public class CacheRepositoryTest {
         productIdList.add("8d74a622-fb36-456d-8927-5336b0226486");
         productIdList.add("88d079ac-45cf-430c-9f8d-0629bb8f17be");
         productIdList.add("8ffec130-316b-48c2-97ec-70f0a54d7cb5");
-        List<Catalog> catalogList = cacheRepository.getCatalogListByProduct(productIdList);
+        List<Catalog> tempList = cacheRepository.getCatalogListByProduct(productIdList);
+        Assert.assertNotNull("规格列表不能为空",tempList);
+    }
+
+    /**
+     * 测试根据商品id获取规格信息列表
+     * 商品存在的情况
+     */
+    @Test
+    public void testGetCatalogListByProductList_PureCache(){
+        List<String> productIdList = new ArrayList<>();
+        productIdList.add("c1ba2ba5-ee5b-4139-8731-99127715ffb0");
+        productIdList.add("ce4fed93-0e50-4595-a8c2-5adf9d99725e");
+        productIdList.add("37bd5942-3ccf-4c24-ad2b-f026b18e6794");
+        productIdList.add("8d74a622-fb36-456d-8927-5336b0226486");
+        productIdList.add("88d079ac-45cf-430c-9f8d-0629bb8f17be");
+        productIdList.add("8ffec130-316b-48c2-97ec-70f0a54d7cb5");
         List<Catalog> cacheCatalogList = cacheRepository.getCatalogListByProduct(productIdList);
-        Assert.assertNotNull("规格列表不能为空",catalogList);
+        Assert.assertNotNull("规格列表不能为空",cacheCatalogList);
     }
 }
