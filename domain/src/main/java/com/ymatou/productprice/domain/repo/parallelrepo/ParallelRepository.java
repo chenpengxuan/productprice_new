@@ -1,10 +1,11 @@
 package com.ymatou.productprice.domain.repo.parallelrepo;
 
-import com.ymatou.productprice.domain.repo.mongorepo.MongoRepository;
 import com.ymatou.productprice.domain.repo.Repository;
+import com.ymatou.productprice.domain.repo.mongorepo.MongoRepository;
 import com.ymatou.productprice.infrastructure.util.ParallelUtil.ParallelProcessor;
 import com.ymatou.productprice.model.Catalog;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import java.util.Map;
  * 并行仓储操作相关
  * Created by chenpengxuan on 2017/3/24.
  */
+@Component
 public class ParallelRepository implements Repository {
     @Autowired
     private ParallelProcessor parallelProcessor;

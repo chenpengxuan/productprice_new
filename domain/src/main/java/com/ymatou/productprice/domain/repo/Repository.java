@@ -1,6 +1,7 @@
 package com.ymatou.productprice.domain.repo;
 
 import com.ymatou.productprice.model.Catalog;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import java.util.Map;
  * 仓储接口
  * Created by chenpengxuan on 2017/3/24.
  */
+@Component
 public interface Repository {
 
     /**

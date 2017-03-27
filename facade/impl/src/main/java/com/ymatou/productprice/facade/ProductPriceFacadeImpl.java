@@ -1,7 +1,6 @@
 package com.ymatou.productprice.facade;
 
 import com.alibaba.dubbo.config.annotation.Service;
-import com.ymatou.productprice.domain.repo.mongorepo.MongoRepository;
 import com.ymatou.productprice.domain.service.PriceQueryService;
 import com.ymatou.productprice.model.CatalogPrice;
 import com.ymatou.productprice.model.ProductPrice;
@@ -32,9 +31,6 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
 
     @Autowired
     private PriceQueryService priceQueryService;
-
-    @Autowired
-    private MongoRepository mongoRepository;
 
     /**
      * 根据商品id获取价格信息

@@ -1,8 +1,8 @@
 package com.ymatou.productprice.domain.repo.cacherepo;
 
+import com.ymatou.productprice.domain.repo.Repository;
 import com.ymatou.productprice.domain.repo.mongorepo.MongoRepository;
 import com.ymatou.productprice.domain.repo.parallelrepo.ParallelRepository;
-import com.ymatou.productprice.domain.repo.Repository;
 import com.ymatou.productprice.infrastructure.config.props.BizProps;
 import com.ymatou.productprice.infrastructure.util.CacheUtil.CacheManager;
 import com.ymatou.productprice.model.Catalog;

@@ -6,10 +6,10 @@ import com.ymatou.productprice.web.ProductPriceApplication;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +20,7 @@ import java.util.List;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = ProductPriceApplication.class)// 指定我们SpringBoot工程的Application启动类
 public class MongoRepositoryTest {
-    @Autowired
+    @Resource(name="mongoRepository")
     private MongoRepository mongoRepository;
 
     /**

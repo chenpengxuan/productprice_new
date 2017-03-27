@@ -5,7 +5,6 @@ import com.ymatou.productprice.infrastructure.constants.Constants;
 import com.ymatou.productprice.infrastructure.dataprocess.mongo.MongoOperationTypeEnum;
 import com.ymatou.productprice.infrastructure.dataprocess.mongo.MongoProcessor;
 import com.ymatou.productprice.infrastructure.dataprocess.mongo.MongoQueryData;
-import com.ymatou.productprice.infrastructure.util.ParallelUtil.ParallelProcessor;
 import com.ymatou.productprice.infrastructure.util.Utils;
 import com.ymatou.productprice.model.Catalog;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +21,6 @@ import java.util.stream.Collectors;
 public class MongoRepository implements Repository{
     @Autowired
     private MongoProcessor mongoProcessor;
-
-    @Autowired
-    private ParallelProcessor parallelProcessor;
 
     /**
      * 根据商品id与时间戳列名获取对应时间戳
@@ -210,16 +206,6 @@ public class MongoRepository implements Repository{
     }
 
     /**
-     * 获取规格信息列表
-     *
-     * @param productIdList
-     * @return
-     */
-    public List<Catalog> getCatalogListByProductParallelWrapper(List<String> productIdList) {
-        return parallelProcessor.doParallelProcess(productIdList, obj -> getCatalogListByProduct((List<String>) obj));
-    }
-
-    /**
      * 根据规格id获取规格信息列表
      *
      * @param catalogIdList
@@ -249,16 +235,6 @@ public class MongoRepository implements Repository{
         return mongoProcessor
                 .queryMongo(queryData)
                 .stream().map(x -> convertMapToCatalog(x)).collect(Collectors.toList());
-    }
-
-    /**
-     * 根据规格id获取规格信息列表
-     *
-     * @param catalogIdList
-     * @return
-     */
-    public List<Catalog> getCatalogByCatalogIdParallelWrapper(List<String> catalogIdList) {
-        return parallelProcessor.doParallelProcess(catalogIdList, obj -> getCatalogByCatalogId((List<String>) obj));
     }
 
     /**
@@ -335,16 +311,6 @@ public class MongoRepository implements Repository{
         queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
 
         return mongoProcessor.queryMongo(queryData);
-    }
-
-    /**
-     * 获取活动商品信息列表
-     *
-     * @param productIdList
-     * @return
-     */
-    public List<Map<String, Object>> getActivityProductListParallelWrapper(List<String> productIdList) {
-        return parallelProcessor.doParallelProcess(productIdList, obj -> getActivityProductList((List<String>) obj));
     }
 
     /**
