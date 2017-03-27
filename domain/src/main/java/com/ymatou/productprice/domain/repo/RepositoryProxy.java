@@ -1,9 +1,8 @@
-package com.ymatou.productprice.domain;
+package com.ymatou.productprice.domain.repo;
 
-import com.ymatou.productprice.domain.cacherepo.CacheRepository;
-import com.ymatou.productprice.domain.mongorepo.MongoRepository;
-import com.ymatou.productprice.domain.parallelrepo.ParallelRepository;
-import com.ymatou.productprice.domain.repo.Repository;
+import com.ymatou.productprice.domain.repo.cacherepo.CacheRepository;
+import com.ymatou.productprice.domain.repo.mongorepo.MongoRepository;
+import com.ymatou.productprice.domain.repo.parallelrepo.ParallelRepository;
 import com.ymatou.productprice.infrastructure.config.props.BizProps;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

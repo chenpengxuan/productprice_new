@@ -1,10 +1,11 @@
 package com.ymatou.productprice.facade;
 
 import com.alibaba.dubbo.config.annotation.Service;
-import com.ymatou.productprice.domain.mongorepo.MongoRepository;
+import com.ymatou.productprice.domain.repo.mongorepo.MongoRepository;
 import com.ymatou.productprice.domain.service.PriceQueryService;
 import com.ymatou.productprice.model.CatalogPrice;
 import com.ymatou.productprice.model.ProductPrice;
+import com.ymatou.productprice.model.ProductPriceForSearched;
 import com.ymatou.productprice.model.req.GetPriceByCatalogIdListRequest;
 import com.ymatou.productprice.model.req.GetPriceByProdIdRequest;
 import com.ymatou.productprice.model.req.GetPriceByProductIdListRequest;
@@ -111,6 +112,54 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
     @Consumes({MediaType.APPLICATION_JSON})
     public BaseResponseNetAdapter getPriceByProductIdListWithTradeIsolation(GetPriceByProductIdListRequest request) {
         List<ProductPrice> productPriceList = priceQueryService.getPriceInfoByProductIdList(request.getBuyerId(),
+                request.getProductIdList()
+                        .stream().distinct().collect(Collectors.toList()),
+                true);
+
+        Map<String, Object> priceInfoList = new HashMap<>();
+        priceInfoList.put("ProductPriceList", productPriceList);
+
+        return BaseResponseNetAdapter.newSuccessInstance(priceInfoList);
+    }
+
+    /**
+     * 新增接口
+     * 根据商品id列表获取价格信息（用于搜索后的商品列表）
+     * @param request
+     * @return
+     */
+    @Override
+    @POST
+    @Path("/{api:(?i:api)}/{Price:(?i:Price)}" +
+            "/{GetPriceByProdIdsTradeIsolationForSearchedList:(?i:GetPriceByProdIdsTradeIsolationForSearchedList)}")
+    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON})
+    public BaseResponseNetAdapter getPriceByProductIdListForSearchedList(GetPriceByProductIdListRequest request) {
+        List<ProductPriceForSearched> productPriceList = priceQueryService.getPriceInfoByProductIdListForSearched(request.getBuyerId(),
+                request.getProductIdList()
+                        .stream().distinct().collect(Collectors.toList()),
+                false);
+
+        Map<String, Object> priceInfoList = new HashMap<>();
+        priceInfoList.put("ProductPriceList", productPriceList);
+
+        return BaseResponseNetAdapter.newSuccessInstance(priceInfoList);
+    }
+
+    /**
+     * 新增接口
+     * 根据商品id列表获取交易隔离价格信息（用于搜索后的商品列表）
+     * @param request
+     * @return
+     */
+    @Override
+    @POST
+    @Path("/{api:(?i:api)}/{Price:(?i:Price)}" +
+            "/{GetPriceByProdIdsForSearchedList:(?i:GetPriceByProdIdsForSearchedList)}")
+    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON})
+    public BaseResponseNetAdapter getPriceByProductIdListWithTradeIsolationForSearchedList(GetPriceByProductIdListRequest request) {
+        List<ProductPriceForSearched> productPriceList = priceQueryService.getPriceInfoByProductIdListForSearched(request.getBuyerId(),
                 request.getProductIdList()
                         .stream().distinct().collect(Collectors.toList()),
                 true);

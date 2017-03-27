@@ -25,18 +25,34 @@ public interface ProductPriceFacade {
     BaseResponseNetAdapter getPriceByProdIdWithTradeIsolation(GetPriceByProdIdRequest request);
 
     /**
-     * 根据商品id列表获取价格信息
+     * 根据商品id列表获取价格信息（用于直播中商品列表）
      * @param request
      * @return
      */
     BaseResponseNetAdapter getPriceByProductIdList(GetPriceByProductIdListRequest request);
 
     /**
-     * 根据商品id列表获取交易隔离价格信息
+     * 根据商品id列表获取交易隔离价格信息（用于直播中商品列表）
      * @param request
      * @return
      */
     BaseResponseNetAdapter getPriceByProductIdListWithTradeIsolation(GetPriceByProductIdListRequest request);
+
+    /**
+     * 新增接口
+     * 根据商品id列表获取价格信息（用于搜索后的商品列表）
+     * @param request
+     * @return
+     */
+    BaseResponseNetAdapter getPriceByProductIdListForSearchedList(GetPriceByProductIdListRequest request);
+
+    /**
+     * 新增接口
+     * 根据商品id列表获取交易隔离价格信息（用于搜索后的商品列表）
+     * @param request
+     * @return
+     */
+    BaseResponseNetAdapter getPriceByProductIdListWithTradeIsolationForSearchedList(GetPriceByProductIdListRequest request);
 
     /**
      * 根据规格id列表获取价格信息

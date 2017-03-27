@@ -1,4 +1,4 @@
-package com.ymatou.productprice.domain.mongorepo;
+package com.ymatou.productprice.domain.repo.mongorepo;
 
 import com.ymatou.productprice.domain.repo.Repository;
 import com.ymatou.productprice.infrastructure.constants.Constants;
@@ -116,7 +116,7 @@ public class MongoRepository implements Repository{
     }
 
     /**
-     * 根据商品id列表获取价格边界信息
+     * 根据商品id列表获取价格边界信息（用于新增接口->搜索商品列表）
      * @param productIdList
      * @return
      */
@@ -132,6 +132,7 @@ public class MongoRepository implements Repository{
         Map<String, Boolean> projectionMap = new HashMap<>();
         projectionMap.put("maxp", true);
         projectionMap.put("minp", true);
+        projectionMap.put("sid", true);
         projectionMap.put("spid", true);
         projectionMap.put("_id", false);
         queryData.setProjection(projectionMap);

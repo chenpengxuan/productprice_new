@@ -50,4 +50,11 @@ public interface Repository {
      * @return
      */
     List<Map<String, Object>> getActivityProductList(List<String> productIdList);
+
+    /**
+     * 根据商品id列表获取价格边界信息（用于新增接口->搜索商品列表）
+     * @param productIdList
+     * @return
+     */
+    List<Map<String,Object>> getPriceRangeListByProduct(List<String> productIdList);
 }

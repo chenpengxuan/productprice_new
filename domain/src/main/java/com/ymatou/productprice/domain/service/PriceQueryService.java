@@ -1,19 +1,14 @@
 package com.ymatou.productprice.domain.service;
 
-import com.ymatou.productprice.domain.RepositoryProxy;
+import com.google.common.primitives.Doubles;
+import com.ymatou.productprice.domain.repo.RepositoryProxy;
 import com.ymatou.productprice.domain.repo.Repository;
-import com.ymatou.productprice.model.BizException;
-import com.ymatou.productprice.model.Catalog;
-import com.ymatou.productprice.model.CatalogPrice;
-import com.ymatou.productprice.model.ProductPrice;
+import com.ymatou.productprice.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -43,7 +38,9 @@ public class PriceQueryService {
      * @param isTradeIsolation
      * @return
      */
-    public ProductPrice getPriceInfoByProductId(int buyerId, String productId, boolean isTradeIsolation) throws BizException {
+    public ProductPrice getPriceInfoByProductId(int buyerId,
+                                                String productId,
+                                                boolean isTradeIsolation) throws BizException {
         //组装商品价格信息
         ProductPrice productPrice = new ProductPrice();
         productPrice.setProductId(productId);
@@ -58,7 +55,11 @@ public class PriceQueryService {
         Map<String, Object> activityProductInfo = repository.getActivityProduct(productId);
 
         //价格核心逻辑
-        priceCoreService.calculateRealPriceCoreLogic(buyerId, catalogList, Arrays.asList(productPrice), Arrays.asList(activityProductInfo), isTradeIsolation);
+        priceCoreService.calculateRealPriceCoreLogic(buyerId,
+                catalogList,
+                Arrays.asList(productPrice),
+                Arrays.asList(activityProductInfo),
+                isTradeIsolation);
 
         return productPrice;
     }
@@ -71,7 +72,9 @@ public class PriceQueryService {
      * @param isTradeIsolation
      * @return
      */
-    public List<ProductPrice> getPriceInfoByProductIdList(int buyerId, List<String> productIdList, boolean isTradeIsolation) throws BizException {
+    public List<ProductPrice> getPriceInfoByProductIdList(int buyerId,
+                                                          List<String> productIdList,
+                                                          boolean isTradeIsolation) throws BizException {
         //组装商品价格信息列表
         List<ProductPrice> productPriceList = productIdList.stream().map(x -> {
             ProductPrice tempProductPrice = new ProductPrice();
@@ -90,7 +93,64 @@ public class PriceQueryService {
         List<Map<String, Object>> activityProductList = repository.getActivityProductList(productIdList);
 
         //价格核心逻辑
-        priceCoreService.calculateRealPriceCoreLogic(buyerId, catalogList, productPriceList, activityProductList, isTradeIsolation);
+        priceCoreService.calculateRealPriceCoreLogic(buyerId,
+                catalogList,
+                productPriceList,
+                activityProductList,
+                isTradeIsolation);
+        return productPriceList;
+    }
+
+    /**
+     * 根据商品id获取价格信息（用于新增接口->搜索商品列表）
+     *
+     * @param buyerId
+     * @param productIdList
+     * @param isTradeIsolation
+     * @return
+     */
+    public List<ProductPriceForSearched> getPriceInfoByProductIdListForSearched(int buyerId,
+                                                                     List<String> productIdList,
+                                                                     boolean isTradeIsolation) throws BizException {
+        //组装商品价格信息列表
+        List<ProductPriceForSearched> productPriceList = productIdList.stream().distinct().map(x -> {
+            ProductPriceForSearched tempProductPrice = new ProductPriceForSearched();
+            tempProductPrice.setProductId(x);
+            return tempProductPrice;
+        }).collect(Collectors.toList());
+
+        //查询所有商品的价格区间信息并进行组装
+        List<Map<String,Object>> productList = repository.getPriceRangeListByProduct
+                (productIdList.stream().distinct().collect(Collectors.toList()));
+
+        if (productList == null || productList.isEmpty()) {
+            BizException.throwBizException("商品信息不存在");
+        }
+
+        productPriceList.stream().forEach(x -> {
+            Map<String,Object> tempProductMap = productList
+                    .stream()
+                    .filter(xx -> xx.get("spid").equals(x.getProductId())).findAny().orElse(Collections.emptyMap());
+            String[] maxPriceList = ((String)tempProductMap.get("maxp")).split(",");
+            String[] minPriceList = ((String)tempProductMap.get("minp")).split(",");
+            //设置原价区间
+            x.setMinOriginalPrice(Doubles.tryParse(minPriceList[0]));
+            x.setMaxOriginalPrice(Doubles.tryParse(maxPriceList[0]));
+            //设置新客价区间
+            x.setMinNewpersonPrice(Doubles.tryParse(minPriceList[1]));
+            x.setMaxNewpersonPrice(Doubles.tryParse(maxPriceList[1]));
+            //设置vip价区间
+            x.setMinVipPrice(Doubles.tryParse(minPriceList[2]));
+            x.setMaxVipPrice(Doubles.tryParse(maxPriceList[2]));
+            //设置sellerId
+            x.setSellerId(new Long(Optional.ofNullable((int)tempProductMap.get("sid")).orElse(0)));
+        });
+
+        //查询活动商品列表
+        List<Map<String, Object>> activityProductList = repository.getActivityProductList(productIdList);
+
+        //价格核心逻辑
+        priceCoreService.calculateRealPriceCoreLogic(buyerId, productPriceList,activityProductList, isTradeIsolation);
         return productPriceList;
     }
 

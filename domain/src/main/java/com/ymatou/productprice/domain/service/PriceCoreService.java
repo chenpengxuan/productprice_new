@@ -7,6 +7,7 @@ import com.ymatou.productprice.intergration.client.UserBehaviorAnalysisService;
 import com.ymatou.productprice.model.Catalog;
 import com.ymatou.productprice.model.PriceEnum;
 import com.ymatou.productprice.model.ProductPrice;
+import com.ymatou.productprice.model.ProductPriceForSearched;
 import com.ymatou.useranalysis.facade.model.req.GetBuyerFirstOrderInfoReq;
 import com.ymatou.useranalysis.facade.model.resp.GetBuyerFirstOrderInfoResp;
 import com.ymatou.useranalysis.facade.model.resp.GetBuyerOrderStatisticsResp;
@@ -53,6 +54,24 @@ public class PriceCoreService {
 
         //设置最终商品价格
         decideProductRealPrice(buyerId, productPriceList, activityProductList, resp, isTradeIsolation);
+    }
+
+    /**
+     * 价格服务核心逻辑（用于新增接口->搜索商品列表）
+     * @param buyerId
+     * @param productPriceForSearchedList
+     * @param activityProductList
+     * @param isTradeIsolation
+     */
+    public void calculateRealPriceCoreLogic(int buyerId,
+                                            List<ProductPriceForSearched> productPriceForSearchedList,
+                                            List<Map<String, Object>> activityProductList,
+                                            boolean isTradeIsolation){
+        //决定当前买家对不同的买手而言是新客还是老客
+        GetBuyerOrderStatisticsResp resp = determineVipOrNewCustomerForSearched(buyerId, productPriceForSearchedList);
+
+        //设置最终商品价格
+        decideProductRealPriceForSearched(buyerId,productPriceForSearchedList,activityProductList,resp,isTradeIsolation);
     }
 
     /**
@@ -130,6 +149,54 @@ public class PriceCoreService {
     }
 
     /**
+     * 决定当前买家对不同的买手而言是新客还是老客(用于新增接口->搜索商品列表)
+     * @param buyerId
+     * @param productPriceForSearchedList
+     * @return
+     */
+    private GetBuyerOrderStatisticsResp determineVipOrNewCustomerForSearched(int buyerId, List<ProductPriceForSearched> productPriceForSearchedList) {
+        //过滤掉vip和新客价都为0的商品，如果全部都是0则不用查询sellerId也不用调用用户行为服务
+        List<ProductPriceForSearched> needsCalculateVipAndNewCustomerPriceList = productPriceForSearchedList.stream().filter(productPrice ->
+                productPrice.getMaxVipPrice() > 0 || productPrice.getMaxNewpersonPrice() > 0).collect(Collectors.toList());
+        GetBuyerOrderStatisticsResp resp = null;
+        if (needsCalculateVipAndNewCustomerPriceList != null
+                && needsCalculateVipAndNewCustomerPriceList.size() > 0) {
+            //查询ProductId --> SellerId map
+            long[] sellerIdList = needsCalculateVipAndNewCustomerPriceList.stream().mapToLong(x -> x.getSellerId()).toArray();
+
+            resp = userBehaviorAnalysisService.getBuyerBehavior(Longs.asList(sellerIdList), buyerId);
+
+            //填充用户行为信息
+            GetBuyerOrderStatisticsResp finalResp = resp;
+            productPriceForSearchedList
+                    .stream().forEach(x -> {
+                x.setHasConfirmedOrders(
+                        (Optional.of(finalResp != null
+                                && finalResp.getFromSeller() != null
+                                && finalResp.getFromSeller().get(x.getSellerId()) != null
+                                && finalResp.getFromSeller().get(x.getSellerId()).isHasConfirmedOrders())
+                                .orElse(false))
+                );
+
+                x.setNoOrdersOrAllCancelled(
+                        (Optional.of(finalResp != null
+                                && finalResp.getFromSeller() != null
+                                && finalResp.getFromSeller().get(x.getSellerId()) != null
+                                && finalResp.getFromSeller().get(x.getSellerId()).isNoOrdersOrAllCancelled())
+                                .orElse(false))
+                );
+            });
+        } else {
+            productPriceForSearchedList
+                    .stream().forEach(x -> {
+                x.setNoOrdersOrAllCancelled(false);
+                x.setHasConfirmedOrders(false);
+            });
+        }
+        return resp;
+    }
+
+    /**
      * 检查是否为码头新客
      *
      * @param buyerId
@@ -195,11 +262,6 @@ public class PriceCoreService {
 
             productPrice.getCatalogs().stream().forEach(catalog -> {
                 PriceEnum tempPriceEnum;
-                Map<PriceEnum, Double> priceMap = new HashMap<>();
-                priceMap.put(PriceEnum.NEWCUSTOMERPRICE, catalog.getNewCustomerPrice());
-                priceMap.put(PriceEnum.QUOTEPRICE, catalog.getQuotePrice());
-                priceMap.put(PriceEnum.VIPPRICE, catalog.getVipPrice());
-
                 //活动商品价格逻辑优先级最高
                 tempPriceEnum = decideActivityPriceAsRealPriceLogic(isNewBuyer,
                         isTradeIsolation,
@@ -221,6 +283,54 @@ public class PriceCoreService {
 
                 //原价价格逻辑
                 tempPriceEnum = decideQuotePriceAsRealPriceLogic(catalog);
+            });
+        });
+    }
+
+    /**
+     * 决定最终价格(用于新增接口->搜索商品列表)
+     * @param buyerId
+     * @param productPriceForSearchedList
+     * @param activityProductInfoList
+     * @param resp
+     * @param isTradeIsolation
+     */
+    private void decideProductRealPriceForSearched(long buyerId,
+                                        List<ProductPriceForSearched> productPriceForSearchedList,
+                                        List<Map<String, Object>> activityProductInfoList,
+                                        GetBuyerOrderStatisticsResp resp,
+                                        boolean isTradeIsolation) {
+        boolean isNewBuyer = checkIsNewBuyer(buyerId, activityProductInfoList);
+
+        productPriceForSearchedList.stream().forEach(productPrice -> {
+            Map<String, Object> tempActivityProduct = activityProductInfoList.stream()
+                    .filter(x -> Optional.ofNullable(x.get("spid")).orElse("").equals(productPrice.getProductId()))
+                    .findAny().orElse(Collections.emptyMap());
+
+            productPriceForSearchedList.stream().forEach(productPriceForSearched -> {
+                PriceEnum priceEnum;
+
+                //活动商品价格逻辑(优先级最高)
+                priceEnum = decideActivityPriceAsRealPriceLogic(isNewBuyer,
+                        isTradeIsolation,
+                        productPriceForSearched,
+                        tempActivityProduct);
+                if (priceEnum != null) return;
+
+                //访客价格逻辑
+                priceEnum = decideVistorPriceAsRealPriceLogic(buyerId, resp, productPriceForSearched);
+                if (priceEnum != null) return;
+
+                //vip价格逻辑
+                priceEnum = decideVipPriceAsRealPriceLogic(productPrice.getSellerId(), resp, productPriceForSearched);
+                if (priceEnum != null) return;
+
+                //直播新客价格逻辑
+                priceEnum = decideNewCustomerPriceAsRealPriceLogic(productPrice.getSellerId(), resp, productPriceForSearched);
+                if (priceEnum != null) return;
+
+                //原价价格逻辑
+                priceEnum = decideQuotePriceAsRealPriceLogic(productPriceForSearched);
             });
         });
     }
@@ -277,6 +387,70 @@ public class PriceCoreService {
     }
 
     /**
+     * 是否需要计算活动价格(用于新增接口->搜索商品列表)
+     * @param isNewBuyer
+     * @param isTradeIsolation
+     * @param productPriceForSearched
+     * @param activityProductInfo
+     * @return
+     */
+    private PriceEnum decideActivityPriceAsRealPriceLogic(boolean isNewBuyer,
+                                                          boolean isTradeIsolation,
+                                                          ProductPriceForSearched productPriceForSearched,
+                                                          Map<String, Object> activityProductInfo) {
+        /**
+         * 是否需要计算活动价格
+         */
+        boolean needsCalculateActivityProductPrice = activityProductInfo != null
+                && (!Optional.ofNullable((Boolean) activityProductInfo.get("isolation")).orElse(false)
+                || isTradeIsolation);
+        List<Map<String, Object>> activityProductCatalogList = ((List<Map<String, Object>>)
+                MapUtil.getMapKeyValueWithDefault(activityProductInfo,
+                        "catalogs",
+                        new ArrayList<Map<String, Object>>()));
+
+        //过滤掉无效的商品规格列表
+        List<Map<String, Object>> validActivityProductCatalogList = activityProductCatalogList
+                .stream()
+                .filter(catalog ->
+                        (int)catalog.get("stock") > 0
+                                && (double)catalog.get("price") > 0).collect(Collectors.toList());
+        if (needsCalculateActivityProductPrice
+                && validActivityProductCatalogList != null
+                && !validActivityProductCatalogList.isEmpty()
+                ) {
+            //最高活动商品规格活动价
+            double maxActivityPrice = validActivityProductCatalogList
+                    .stream()
+                    .mapToDouble(x -> (double)x.get("price"))
+                    .max()
+                    .getAsDouble();
+            //最低活动商品规格活动价
+            double minActivityPrice = validActivityProductCatalogList
+                    .stream()
+                    .mapToDouble(x -> (double)x.get("price"))
+                    .min()
+                    .getAsDouble();
+            //新人活动
+            if (Optional.ofNullable((Boolean) activityProductInfo.get("nbuyer")).orElse(false)
+                    && isNewBuyer) {
+                productPriceForSearched.setMaxPrice(maxActivityPrice);
+                productPriceForSearched.setMinPrice(minActivityPrice);
+                productPriceForSearched.setPriceType(PriceEnum.YMTACTIVITYPRICE.getCode());
+                return PriceEnum.YMTACTIVITYPRICE;
+            } else if (Optional.ofNullable((Boolean) activityProductInfo.get("nbuyer")).orElse(false)
+                    && !isNewBuyer) {
+                return null;
+            }
+            productPriceForSearched.setMaxPrice(maxActivityPrice);
+            productPriceForSearched.setMinPrice(minActivityPrice);
+            productPriceForSearched.setPriceType(PriceEnum.YMTACTIVITYPRICE.getCode());
+            return PriceEnum.YMTACTIVITYPRICE;
+        }
+        return null;
+    }
+
+    /**
      * 决定访客价格是否作为最终价格
      *
      * @param buyerId
@@ -306,6 +480,47 @@ public class PriceCoreService {
     }
 
     /**
+     * 决定访客价格是否作为最终价格(用于新增接口->搜索商品列表)
+     * @param buyerId
+     * @param resp
+     * @param productPriceForSearched
+     * @return
+     */
+    private PriceEnum decideVistorPriceAsRealPriceLogic(Long buyerId,
+                                                        GetBuyerOrderStatisticsResp resp,
+                                                        ProductPriceForSearched productPriceForSearched) {
+        //买家未登录记录日志
+        if (buyerId <= 0) {
+            logWrapper.recordInfoLog("buyerId <=0");
+        }
+        if (buyerId <= 0
+                && (resp == null || resp.getFromSeller() == null)) {
+            Map<PriceEnum, Double> priceMap = new HashMap<>();
+            priceMap.put(PriceEnum.NEWCUSTOMERPRICE, productPriceForSearched.getMinNewpersonPrice() > 0 ?
+                    productPriceForSearched.getMinNewpersonPrice():productPriceForSearched.getMaxNewpersonPrice());
+            priceMap.put(PriceEnum.QUOTEPRICE, productPriceForSearched.getMinOriginalPrice() > 0 ?
+                    productPriceForSearched.getMinOriginalPrice():productPriceForSearched.getMaxOriginalPrice());
+            priceMap.put(PriceEnum.VIPPRICE, productPriceForSearched.getMinVipPrice() > 0 ?
+                    productPriceForSearched.getMinVipPrice():productPriceForSearched.getMaxVipPrice());
+
+            Map.Entry<PriceEnum, Double> minEntry = priceMap.entrySet()
+                    .stream()
+                    .min((x, y) -> Double.compare(x.getValue().doubleValue(), y.getValue().doubleValue()))
+                    .get();
+
+            Map.Entry<PriceEnum, Double> maxEntry = priceMap.entrySet()
+                    .stream()
+                    .max((x, y) -> Double.compare(x.getValue().doubleValue(), y.getValue().doubleValue()))
+                    .get();
+            productPriceForSearched.setMinPrice(minEntry.getValue());
+            productPriceForSearched.setMaxPrice(maxEntry.getValue());
+            productPriceForSearched.setPriceType(minEntry.getKey().getCode());
+            return minEntry.getKey();
+        }
+        return null;
+    }
+
+    /**
      * 决定vip价格是否作为最终价格
      *
      * @param sellerId
@@ -322,6 +537,32 @@ public class PriceCoreService {
                 && catalog.getVipPrice() < catalog.getQuotePrice()) {
             catalog.setPrice(catalog.getVipPrice());
             catalog.setPriceType(PriceEnum.VIPPRICE.getCode());
+            return PriceEnum.VIPPRICE;
+        }
+        return null;
+    }
+
+    /**
+     * 决定vip价格是否作为最终价格(用于新增接口->搜索商品列表)
+     *
+     * @param sellerId
+     * @param resp
+     * @param productPriceForSearched
+     * @return
+     */
+    private PriceEnum decideVipPriceAsRealPriceLogic(Long sellerId, GetBuyerOrderStatisticsResp resp, ProductPriceForSearched productPriceForSearched) {
+        //买家已经有确认的订单
+
+        if (resp != null
+                && resp.getFromSeller().get(sellerId) != null
+                && resp.getFromSeller().get(sellerId).isHasConfirmedOrders()
+                && (productPriceForSearched.getMinVipPrice() > 0 || productPriceForSearched.getMaxVipPrice() > 0)
+               ) {
+            productPriceForSearched.setMinPrice(productPriceForSearched.getMinVipPrice() > 0 ?
+                    productPriceForSearched.getMinVipPrice():productPriceForSearched.getMinOriginalPrice());
+            productPriceForSearched.setMaxPrice(productPriceForSearched.getMaxVipPrice() > 0 ?
+                    productPriceForSearched.getMaxVipPrice():productPriceForSearched.getMaxOriginalPrice());
+            productPriceForSearched.setPriceType(PriceEnum.VIPPRICE.getCode());
             return PriceEnum.VIPPRICE;
         }
         return null;
@@ -349,6 +590,30 @@ public class PriceCoreService {
     }
 
     /**
+     *  决定新客价格是否作为最终价格(用于新增接口->搜索商品列表)
+     * @param sellerId
+     * @param resp
+     * @param productPriceForSearched
+     * @return
+     */
+    private PriceEnum decideNewCustomerPriceAsRealPriceLogic(Long sellerId, GetBuyerOrderStatisticsResp resp, ProductPriceForSearched productPriceForSearched) {
+        //买家如果没有订单或订单全部取消
+        if (resp != null
+                && resp.getFromSeller().get(sellerId) != null
+                && resp.getFromSeller().get(sellerId).isNoOrdersOrAllCancelled()
+                && (productPriceForSearched.getMinNewpersonPrice() > 0 || productPriceForSearched.getMaxNewpersonPrice() > 0)
+                ) {
+            productPriceForSearched.setMinPrice(productPriceForSearched.getMinNewpersonPrice() > 0 ?
+                    productPriceForSearched.getMinNewpersonPrice():productPriceForSearched.getMinOriginalPrice());
+            productPriceForSearched.setMaxPrice(productPriceForSearched.getMaxNewpersonPrice() > 0 ?
+                    productPriceForSearched.getMaxNewpersonPrice():productPriceForSearched.getMaxOriginalPrice());
+            productPriceForSearched.setPriceType(PriceEnum.VIPPRICE.getCode());
+            return PriceEnum.NEWCUSTOMERPRICE;
+        }
+        return null;
+    }
+
+    /**
      * 决定原价是否作为最终价格
      *
      * @param catalog
@@ -356,6 +621,18 @@ public class PriceCoreService {
     private PriceEnum decideQuotePriceAsRealPriceLogic(Catalog catalog) {
         catalog.setPriceType(PriceEnum.QUOTEPRICE.getCode());
         catalog.setPrice(catalog.getQuotePrice());
+        return PriceEnum.QUOTEPRICE;
+    }
+
+    /**
+     * 决定原价是否作为最终价格(用于新增接口->搜索商品列表)
+     *
+     * @param productPriceForSearched
+     */
+    private PriceEnum decideQuotePriceAsRealPriceLogic(ProductPriceForSearched productPriceForSearched) {
+        productPriceForSearched.setPriceType(PriceEnum.QUOTEPRICE.getCode());
+        productPriceForSearched.setMinPrice(productPriceForSearched.getMinOriginalPrice());
+        productPriceForSearched.setMaxPrice(productPriceForSearched.getMaxOriginalPrice());
         return PriceEnum.QUOTEPRICE;
     }
 }

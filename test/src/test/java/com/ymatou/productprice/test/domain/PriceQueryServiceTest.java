@@ -104,7 +104,7 @@ public class PriceQueryServiceTest {
      * 较多catalogId 顺便简单看下性能
      */
     @Test
-    public void testGetPriceInfoByCatalogIdList_Normal() {
+    public void testGetPriceInfoByCatalogIdList_HugeNormal() {
         int buyerId = 20345997;
         List<String> catalogIdList = new ArrayList<>();
         catalogIdList.add("80025bc8-5353-4560-bc54-4eff1f4fc686");
