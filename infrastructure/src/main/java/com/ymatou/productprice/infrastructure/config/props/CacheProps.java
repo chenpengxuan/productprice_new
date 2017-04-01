@@ -31,6 +31,21 @@ public class CacheProps {
      */
     private int writeConcurrencyNum;
 
+    /**
+     * 活动商品缓存条目数
+     */
+    private int activityProductCacheSize;
+
+    /**
+     * 是否使用活动缓存
+     */
+    private boolean useActivityCache;
+
+    /**
+     * #活动商品获取增量时间频次(单位：秒)
+     */
+    private int activityProductFrequency;
+
     @DisconfFileItem(name = "cacheType")
     public String getCacheType() {
         return cacheType;
@@ -65,5 +80,32 @@ public class CacheProps {
 
     public void setWriteConcurrencyNum(int writeConcurrencyNum) {
         this.writeConcurrencyNum = writeConcurrencyNum;
+    }
+
+    @DisconfFileItem(name = "activityProductCacheSize")
+    public int getActivityProductCacheSize() {
+        return activityProductCacheSize;
+    }
+
+    public void setActivityProductCacheSize(int activityProductCacheSize) {
+        this.activityProductCacheSize = activityProductCacheSize;
+    }
+
+    @DisconfFileItem(name = "useActivityCache")
+    public boolean isUseActivityCache() {
+        return useActivityCache;
+    }
+
+    public void setUseActivityCache(boolean useActivityCache) {
+        this.useActivityCache = useActivityCache;
+    }
+
+    @DisconfFileItem(name = "activityProductFrequency")
+    public int getActivityProductFrequency() {
+        return activityProductFrequency;
+    }
+
+    public void setActivityProductFrequency(int activityProductFrequency) {
+        this.activityProductFrequency = activityProductFrequency;
     }
 }

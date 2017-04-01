@@ -1,6 +1,5 @@
 package com.ymatou.productprice.domain.repo;
 
-import com.ymatou.productprice.domain.repo.cacherepo.CacheRepository;
 import com.ymatou.productprice.domain.repo.mongorepo.MongoRepository;
 import com.ymatou.productprice.domain.repo.parallelrepo.ParallelRepository;
 import com.ymatou.productprice.infrastructure.config.props.BizProps;
@@ -17,9 +16,6 @@ public class RepositoryProxy {
     private BizProps bizProps;
 
     @Autowired
-    private CacheRepository cacheRepository;
-
-    @Autowired
     private ParallelRepository parallelRepository;
 
     @Autowired
@@ -32,10 +28,7 @@ public class RepositoryProxy {
      * @return
      */
     public Repository getRepository(){
-        if(bizProps.isUseCache()){
-            realRepository = cacheRepository;
-        }
-       else if(bizProps.isUseParallel()){
+        if(bizProps.isUseParallel()){
             realRepository = parallelRepository;
         }
         else{

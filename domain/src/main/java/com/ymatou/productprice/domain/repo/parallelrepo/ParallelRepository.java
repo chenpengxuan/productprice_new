@@ -1,14 +1,15 @@
 package com.ymatou.productprice.domain.repo.parallelrepo;
 
+import com.ymatou.productprice.domain.model.ActivityProduct;
+import com.ymatou.productprice.domain.model.Catalog;
+import com.ymatou.productprice.domain.model.ProductPriceData;
 import com.ymatou.productprice.domain.repo.Repository;
 import com.ymatou.productprice.domain.repo.mongorepo.MongoRepository;
 import com.ymatou.productprice.infrastructure.util.ParallelUtil.ParallelProcessor;
-import com.ymatou.productprice.model.Catalog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 并行仓储操作相关
@@ -60,7 +61,7 @@ public class ParallelRepository implements Repository {
      * @return
      */
     @Override
-    public Map<String, Object> getActivityProduct(String productId) {
+    public ActivityProduct getActivityProduct(String productId) {
         return mongoRepository.getActivityProduct(productId);
     }
 
@@ -70,7 +71,7 @@ public class ParallelRepository implements Repository {
      * @return
      */
     @Override
-    public List<Map<String, Object>> getActivityProductList(List<String> productIdList) {
+    public List<ActivityProduct> getActivityProductList(List<String> productIdList) {
         return parallelProcessor.doParallelProcess(productIdList, obj ->
                 mongoRepository.getActivityProductList((List<String>) obj));
     }
@@ -81,7 +82,7 @@ public class ParallelRepository implements Repository {
      * @return
      */
     @Override
-    public List<Map<String, Object>> getPriceRangeListByProduct(List<String> productIdList) {
+    public List<ProductPriceData> getPriceRangeListByProduct(List<String> productIdList) {
         return parallelProcessor.doParallelProcess(productIdList,obj ->
                 mongoRepository.getPriceRangeListByProduct((List<String>) obj));
     }

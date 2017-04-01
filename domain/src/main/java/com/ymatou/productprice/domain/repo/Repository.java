@@ -1,10 +1,11 @@
 package com.ymatou.productprice.domain.repo;
 
-import com.ymatou.productprice.model.Catalog;
+import com.ymatou.productprice.domain.model.ActivityProduct;
+import com.ymatou.productprice.domain.model.Catalog;
+import com.ymatou.productprice.domain.model.ProductPriceData;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 仓储接口
@@ -43,7 +44,7 @@ public interface Repository {
      * @param productId
      * @return
      */
-    Map<String, Object> getActivityProduct(String productId);
+    ActivityProduct getActivityProduct(String productId);
 
     /**
      * 获取活动商品信息列表
@@ -51,12 +52,12 @@ public interface Repository {
      * @param productIdList
      * @return
      */
-    List<Map<String, Object>> getActivityProductList(List<String> productIdList);
+    List<ActivityProduct> getActivityProductList(List<String> productIdList);
 
     /**
      * 根据商品id列表获取价格边界信息（用于新增接口->搜索商品列表）
      * @param productIdList
      * @return
      */
-    List<Map<String,Object>> getPriceRangeListByProduct(List<String> productIdList);
+    List<ProductPriceData> getPriceRangeListByProduct(List<String> productIdList);
 }

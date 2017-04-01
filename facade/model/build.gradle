@@ -1,7 +1,7 @@
 description = "this is a model jar"
 
 jar {
-    baseName = "ordersync-facade-model"
+    baseName = "productprice-facade-model"
     version = "${facadeVersion}"
 }
 

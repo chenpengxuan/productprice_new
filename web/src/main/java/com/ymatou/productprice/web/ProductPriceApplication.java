@@ -13,6 +13,11 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 
+//// TODO: 2017/3/27 1.缓存不基于业务场景，去除缓存key中的methodname
+//TODO 2.repository返回数据结构化
+//TODO 3.活动商品全量缓存，不基于lru机制
+//TODO 4.活动商品增量获取 5秒一次刷objectId的时间戳比较大小拿增量数据
+//TODO 5.wiki上落地所有接口的查询数据的活动图逻辑
 @Configuration
 @EnableAutoConfiguration
 		(exclude = {DataSourceAutoConfiguration.class

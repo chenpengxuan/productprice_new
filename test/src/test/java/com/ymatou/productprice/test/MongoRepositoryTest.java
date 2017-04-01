@@ -1,7 +1,7 @@
 package com.ymatou.productprice.test;
 
+import com.ymatou.productprice.domain.model.Catalog;
 import com.ymatou.productprice.domain.repo.mongorepo.MongoRepository;
-import com.ymatou.productprice.model.Catalog;
 import com.ymatou.productprice.web.ProductPriceApplication;
 import org.junit.Assert;
 import org.junit.Test;
