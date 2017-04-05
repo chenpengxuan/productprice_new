@@ -1,25 +1,27 @@
 package com.ymatou.productprice.domain.repo;
 
-import com.ymatou.productprice.domain.repo.mongorepo.MongoRepository;
-import com.ymatou.productprice.domain.repo.parallelrepo.ParallelRepository;
 import com.ymatou.productprice.infrastructure.config.props.BizProps;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
 
 /**
  * 仓储代理
  * Created by chenpengxuan on 2017/3/24.
  */
 @Component
+@DependsOn({"disconfMgrBean2"})
 public class RepositoryProxy {
     @Autowired
     private BizProps bizProps;
 
-    @Autowired
-    private ParallelRepository parallelRepository;
+    @Resource(name="parallelRepository")
+    private Repository parallelRepository;
 
-    @Autowired
-    private MongoRepository mongoRepository;
+    @Resource(name="mongoRepository")
+    private Repository mongoRepository;
 
     private Repository realRepository;
 

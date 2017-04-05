@@ -2,18 +2,18 @@ package com.ymatou.productprice.domain.service;
 
 import com.google.common.primitives.Doubles;
 import com.ymatou.productprice.domain.cache.Cache;
-import com.ymatou.productprice.domain.model.*;
+import com.ymatou.productprice.domain.model.ActivityProduct;
+import com.ymatou.productprice.domain.model.ProductPriceData;
 import com.ymatou.productprice.domain.repo.Repository;
 import com.ymatou.productprice.domain.repo.RepositoryProxy;
-import com.ymatou.productprice.domain.repo.mongorepo.MongoRepository;
 import com.ymatou.productprice.infrastructure.config.props.BizProps;
 import com.ymatou.productprice.infrastructure.config.props.CacheProps;
 import com.ymatou.productprice.model.*;
-import com.ymatou.productprice.model.Catalog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,8 +40,8 @@ public class PriceQueryService {
 
     private Repository repository;
 
-    @Autowired
-    private MongoRepository mongoRepository;
+    @Resource(name="mongoRepository")
+    private Repository mongoRepository;
 
     @PostConstruct
     public void init() {

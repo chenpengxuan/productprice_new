@@ -6,8 +6,6 @@ import com.ymatou.productprice.domain.model.ActivityProduct;
 import com.ymatou.productprice.domain.model.Catalog;
 import com.ymatou.productprice.domain.model.ProductPriceData;
 import com.ymatou.productprice.domain.repo.Repository;
-import com.ymatou.productprice.domain.repo.mongorepo.MongoRepository;
-import com.ymatou.productprice.domain.repo.parallelrepo.ParallelRepository;
 import com.ymatou.productprice.infrastructure.config.props.BizProps;
 import com.ymatou.productprice.infrastructure.util.CacheUtil.CacheManager;
 import org.bson.types.ObjectId;
@@ -15,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
@@ -34,11 +33,11 @@ public class Cache {
     @Autowired
     private BizProps bizProps;
 
-    @Autowired
-    private MongoRepository mongoRepository;
+    @Resource(name="mongoRepository")
+    private Repository mongoRepository;
 
-    @Autowired
-    private ParallelRepository parallelRepository;
+    @Resource(name="parallelRepository")
+    private Repository parallelRepository;
 
     private Repository realBusinessRepository;
 
@@ -260,7 +259,7 @@ public class Cache {
                 .collect(Collectors.toList());
 
         //根据catalogId获取商品id
-        List<Map<String, Object>> mapList = mongoRepository.getProductIdByCatalogIdList(catalogIdList);
+        List<Map<String, Object>> mapList = realBusinessRepository.getProductIdByCatalogIdList(catalogIdList);
 
         //根据商品id列表获取缓存信息
         List<String> productIdList = mapList
@@ -276,8 +275,8 @@ public class Cache {
      * 初始化活动商品缓存
      */
     public int initActivityProductCache(){
-        List<ActivityProduct> activityProductList = mongoRepository.getAllValidActivityProductList();
-        cacheManager.put(activityProductList
+        List<ActivityProduct> activityProductList = realBusinessRepository.getAllValidActivityProductList();
+        cacheManager.putActivityProduct(activityProductList
         .stream()
         .collect(Collectors.toMap(ActivityProduct::getProductId,y -> y,(key1,key2) -> key2))
         );
@@ -317,15 +316,16 @@ public class Cache {
         ConcurrentMap activityProductCache = cacheManager.getActivityProductCacheContainer();
 
         //从缓存中获取最后创建的活动商品数据的主键
-        ObjectId newestCacheActivityProductPrimaryKey = (ObjectId) activityProductCache.values()
+        ObjectId newestCacheActivityProductPrimaryKey = ((ActivityProduct)activityProductCache.values()
                 .stream()
                 .max((x,y) ->
                         Integer.compare(((ActivityProduct)x).getActivityProductId().getTimestamp()
                                 ,((ActivityProduct)y).getActivityProductId().getTimestamp()))
-                .get();
+                .get())
+                .getActivityProductId();
 
         //获取新增的mongo活动商品信息
-        List<ActivityProduct> newestActivityProductList = mongoRepository
+        List<ActivityProduct> newestActivityProductList = realBusinessRepository
                 .getActivityProductList(newestCacheActivityProductPrimaryKey);
 
         //批量添加至缓存

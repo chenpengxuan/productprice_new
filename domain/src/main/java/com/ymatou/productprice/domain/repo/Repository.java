@@ -3,9 +3,11 @@ package com.ymatou.productprice.domain.repo;
 import com.ymatou.productprice.domain.model.ActivityProduct;
 import com.ymatou.productprice.domain.model.Catalog;
 import com.ymatou.productprice.domain.model.ProductPriceData;
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 仓储接口
@@ -60,4 +62,44 @@ public interface Repository {
      * @return
      */
     List<ProductPriceData> getPriceRangeListByProduct(List<String> productIdList);
+
+    /**
+     * 根据商品id与时间戳列名获取对应时间戳
+     * 用于缓存功能
+     *
+     * @param productId
+     * @param stampKeyList
+     * @return
+     */
+    Map<String, Object> getTimeStampByProductId(String productId, List<String> stampKeyList);
+
+    /**
+     * 根据商品id列表与时间戳列名获取对应时间戳
+     *
+     * @param productIdList
+     * @param stampKeyList
+     * @return
+     */
+    List<Map<String, Object>> getTimeStampByProductIdList(List<String> productIdList, List<String> stampKeyList);
+
+    /**
+     * 获取新增活动商品信息列表
+     *
+     * @param newestActivityObjectId 最新主键
+     * @return
+     */
+    List<ActivityProduct> getActivityProductList(ObjectId newestActivityObjectId);
+
+    /**
+     * 根据规格id列表获取商品id规格id映射关系
+     * @param catalogIdList
+     * @return
+     */
+    List<Map<String, Object>> getProductIdByCatalogIdList(List<String> catalogIdList);
+
+    /**
+     * 获取全部有效活动商品列表
+     * @return
+     */
+    List<ActivityProduct> getAllValidActivityProductList();
 }

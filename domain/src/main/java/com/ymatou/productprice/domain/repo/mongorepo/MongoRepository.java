@@ -12,7 +12,7 @@ import com.ymatou.productprice.infrastructure.dataprocess.mongo.MongoQueryData;
 import com.ymatou.productprice.infrastructure.util.Utils;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  * mongo 数据操作相关
  * Created by chenpengxuan on 2017/3/2.
  */
-@Component
+@Service("mongoRepository")
 public class MongoRepository implements Repository {
     @Autowired
     private MongoProcessor mongoProcessor;
