@@ -10,7 +10,7 @@ import java.util.Map;
  * .net 返回风格匹配器
  * Created by chenpengxuan on 2017/3/6.
  */
-public class BaseResponseNetAdapter {
+public class BaseResponseNetAdapter<T> {
     /**
      * 系统状态码 成功为200 失败为500
      */
@@ -33,7 +33,7 @@ public class BaseResponseNetAdapter {
      * 数据
      */
     @JsonProperty("Data")
-    private Map<String, Object> Data;
+    private T Data;
 
     @JsonIgnore
     public int getCode() {
@@ -66,12 +66,12 @@ public class BaseResponseNetAdapter {
     }
 
     @JsonIgnore
-    public Map<String, Object> getData() {
+    public T getData() {
         return Data;
     }
 
     @JsonIgnore
-    public void setData(Map<String, Object> data) {
+    public void setData(T data) {
         Data = data;
     }
 
@@ -110,6 +110,15 @@ public class BaseResponseNetAdapter {
      * @return
      */
     public static BaseResponseNetAdapter newSuccessInstance(Map<String, Object> data) {
+        BaseResponseNetAdapter baseResponseNetAdapter = new BaseResponseNetAdapter();
+        baseResponseNetAdapter.setBCode(200);
+        baseResponseNetAdapter.setCode(200);
+        baseResponseNetAdapter.setMsg("");
+        baseResponseNetAdapter.setData(data);
+        return baseResponseNetAdapter;
+    }
+
+    public static <T> BaseResponseNetAdapter newSuccessInstance(T data) {
         BaseResponseNetAdapter baseResponseNetAdapter = new BaseResponseNetAdapter();
         baseResponseNetAdapter.setBCode(200);
         baseResponseNetAdapter.setCode(200);
