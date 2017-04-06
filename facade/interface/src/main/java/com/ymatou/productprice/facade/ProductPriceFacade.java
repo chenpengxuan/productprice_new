@@ -75,4 +75,10 @@ public interface ProductPriceFacade {
      * @return
      */
     BaseResponseNetAdapter getCacheInfoByProductId(GetPriceCacheRequest request);
+
+    /**
+     * 获取缓存统计信息
+     * @return
+     */
+    BaseResponseNetAdapter getCacheInfoStatsInfo();
 }

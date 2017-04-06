@@ -2,6 +2,7 @@ package com.ymatou.productprice.infrastructure.util.CacheUtil;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheStats;
 import com.google.common.collect.Maps;
 import com.ymatou.productprice.infrastructure.config.props.CacheProps;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +57,14 @@ public class CacheManager {
             default:
                 break;
         }
+    }
+
+    /**
+     * 获取缓存统计信息
+     * @return
+     */
+    public CacheStats getCacheStats(){
+        return cacheFactory.stats();
     }
 
     /**

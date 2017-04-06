@@ -1,6 +1,7 @@
 package com.ymatou.productprice.facade;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.google.common.cache.CacheStats;
 import com.ymatou.productprice.domain.model.ActivityProduct;
 import com.ymatou.productprice.domain.model.ProductPriceData;
 import com.ymatou.productprice.domain.service.PriceQueryService;
@@ -234,6 +235,24 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
 
         Map<String, Object> cacheInfoList = new HashMap<>();
         cacheInfoList.put("CachePriceList", cacheResult);
+
+        return BaseResponseNetAdapter.newSuccessInstance(cacheInfoList);
+    }
+
+    /**
+     * 获取缓存统计信息
+     * @return
+     */
+    @Override
+    @GET
+    @Path("/{api:(?i:api)}/{Price:(?i:Price)}/{GetCacheInfoStatsInfo:(?i:GetCacheInfoStatsInfo)}")
+    @Produces({MediaType.APPLICATION_JSON})
+    public BaseResponseNetAdapter getCacheInfoStatsInfo(){
+        CacheStats cacheStats =
+                priceQueryService.getCacheStatisticsInfo();
+
+        Map<String, Object> cacheInfoList = new HashMap<>();
+        cacheInfoList.put("CacheStatsInfo", cacheStats);
 
         return BaseResponseNetAdapter.newSuccessInstance(cacheInfoList);
     }

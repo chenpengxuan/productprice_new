@@ -1,5 +1,6 @@
 package com.ymatou.productprice.domain.cache;
 
+import com.google.common.cache.CacheStats;
 import com.google.common.collect.Maps;
 import com.google.common.primitives.Longs;
 import com.ymatou.productprice.domain.model.ActivityProduct;
@@ -48,6 +49,14 @@ public class Cache {
         } else {
             realBusinessRepository = mongoRepository;
         }
+    }
+
+    /**
+     * 获取缓存统计信息
+     * @return
+     */
+    public CacheStats getCacheStats(){
+        return cacheManager.getCacheStats();
     }
 
     /**
@@ -167,7 +176,9 @@ public class Cache {
 
     /**
      * 处理并组装商品规格缓存数据
+     * @param productIdList
      * @param cacheProductList
+     * @param catalogUpdateTimeMap
      * @return
      */
     private List<Catalog> processProductPriceDataCacheList(List<String> productIdList,
@@ -189,7 +200,9 @@ public class Cache {
         } else {
             //从缓存中获取需要的数据
             List<Catalog> cacheCatalogList = new ArrayList<>();
-            cacheProductList.forEach(x -> x.getCatalogList().forEach(cacheCatalogList::add));
+            cacheProductList.forEach(x ->
+                    x.getCatalogList()
+                    .forEach(cacheCatalogList::add));
 
             //过滤有效业务缓存数据
             List<Catalog> validCatalogList = filterValidCacheData(cacheCatalogList,catalogUpdateTimeMap);
@@ -200,8 +213,9 @@ public class Cache {
                     .map(Catalog::getProductId)
                     .collect(Collectors.toList());
 
-            //传入的catalogId与有效数据对应的catalogId列表的差集就是需要重新拉取的数据
+            //传入的productId与有效数据对应的productId列表的差集就是需要重新拉取的数据
             List<String> needReloadCatalogIdList = new ArrayList<>();
+
             needReloadCatalogIdList.addAll(productIdList);
             needReloadCatalogIdList.removeAll(validProductIdList);
 
@@ -246,21 +260,11 @@ public class Cache {
     /**
      * 根据规格id获取规格信息列表
      *
-     * @param catalogIdList
+     * @param mapList
      * @return
      */
-    public List<Catalog> getCatalogByCatalogId(List<String> catalogIdList,
+    public List<Catalog> getCatalogByCatalogId(List<Map<String, Object>> mapList,
                                                Map<String, Date> catalogUpdateTimeMap) {
-
-        //过滤重复规格id
-        catalogIdList = catalogIdList
-                .stream()
-                .distinct()
-                .collect(Collectors.toList());
-
-        //根据catalogId获取商品id
-        List<Map<String, Object>> mapList = realBusinessRepository.getProductIdByCatalogIdList(catalogIdList);
-
         //根据商品id列表获取缓存信息
         List<String> productIdList = mapList
                 .stream()
