@@ -66,15 +66,17 @@ public class ActivityCacheSchedule {
      */
     public void scheduler() {
         try {
+            final int[] recordCount = {0};
+            final int[] refreshCount = {0};
             future = threadPoolTaskScheduler.schedule(() ->
-                            recordCount = cache.addNewestActivityProductCache(),
+                            recordCount[0] = cache.addNewestActivityProductCache(),
                     new CronTrigger(cronSetting));
-            logWrapper.recordInfoLog("增量添加活动商品缓存已执行,新增{}条", recordCount);
+            logWrapper.recordInfoLog("增量添加活动商品缓存已执行,新增{}条", recordCount[0]);
 
             futureRefreshActivity = threadPoolTaskScheduler.schedule(() ->
-                            recordCount = cache.refreshActivityProductCache(),
+                            refreshCount[0] = cache.refreshActivityProductCache(),
                     new CronTrigger(cronSetting));
-            logWrapper.recordInfoLog("定期删除过期活动商品缓存已执行,已删除{}条", recordCount);
+            logWrapper.recordInfoLog("定期删除过期活动商品缓存已执行,已删除{}条", refreshCount[0]);
         } catch (Exception ex) {
             logWrapper.recordErrorLog("增量添加活动商品缓存发生异常", ex);
         }

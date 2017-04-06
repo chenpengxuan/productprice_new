@@ -252,7 +252,10 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
                 priceQueryService.getCacheStatisticsInfo();
 
         Map<String, Object> cacheInfoList = new HashMap<>();
-        cacheInfoList.put("CacheStatsInfo", cacheStats);
+        cacheInfoList.put("CacheStatsInfo", cacheStats.toString()
+                .replace("{","")
+                .replace("}","")
+                .replace("CacheStats",""));
 
         return BaseResponseNetAdapter.newSuccessInstance(cacheInfoList);
     }

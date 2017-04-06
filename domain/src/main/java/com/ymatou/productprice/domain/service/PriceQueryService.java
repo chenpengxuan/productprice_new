@@ -234,7 +234,6 @@ public class PriceQueryService {
                     (productIdList);
         }
 
-
         if (productList == null || productList.isEmpty()) {
             BizException.throwBizException("商品信息不存在");
         }
