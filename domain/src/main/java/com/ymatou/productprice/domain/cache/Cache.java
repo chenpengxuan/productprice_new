@@ -287,7 +287,7 @@ public class Cache {
      * 刷新活动商品缓存
      * 去除过期商品缓存
      */
-    public void refreshActivityProductCache(){
+    public int refreshActivityProductCache(){
         ConcurrentMap activityProductCache = cacheManager.getActivityProductCacheContainer();
 
         //获取过期的活动商品缓存信息列表
@@ -307,6 +307,7 @@ public class Cache {
                 .map(x -> x.getProductId())
                 .collect(Collectors.toList());
         cacheManager.deleteActivityProduct(invalidActivityProductCacheIdList);
+        return invalidActivityProductCacheIdList.size();
     }
 
     /**

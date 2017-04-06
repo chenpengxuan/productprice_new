@@ -35,6 +35,8 @@ public class ActivityCacheSchedule {
 
     private ScheduledFuture<?> future;
 
+    private ScheduledFuture<?> futureRefreshActivity;
+
     private static int recordCount;
 
     private static String cronSetting;
@@ -62,9 +64,15 @@ public class ActivityCacheSchedule {
      */
     public void scheduler() {
         try {
-            future = threadPoolTaskScheduler.schedule(() -> recordCount = cache.addNewestActivityProductCache(),
+            future = threadPoolTaskScheduler.schedule(() ->
+                            recordCount = cache.addNewestActivityProductCache(),
                     new CronTrigger(cronSetting));
             logWrapper.recordInfoLog("增量添加活动商品缓存已执行,新增{}条", recordCount);
+
+            futureRefreshActivity = threadPoolTaskScheduler.schedule(() ->
+                            recordCount = cache.refreshActivityProductCache(),
+                    new CronTrigger(cronSetting));
+            logWrapper.recordInfoLog("定期删除过期活动商品缓存已执行,已删除{}条", recordCount);
         } catch (Exception ex) {
             logWrapper.recordErrorLog("增量添加活动商品缓存发生异常", ex);
         }

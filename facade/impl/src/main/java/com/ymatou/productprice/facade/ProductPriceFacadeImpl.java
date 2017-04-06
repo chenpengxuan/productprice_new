@@ -1,13 +1,17 @@
 package com.ymatou.productprice.facade;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.ymatou.productprice.domain.model.ActivityProduct;
+import com.ymatou.productprice.domain.model.ProductPriceData;
 import com.ymatou.productprice.domain.service.PriceQueryService;
+import com.ymatou.productprice.infrastructure.util.Tuple;
 import com.ymatou.productprice.model.CatalogPrice;
 import com.ymatou.productprice.model.ProductPrice;
 import com.ymatou.productprice.model.ProductPriceForSearched;
 import com.ymatou.productprice.model.req.GetPriceByCatalogIdListRequest;
 import com.ymatou.productprice.model.req.GetPriceByProdIdRequest;
 import com.ymatou.productprice.model.req.GetPriceByProductIdListRequest;
+import com.ymatou.productprice.model.req.GetPriceCacheRequest;
 import com.ymatou.productprice.model.resp.BaseResponseNetAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -212,5 +216,25 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
         priceInfoList.put("CatalogPriceList", catalogPriceList);
 
         return BaseResponseNetAdapter.newSuccessInstance(priceInfoList);
+    }
+
+    /**
+     * 根据商品id获取缓存信息
+     * @param request
+     * @return
+     */
+    @Override
+    @POST
+    @Path("/{api:(?i:api)}/{Price:(?i:Price)}/{GetPriceCacheInfo:(?i:GetPriceCacheInfo)}")
+    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON})
+    public BaseResponseNetAdapter getCacheInfoByProductId(GetPriceCacheRequest request){
+        Tuple<List<ProductPriceData>,List<ActivityProduct>> cacheResult =
+                priceQueryService.getCacheInfoByProductIdList(request.getProductIdList());
+
+        Map<String, Object> cacheInfoList = new HashMap<>();
+        cacheInfoList.put("CachePriceList", cacheResult);
+
+        return BaseResponseNetAdapter.newSuccessInstance(cacheInfoList);
     }
 }

@@ -8,6 +8,7 @@ import com.ymatou.productprice.domain.repo.Repository;
 import com.ymatou.productprice.domain.repo.RepositoryProxy;
 import com.ymatou.productprice.infrastructure.config.props.BizProps;
 import com.ymatou.productprice.infrastructure.config.props.CacheProps;
+import com.ymatou.productprice.infrastructure.util.Tuple;
 import com.ymatou.productprice.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -296,5 +297,35 @@ public class PriceQueryService {
             catalogPriceList.addAll(tempCatalogPriceList);
         });
         return catalogPriceList;
+    }
+
+    /**
+     * 根据商品id列表获取缓存信息
+     * @param productIdList
+     * @return
+     */
+    public Tuple<List<ProductPriceData>,List<ActivityProduct>> getCacheInfoByProductIdList(List<String> productIdList){
+        List<Map<String,Object>> stampList = mongoRepository
+                .getTimeStampByProductIdList(productIdList,Arrays.asList("sut","aut"));
+
+        Map<String,Date> stampMap = stampList
+                .stream()
+                .collect(Collectors
+                        .toMap(x -> x.get("spid").toString(),
+                                y -> Optional.ofNullable((Date)y.get("sut")).orElse(new Date()),
+                                (key1,key2) -> key2));
+
+        Map<String,Date> activityStampMap = stampList
+                .stream()
+                .collect(Collectors
+                        .toMap(x -> x.get("spid").toString(),
+                                y -> Optional.ofNullable((Date)y.get("aut")).orElse(new Date()),
+                                (key1,key2) -> key2));
+
+        List<ProductPriceData> tempDataList = cache.getPriceRangeListByProduct(productIdList,stampMap);
+        List<ActivityProduct> tempActivityDataList = cache.getActivityProductList(productIdList,activityStampMap);
+
+        Tuple<List<ProductPriceData>,List<ActivityProduct>> result = new Tuple(tempDataList,tempActivityDataList);
+        return result;
     }
 }
