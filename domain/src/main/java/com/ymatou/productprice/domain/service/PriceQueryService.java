@@ -1,6 +1,7 @@
 package com.ymatou.productprice.domain.service;
 
 import com.google.common.cache.CacheStats;
+import com.google.common.collect.Lists;
 import com.google.common.primitives.Doubles;
 import com.ymatou.productprice.domain.cache.Cache;
 import com.ymatou.productprice.domain.model.ActivityProduct;
@@ -67,7 +68,7 @@ public class PriceQueryService {
 
         //获取活动商品与规格的变更时间戳
         Map<String, Object> updateStampMap = repository
-                .getTimeStampByProductId(productId, Arrays.asList("cut", "aut"));
+                .getTimeStampByProductId(productId, Lists.newArrayList("cut", "aut"));
 
         //如果时间戳为空，则取当前时间
         Date catalogUpdateTime = Optional.ofNullable((Date) updateStampMap.get("cut")).orElse(new Date());
@@ -98,8 +99,8 @@ public class PriceQueryService {
         //价格核心逻辑
         priceCoreService.calculateRealPriceCoreLogic(buyerId,
                 outputCatalogList,
-                Arrays.asList(productPrice),
-                Arrays.asList(activityProductInfo),
+                Lists.newArrayList(productPrice),
+                Lists.newArrayList(activityProductInfo),
                 isTradeIsolation);
 
         return productPrice;
@@ -147,7 +148,7 @@ public class PriceQueryService {
 
         //获取活动商品与规格的变更时间戳
         List<Map<String, Object>> updateStampMapList = repository
-                .getTimeStampByProductIdList(productIdList, Arrays.asList("cut", "aut"));
+                .getTimeStampByProductIdList(productIdList, Lists.newArrayList("cut", "aut"));
 
         Map<String, Date> activityProductUpdateTimeMap = new HashMap<>();
         Map<String, Date> catalogUpdateTimeMap = new HashMap<>();
@@ -216,7 +217,7 @@ public class PriceQueryService {
 
         //获取活动商品与规格的变更时间戳
         List<Map<String, Object>> updateStampMapList = repository
-                .getTimeStampByProductIdList(productIdList, Arrays.asList("sut,aut"));
+                .getTimeStampByProductIdList(productIdList, Lists.newArrayList("sut,aut"));
 
         Map<String, Date> productUpdateStampMap = updateStampMapList
                 .stream()
@@ -301,7 +302,7 @@ public class PriceQueryService {
 
         //获取活动商品与规格的变更时间戳
         List<Map<String, Object>> updateStampMapList = mongoRepository
-                .getTimeStampByProductIdList(productIdList, Arrays.asList("cut", "aut"));
+                .getTimeStampByProductIdList(productIdList, Lists.newArrayList("cut", "aut"));
 
         Map<String, Date> catalogUpdateStampMap = updateStampMapList
                 .stream()
@@ -376,7 +377,7 @@ public class PriceQueryService {
      */
     public Tuple<List<ProductPriceData>, List<ActivityProduct>> getCacheInfoByProductIdList(List<String> productIdList) {
         List<Map<String, Object>> stampList = mongoRepository
-                .getTimeStampByProductIdList(productIdList, Arrays.asList("sut", "aut"));
+                .getTimeStampByProductIdList(productIdList, Lists.newArrayList("sut", "aut"));
 
         Map<String, Date> stampMap = stampList
                 .stream()

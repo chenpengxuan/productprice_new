@@ -1,5 +1,6 @@
 package com.ymatou.productprice.domain.repo.mongorepo;
 
+import com.google.common.collect.Lists;
 import com.ymatou.productprice.domain.model.ActivityCatalog;
 import com.ymatou.productprice.domain.model.ActivityProduct;
 import com.ymatou.productprice.domain.model.Catalog;
@@ -450,7 +451,7 @@ public class MongoRepository implements Repository {
      * @return
      */
     public Date getUpdateTimeByProductId(String productId, String tableUpdateColName) {
-        Map<String, Object> tempChangeMap = getTimeStampByProductId(productId, Arrays.asList(tableUpdateColName));
+        Map<String, Object> tempChangeMap = getTimeStampByProductId(productId, Lists.newArrayList(tableUpdateColName));
         return Optional.ofNullable((Date) tempChangeMap.get(tableUpdateColName)).orElse(null);
     }
 
@@ -512,7 +513,7 @@ public class MongoRepository implements Repository {
         );
         tempActivityProduct.setProductId(Optional.ofNullable((String) activityProductMap.get("spid")).orElse(""));
         List<Map<String, Object>> tempCatalogs = Optional
-                .ofNullable((List<Map<String, Object>>) activityProductMap.get("catalogs")).orElse(Arrays.asList());
+                .ofNullable((List<Map<String, Object>>) activityProductMap.get("catalogs")).orElse(Lists.newArrayList());
         tempActivityProduct.setActivityCatalogList(tempCatalogs.stream().map(x -> {
             ActivityCatalog tempCatalog = new ActivityCatalog();
             tempCatalog.setActivityCatalogId(Optional.ofNullable((String) x.get("cid")).orElse(""));

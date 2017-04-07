@@ -1,5 +1,6 @@
 package com.ymatou.productprice.domain.service;
 
+import com.google.common.collect.Lists;
 import com.google.common.primitives.Longs;
 import com.ymatou.productprice.domain.model.ActivityCatalog;
 import com.ymatou.productprice.domain.model.ActivityProduct;
@@ -46,12 +47,23 @@ public class PriceCoreService {
                                             List<ActivityProduct> activityProductList,
                                             boolean isTradeIsolation) {
         //填充catalogs
-        productPriceList.stream().forEach(productPrice -> productPrice.setCatalogs(catalogList
-                .stream().filter(x -> x.getProductId().equals(productPrice.getProductId()))
-                .collect(Collectors.toList())));
+        productPriceList.forEach(productPrice -> {
+            List<Catalog> tempCatalogList = catalogList
+                    .stream().filter(x -> x.getProductId().equals(productPrice.getProductId()))
+                    .collect(Collectors.toList());
+            productPrice.setCatalogs(tempCatalogList);
+            productPrice.setSellerId(Optional.of(new Long(tempCatalogList
+            .stream()
+            .findAny()
+            .get()
+            .getSellerId()))
+            .orElse(0L));
+        });
 
         //决定当前买家对不同的买手而言是新客还是老客
         GetBuyerOrderStatisticsResp resp = determineVipOrNewCustomer(buyerId, productPriceList);
+
+        //
 
         //设置最终商品价格
         decideProductRealPrice(buyerId, productPriceList, activityProductList, resp, isTradeIsolation);
@@ -103,46 +115,34 @@ public class PriceCoreService {
         GetBuyerOrderStatisticsResp resp = null;
         if (!needsCalculateVipAndNewCustomerPriceList.isEmpty()) {
 
-            //查询ProductId --> SellerId map
-            List<Catalog> tempCatalogList = new ArrayList<>();
-
-            needsCalculateVipAndNewCustomerPriceList.stream()
-                    .forEach(x -> tempCatalogList.addAll(x.getCatalogs()));
-            Map<String, Integer> tempMap = tempCatalogList
+            resp = userBehaviorAnalysisService.getBuyerBehavior(needsCalculateVipAndNewCustomerPriceList
                     .stream()
-                    .collect(Collectors.toMap(Catalog::getProductId, Catalog::getSellerId, (key1, key2) -> key2));
-
-            long[] sellerIdList = tempMap.values().stream().mapToLong(z -> (long) z).toArray();
-
-            resp = userBehaviorAnalysisService.getBuyerBehavior(Longs.asList(sellerIdList), buyerId);
+                    .map(ProductPrice::getSellerId)
+                    .collect(Collectors.toList()), buyerId);
 
             //填充sellerId及对应用户行为信息
             GetBuyerOrderStatisticsResp finalResp = resp;
             productPriceList
-                    .stream().forEach(x -> {
-
-                Integer tempSellerId = Optional.ofNullable(tempMap.get(x.getSellerId())).orElse(0);
-                x.setSellerId(new Long(tempSellerId));
-
+                    .forEach(x -> {
                 x.setHasConfirmedOrders(
                         (Optional.of(finalResp != null
                                 && finalResp.getFromSeller() != null
-                                && finalResp.getFromSeller().get(tempSellerId) != null
-                                && finalResp.getFromSeller().get(tempSellerId).isHasConfirmedOrders())
+                                && finalResp.getFromSeller().get(x.getSellerId()) != null
+                                && finalResp.getFromSeller().get(x.getSellerId()).isHasConfirmedOrders())
                                 .orElse(false))
                 );
 
                 x.setNoOrdersOrAllCancelled(
                         (Optional.of(finalResp != null
                                 && finalResp.getFromSeller() != null
-                                && finalResp.getFromSeller().get(tempSellerId) != null
-                                && finalResp.getFromSeller().get(tempSellerId).isNoOrdersOrAllCancelled())
+                                && finalResp.getFromSeller().get(x.getSellerId()) != null
+                                && finalResp.getFromSeller().get(x.getSellerId()).isNoOrdersOrAllCancelled())
                                 .orElse(false))
                 );
             });
         } else {
             productPriceList
-                    .stream().forEach(x -> {
+                    .forEach(x -> {
                 x.setNoOrdersOrAllCancelled(false);
                 x.setHasConfirmedOrders(false);
             });
@@ -207,9 +207,12 @@ public class PriceCoreService {
      * @return
      */
     private boolean checkIsNewBuyer(long buyerId, List<ActivityProduct> activityProductInfoList) {
-        List<ActivityProduct> newBuyerActivityProductList = activityProductInfoList.stream()
-                .filter(x -> x.getNewBuyer())
-                .collect(Collectors.toList());
+        activityProductInfoList.removeAll(Collections.singleton(null));
+        List<ActivityProduct> newBuyerActivityProductList = activityProductInfoList != null
+                && !activityProductInfoList.isEmpty() ?
+        activityProductInfoList.stream()
+                .filter(ActivityProduct::getNewBuyer)
+                .collect(Collectors.toList()) : null;
 
         boolean isNewBuyerActivityProduct = buyerId > 0
                 && !activityProductInfoList.isEmpty()
@@ -220,7 +223,7 @@ public class PriceCoreService {
             return isNewBuyerActivityProduct;
         }
         GetBuyerFirstOrderInfoReq req = new GetBuyerFirstOrderInfoReq();
-        req.setBuyerIds(Arrays.asList(buyerId));
+        req.setBuyerIds(Lists.newArrayList(buyerId));
 
         boolean isNewBuyer;
         try {
@@ -360,9 +363,9 @@ public class PriceCoreService {
         boolean needsCalculateActivityProductPrice = activityProductInfo != null
                 && (!activityProductInfo.getHasIsolation()
                 || isTradeIsolation);
-        ActivityCatalog activityCatalog = activityProductInfo.getActivityCatalogList()
+        ActivityCatalog activityCatalog = needsCalculateActivityProductPrice ? activityProductInfo.getActivityCatalogList()
                 .stream().filter(x -> x.getActivityCatalogId().equals(catalog.getCatalogId()))
-                .findAny().orElse(null);
+                .findAny().orElse(null) : null;
 
         if (needsCalculateActivityProductPrice
                 && activityCatalog != null

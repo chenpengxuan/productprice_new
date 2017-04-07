@@ -3,6 +3,7 @@ package com.ymatou.productprice.infrastructure.util.CacheUtil;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheStats;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.ymatou.productprice.infrastructure.config.props.CacheProps;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -253,7 +254,7 @@ public class CacheManager {
         List<V> cacheResultList = new ArrayList<>();
 
         Map<K, List<V>> cacheResultMap = cacheFactory.getAllPresent(cacheKeyMap.values());
-        cacheResultList.addAll(Arrays.asList((V[]) cacheResultMap.values().toArray()));
+        cacheResultList.addAll(Lists.newArrayList((V[]) cacheResultMap.values().toArray()));
 
         Set<K> cachedKeyList = cacheResultMap.keySet();
         //过滤参数列表将没有命中和业务缓存数据失效的数据一起重新查询数据
@@ -305,7 +306,7 @@ public class CacheManager {
         List<V> cacheResultList = new ArrayList<>();
 
         if (!queryParamWithCacheKeyMap.isEmpty()) {
-            List<K> paramList = Arrays.asList();
+            List<K> paramList = Lists.newArrayList();
             queryParamWithCacheKeyMap.keySet().stream().forEach(x -> paramList.addAll(x));
             Z repositoryResultList = repositoryFunc
                     .apply(paramList);
