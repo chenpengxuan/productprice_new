@@ -37,8 +37,6 @@ public class ActivityCacheSchedule {
 
     private ScheduledFuture<?> futureRefreshActivity;
 
-    private static int recordCount;
-
     private static String cronSetting;
 
     @Bean
@@ -50,7 +48,7 @@ public class ActivityCacheSchedule {
     public void init() {
         if (bizProps.isUseCache() && cacheProps.isUseActivityCache()) {
             //初始化活动商品缓存
-            recordCount = cache.initActivityProductCache();
+            int recordCount = cache.initActivityProductCache();
             logWrapper.recordInfoLog("初始化活动商品缓存已执行,新增{}条", recordCount);
 
             cronSetting = bizProps.isUseCache() && cacheProps.isUseActivityCache() ? "0/" +
@@ -66,19 +64,17 @@ public class ActivityCacheSchedule {
      */
     public void scheduler() {
         try {
-            final int[] recordCount = {0};
-            final int[] refreshCount = {0};
             future = threadPoolTaskScheduler.schedule(() ->
-                            recordCount[0] = cache.addNewestActivityProductCache(),
+                            cache.addNewestActivityProductCache(),
                     new CronTrigger(cronSetting));
-            logWrapper.recordInfoLog("增量添加活动商品缓存已执行,新增{}条", recordCount[0]);
+
 
             futureRefreshActivity = threadPoolTaskScheduler.schedule(() ->
-                            refreshCount[0] = cache.refreshActivityProductCache(),
+                            cache.refreshActivityProductCache(),
                     new CronTrigger(cronSetting));
-            logWrapper.recordInfoLog("定期删除过期活动商品缓存已执行,已删除{}条", refreshCount[0]);
+
         } catch (Exception ex) {
-            logWrapper.recordErrorLog("增量添加活动商品缓存发生异常", ex);
+            logWrapper.recordErrorLog("活动商品缓存定时任务发生异常", ex);
         }
     }
 }

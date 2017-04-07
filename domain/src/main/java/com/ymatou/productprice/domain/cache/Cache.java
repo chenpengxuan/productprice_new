@@ -9,6 +9,7 @@ import com.ymatou.productprice.domain.model.ProductPriceData;
 import com.ymatou.productprice.domain.repo.Repository;
 import com.ymatou.productprice.infrastructure.config.props.BizProps;
 import com.ymatou.productprice.infrastructure.util.CacheUtil.CacheManager;
+import com.ymatou.productprice.infrastructure.util.LogWrapper;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -39,6 +40,9 @@ public class Cache {
 
     @Resource(name="parallelRepository")
     private Repository parallelRepository;
+
+    @Autowired
+    private LogWrapper logWrapper;
 
     private Repository realBusinessRepository;
 
@@ -297,7 +301,7 @@ public class Cache {
      * 刷新活动商品缓存
      * 去除过期商品缓存
      */
-    public int refreshActivityProductCache(){
+    public void refreshActivityProductCache(){
         ConcurrentMap activityProductCache = cacheManager.getActivityProductCacheContainer();
 
         //获取过期的活动商品缓存信息列表
@@ -317,13 +321,13 @@ public class Cache {
                 .map(x -> x.getProductId())
                 .collect(Collectors.toList());
         cacheManager.deleteActivityProduct(invalidActivityProductCacheIdList);
-        return invalidActivityProductCacheIdList.size();
+        logWrapper.recordInfoLog("定期删除过期活动商品缓存已执行,已删除{}条", invalidActivityProductCacheIdList.size());
     }
 
     /**
      * 添加活动商品增量信息
      */
-    public int addNewestActivityProductCache(){
+    public void addNewestActivityProductCache(){
         ConcurrentMap activityProductCache = cacheManager.getActivityProductCacheContainer();
 
         //从缓存中获取最后创建的活动商品数据的主键
@@ -344,7 +348,7 @@ public class Cache {
         .stream()
         .collect(Collectors.toMap(ActivityProduct::getProductId,y -> y,(key1,key2) -> key2)));
 
-        return newestActivityProductList.size();
+        logWrapper.recordInfoLog("增量添加活动商品缓存已执行,新增{}条", newestActivityProductList.size());
     }
 
     /**
@@ -448,7 +452,8 @@ public class Cache {
                 .stream()
                 .map(x -> (ProductPriceData)x)
                 .collect(Collectors.toList());
-
+        //针对Arrays.asList创建的列表 排除空元素
+        cacheProductList.removeAll(Collections.singleton(null));
         //缓存完全不命中
         if(cacheProductList == null || cacheProductList.isEmpty()){
             result = mongoRepository.getPriceRangeListByProduct(productIdList);
