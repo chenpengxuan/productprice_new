@@ -13,7 +13,7 @@ public class GetPriceCacheRequest extends BaseRequest{
     /**
      * 商品id
      */
-    @JsonProperty("ProductIds")
+    @JsonProperty("ProductIdList")
     @NotNull(message = "商品id列表不能为空")
     private List<String> productIdList;
 

@@ -467,7 +467,8 @@ public class PriceCoreService {
             logWrapper.recordInfoLog("buyerId <=0");
         }
         if (buyerId <= 0
-                && (resp == null || resp.getFromSeller() == null)) {
+                && (resp == null || resp.getFromSeller() == null)
+                && catalog != null) {
             Map<PriceEnum, Double> priceMap = new HashMap<>();
             priceMap.put(PriceEnum.NEWCUSTOMERPRICE, catalog.getNewCustomerPrice());
             priceMap.put(PriceEnum.QUOTEPRICE, catalog.getQuotePrice());
