@@ -252,7 +252,10 @@ public class Cache {
                 .collect(Collectors.toList());
 
         //根据商品id列表获取缓存信息
-        List<ProductPriceData> cacheProductList = cacheManager.get(productIdList);
+        List<ProductPriceData> cacheProductList = cacheManager.get(productIdList).values()
+                .stream()
+                .map(x -> (ProductPriceData)x)
+                .collect(Collectors.toList());
 
         return processProductPriceDataCacheList(productIdList,cacheProductList,catalogUpdateTimeMap);
     }
@@ -270,7 +273,10 @@ public class Cache {
                 .stream()
                 .map(x -> x.get("spid").toString())
                 .collect(Collectors.toList());
-        List<ProductPriceData> cacheProductList = cacheManager.get(productIdList);
+        List<ProductPriceData> cacheProductList = cacheManager.get(productIdList).values()
+                .stream()
+                .map(x -> (ProductPriceData)x)
+                .collect(Collectors.toList());
 
         return processProductPriceDataCacheList(productIdList,cacheProductList,catalogUpdateTimeMap);
     }
@@ -437,7 +443,10 @@ public class Cache {
         List<ProductPriceData> result;
 
         //从缓存中获取数据
-        List<ProductPriceData> cacheProductList = cacheManager.get(productIdList);
+        List<ProductPriceData> cacheProductList = cacheManager.get(productIdList).values()
+                .stream()
+                .map(x -> (ProductPriceData)x)
+                .collect(Collectors.toList());
 
         //缓存完全不命中
         if(cacheProductList == null || cacheProductList.isEmpty()){

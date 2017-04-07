@@ -204,7 +204,7 @@ public class CacheManager {
      * @param <V>
      * @return
      */
-    public <K, V> List<V> get(List<K> cacheKeyList){return (List<V>) cacheFactory.getAllPresent(cacheKeyList);}
+    public <K, V> Map<K,V> get(List<K> cacheKeyList){return (Map<K,V>) cacheFactory.getAllPresent(cacheKeyList);}
 
     /**
      * 添加单个缓存信息
