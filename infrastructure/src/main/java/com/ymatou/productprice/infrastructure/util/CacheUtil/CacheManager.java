@@ -112,7 +112,8 @@ public class CacheManager {
      * @param <V>
      */
     public <K, V> V get(K cacheKey) {
-        return (V) cacheFactory.getIfPresent(cacheKey);
+        return
+                Optional.ofNullable((V) cacheFactory.getIfPresent(cacheKey)).orElse(null);
     }
 
     /**
@@ -122,7 +123,8 @@ public class CacheManager {
      * @param <V>
      * @return
      */
-    public <K,V> V getActivityProduct(K cacheKey){return (V)activityProductCacheFactory.get(cacheKey);}
+    public <K,V> V getActivityProduct(K cacheKey){return
+            Optional.ofNullable((V)activityProductCacheFactory.get(cacheKey)).orElse(null);}
 
     /**
      * 获取活动商品

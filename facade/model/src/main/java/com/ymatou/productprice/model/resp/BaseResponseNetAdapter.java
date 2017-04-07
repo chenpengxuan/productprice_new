@@ -4,8 +4,6 @@ package com.ymatou.productprice.model.resp;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.Map;
-
 /**
  * .net 返回风格匹配器
  * Created by chenpengxuan on 2017/3/6.
@@ -100,21 +98,6 @@ public class BaseResponseNetAdapter<T> {
         baseResponseNetAdapter.setCode(201);
         baseResponseNetAdapter.setMsg(errorMsg);
         baseResponseNetAdapter.setData(null);
-        return baseResponseNetAdapter;
-    }
-
-    /**
-     * 创建成功resp
-     *
-     * @param data
-     * @return
-     */
-    public static BaseResponseNetAdapter newSuccessInstance(Map<String, Object> data) {
-        BaseResponseNetAdapter baseResponseNetAdapter = new BaseResponseNetAdapter();
-        baseResponseNetAdapter.setBCode(200);
-        baseResponseNetAdapter.setCode(200);
-        baseResponseNetAdapter.setMsg("");
-        baseResponseNetAdapter.setData(data);
         return baseResponseNetAdapter;
     }
 
