@@ -305,7 +305,9 @@ public class Cache {
         ConcurrentMap activityProductCache = cacheManager.getActivityProductCacheContainer();
 
         //获取过期的活动商品缓存信息列表
-        List<ActivityProduct> invalidActivityProductCacheList = (List<ActivityProduct>) activityProductCache.values()
+        List<ActivityProduct> invalidActivityProductCacheList = activityProductCache != null
+                && !activityProductCache.isEmpty() ?
+                (List<ActivityProduct>) activityProductCache.values()
                 .stream()
                 .filter(x -> {
                     ActivityProduct tempProduct = (ActivityProduct)x;
@@ -313,15 +315,19 @@ public class Cache {
                     Long now = new Date().getTime();
                     return now > endTime;
                 })
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()) : null;
 
-        //批量删除过期活动商品信息列表
-        List<String> invalidActivityProductCacheIdList = invalidActivityProductCacheList
-                .stream()
-                .map(x -> x.getProductId())
-                .collect(Collectors.toList());
-        cacheManager.deleteActivityProduct(invalidActivityProductCacheIdList);
-        logWrapper.recordInfoLog("定期删除过期活动商品缓存已执行,已删除{}条", invalidActivityProductCacheIdList.size());
+        if(invalidActivityProductCacheList != null && !invalidActivityProductCacheList.isEmpty()) {
+            //批量删除过期活动商品信息列表
+            List<String> invalidActivityProductCacheIdList = invalidActivityProductCacheList
+                    .stream()
+                    .map(x -> x.getProductId())
+                    .collect(Collectors.toList());
+            if (!invalidActivityProductCacheIdList.isEmpty()) {
+                cacheManager.deleteActivityProduct(invalidActivityProductCacheIdList);
+                logWrapper.recordInfoLog("定期删除过期活动商品缓存已执行,已删除{}条", invalidActivityProductCacheIdList.size());
+            }
+        }
     }
 
     /**
