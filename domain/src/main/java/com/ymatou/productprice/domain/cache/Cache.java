@@ -494,6 +494,8 @@ public class Cache {
             List<ProductPriceData> reloadProductList = mongoRepository
                     .getPriceRangeListByProduct(needReloadProductIdList);
 
+            //去除空数据
+            reloadProductList.removeAll(Collections.singleton(null));
             //组装需要刷缓存的数据
             reloadProductList.forEach(x -> {
                 //针对缓存结构中 商品数据过期 但是商品中规格数据可能有效的情况，保留其规格缓存数据
@@ -509,7 +511,7 @@ public class Cache {
             });
 
             //批量刷缓存
-            cacheManager.putActivityProduct(reloadProductList
+            cacheManager.put(reloadProductList
             .stream()
             .collect(Collectors.toMap(ProductPriceData::getProductId,y -> y,(key1,key2) -> key2)));
 
