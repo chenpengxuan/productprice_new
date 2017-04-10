@@ -172,7 +172,7 @@ public class MongoRepository implements Repository {
         projectionMap.put("_id", false);
         queryData.setProjection(projectionMap);
 
-        queryData.setTableName(Constants.CatalogDb);
+        queryData.setTableName(Constants.ProductDb);
 
         queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
         return mongoProcessor
