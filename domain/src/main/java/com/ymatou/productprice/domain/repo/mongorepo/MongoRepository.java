@@ -509,7 +509,6 @@ public class MongoRepository implements Repository {
     private ActivityProduct convertMapToActivityProduct(Map<String, Object> activityProductMap) {
         ActivityProduct tempActivityProduct = new ActivityProduct();
 
-        try{
             tempActivityProduct.setActivityProductId(
                     Optional.ofNullable((ObjectId) activityProductMap.get("_id")).orElse(null)
             );
@@ -532,10 +531,6 @@ public class MongoRepository implements Repository {
             tempActivityProduct.setNewBuyer(Optional.ofNullable((Boolean) activityProductMap.get("nbuyer")).orElse(false));
             tempActivityProduct.setStartTime(Optional.ofNullable((Date) activityProductMap.get("start")).orElse(null));
             tempActivityProduct.setEndTime(Optional.ofNullable((Date) activityProductMap.get("end")).orElse(null));
-
-        }catch (Exception ex){
-            int a = 9;
-        }
 
         return tempActivityProduct;
     }
