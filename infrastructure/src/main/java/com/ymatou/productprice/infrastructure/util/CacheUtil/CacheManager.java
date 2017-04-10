@@ -99,9 +99,9 @@ public class CacheManager {
             if (!checkCacheValidFunc.apply(queryParam, cacheResult)) {
                 Z tempData = repositoryFunc.apply(queryParam);
                 cacheResult = updateDataFunc.apply(cacheResult, tempData);
-                cacheFactory.put(cacheKey, cacheResult);
             }
         }
+        cacheFactory.put(cacheKey, cacheResult);
         return cacheResult;
     }
 

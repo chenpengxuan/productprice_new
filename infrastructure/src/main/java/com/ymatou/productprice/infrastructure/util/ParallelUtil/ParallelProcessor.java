@@ -38,7 +38,7 @@ public class ParallelProcessor<T extends List, R extends List> {
     private void init() {
         forkJoinPool = new ForkJoinPool(bizProps.getParallelCount());
         threadPoolExecutor = new ThreadPoolExecutor(bizProps.getParallelCount(),
-                bizProps.getParallelCount(),
+                bizProps.getParallelCount() * 100,
                 Long.MAX_VALUE,
                 TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>());
