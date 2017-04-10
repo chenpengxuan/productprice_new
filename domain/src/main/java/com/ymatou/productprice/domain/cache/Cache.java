@@ -470,7 +470,8 @@ public class Cache {
                     .filter(x -> {
                        Long cacheProductUpdateStamp = Optional.ofNullable(x.getUpdateTime())
                                .orElse(new Date()).getTime();
-                        Long productUpdateStamp = productUpdateStampMap.get(x.getProductId()).getTime();
+                        Long productUpdateStamp = productUpdateStampMap.get(x.getProductId()) != null ?
+                                productUpdateStampMap.get(x.getProductId()).getTime() : 0;
                         return Long.compare(cacheProductUpdateStamp,productUpdateStamp) == 0;
                     })
                     .collect(Collectors.toList());
