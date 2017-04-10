@@ -508,28 +508,35 @@ public class MongoRepository implements Repository {
      */
     private ActivityProduct convertMapToActivityProduct(Map<String, Object> activityProductMap) {
         ActivityProduct tempActivityProduct = new ActivityProduct();
-        tempActivityProduct.setActivityProductId(
-                Optional.ofNullable((ObjectId) activityProductMap.get("_id")).orElse(null)
-        );
-        tempActivityProduct.setProductId(Optional.ofNullable((String) activityProductMap.get("spid")).orElse(""));
-        List<Map<String, Object>> tempCatalogs = Optional
-                .ofNullable((List<Map<String, Object>>) activityProductMap.get("catalogs")).orElse(Lists.newArrayList());
-        tempActivityProduct.setActivityCatalogList(tempCatalogs.stream().map(x -> {
-            ActivityCatalog tempCatalog = new ActivityCatalog();
-            tempCatalog.setActivityCatalogId(Optional.ofNullable((String) x.get("cid")).orElse(""));
-            tempCatalog.setActivityCatalogPrice(Optional.ofNullable((Double) x.get("price")).orElse(0D));
-            tempCatalog.setActivityStock(Optional.ofNullable((Integer) x.get("stock")).orElse(0));
-            return tempCatalog;
-        }).collect(Collectors.toList()));
-        tempActivityProduct.setUpdateTime(
-                getUpdateTimeByProductId(Optional.ofNullable((String) activityProductMap.get("spid")).orElse(""), "aut")
-        );
-        tempActivityProduct.setHasIsolation(
-                Optional.ofNullable((Boolean) activityProductMap.get("isolation")).orElse(false)
-        );
-        tempActivityProduct.setNewBuyer(Optional.ofNullable((Boolean) activityProductMap.get("nbuyer")).orElse(false));
-        tempActivityProduct.setStartTime(Optional.ofNullable((Date) activityProductMap.get("start")).orElse(null));
-        tempActivityProduct.setEndTime(Optional.ofNullable((Date) activityProductMap.get("end")).orElse(null));
+
+        try{
+            tempActivityProduct.setActivityProductId(
+                    Optional.ofNullable((ObjectId) activityProductMap.get("_id")).orElse(null)
+            );
+            tempActivityProduct.setProductId(Optional.ofNullable((String) activityProductMap.get("spid")).orElse(""));
+            List<Map<String, Object>> tempCatalogs = Optional
+                    .ofNullable((List<Map<String, Object>>) activityProductMap.get("catalogs")).orElse(Lists.newArrayList());
+            tempActivityProduct.setActivityCatalogList(tempCatalogs.stream().map(x -> {
+                ActivityCatalog tempCatalog = new ActivityCatalog();
+                tempCatalog.setActivityCatalogId(Optional.ofNullable((String) x.get("cid")).orElse(""));
+                tempCatalog.setActivityCatalogPrice(Optional.ofNullable((Double) x.get("price")).orElse(0D));
+                tempCatalog.setActivityStock(Optional.ofNullable((Integer) x.get("stock")).orElse(0));
+                return tempCatalog;
+            }).collect(Collectors.toList()));
+            tempActivityProduct.setUpdateTime(
+                    getUpdateTimeByProductId(Optional.ofNullable((String) activityProductMap.get("spid")).orElse(""), "aut")
+            );
+            tempActivityProduct.setHasIsolation(
+                    Optional.ofNullable((Boolean) activityProductMap.get("isolation")).orElse(false)
+            );
+            tempActivityProduct.setNewBuyer(Optional.ofNullable((Boolean) activityProductMap.get("nbuyer")).orElse(false));
+            tempActivityProduct.setStartTime(Optional.ofNullable((Date) activityProductMap.get("start")).orElse(null));
+            tempActivityProduct.setEndTime(Optional.ofNullable((Date) activityProductMap.get("end")).orElse(null));
+
+        }catch (Exception ex){
+            int a = 9;
+        }
+
         return tempActivityProduct;
     }
 }

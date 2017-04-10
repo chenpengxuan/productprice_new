@@ -331,24 +331,28 @@ public class Cache {
         ConcurrentMap activityProductCache = cacheManager.getActivityProductCacheContainer();
 
         //从缓存中获取最后创建的活动商品数据的主键
-        ObjectId newestCacheActivityProductPrimaryKey = ((ActivityProduct)activityProductCache.values()
+        ActivityProduct latestActivityProduct = (ActivityProduct)activityProductCache.values()
                 .stream()
                 .max((x,y) ->
                         Integer.compare(((ActivityProduct)x).getActivityProductId().getTimestamp()
                                 ,((ActivityProduct)y).getActivityProductId().getTimestamp()))
-                .get())
-                .getActivityProductId();
+                 .orElse(null);
 
-        //获取新增的mongo活动商品信息
-        List<ActivityProduct> newestActivityProductList = realBusinessRepository
-                .getActivityProductList(newestCacheActivityProductPrimaryKey);
+        ObjectId newestCacheActivityProductPrimaryKey = latestActivityProduct != null ?
+                latestActivityProduct.getActivityProductId():null;
 
-        //批量添加至缓存
-        cacheManager.putActivityProduct(newestActivityProductList
-        .stream()
-        .collect(Collectors.toMap(ActivityProduct::getProductId,y -> y,(key1,key2) -> key2)));
+        if(newestCacheActivityProductPrimaryKey != null) {
+            //获取新增的mongo活动商品信息
+            List<ActivityProduct> newestActivityProductList = realBusinessRepository
+                    .getActivityProductList(newestCacheActivityProductPrimaryKey);
 
-        logWrapper.recordInfoLog("增量添加活动商品缓存已执行,新增{}条", newestActivityProductList.size());
+            //批量添加至缓存
+            cacheManager.putActivityProduct(newestActivityProductList
+                    .stream()
+                    .collect(Collectors.toMap(ActivityProduct::getProductId, y -> y, (key1, key2) -> key2)));
+
+            logWrapper.recordInfoLog("增量添加活动商品缓存已执行,新增{}条", newestActivityProductList.size());
+        }
     }
 
     /**
@@ -384,19 +388,21 @@ public class Cache {
         Long now = new Date().getTime();
         Long updateStamp = activityProductUpdateTime.getTime();
 
-        //未开始的活动
-        if(now < startTime){
-            return null;
+        if(Long.compare(activityProduct.getUpdateTime().getTime(),updateStamp) != 0){
+            activityProduct = mongoRepository.getActivityProduct(activityProduct.getProductId());
+            cacheManager.putActivityProduct(activityProduct.getProductId(),activityProduct);
+            startTime = activityProduct.getStartTime().getTime();
+            endTime = activityProduct.getEndTime().getTime();
         }
+
         //过期的活动商品
-        else if(now > endTime){
+        if(now > endTime){
             cacheManager.deleteActivityProduct(activityProduct.getProductId());
             return null;
         }
         //活动商品数据发生变化，取数据重新刷缓存
-        else if(Long.compare(activityProduct.getUpdateTime().getTime(),updateStamp) != 0){
-            activityProduct = mongoRepository.getActivityProduct(activityProduct.getProductId());
-            cacheManager.putActivityProduct(activityProduct.getProductId(),activityProduct);
+        else if(now < startTime){
+            return null;
         }
         return activityProduct;
     }
@@ -486,6 +492,7 @@ public class Cache {
             List<ProductPriceData> invalidProductPriceDataList = new ArrayList<>();
             invalidProductPriceDataList.addAll(cacheProductList);
             invalidProductPriceDataList.removeAll(validProductPriceDataList);
+            invalidProductPriceDataList.removeAll(Collections.singleton(null));
 
             //组装需要重新取数据库获取的数据
             List<String> needReloadProductIdList = new ArrayList<>();
@@ -501,7 +508,7 @@ public class Cache {
                 //针对缓存结构中 商品数据过期 但是商品中规格数据可能有效的情况，保留其规格缓存数据
                 ProductPriceData invalidProductCacheData = invalidProductPriceDataList
                         .stream()
-                        .filter(z -> z.getProductId().equals(x.getProductId()))
+                        .filter(z -> Optional.ofNullable(z.getProductId()).orElse("").equals(x.getProductId()))
                         .findAny()
                         .orElse(null);
 
