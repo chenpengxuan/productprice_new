@@ -1,3 +1,7 @@
+bootRun {
+    jvmArgs "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=9212"
+}
+
 buildscript {
     repositories {
         // NOTE: You should declare only repositories that you need here
