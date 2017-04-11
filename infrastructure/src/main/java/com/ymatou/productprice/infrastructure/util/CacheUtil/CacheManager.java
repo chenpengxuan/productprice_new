@@ -101,7 +101,9 @@ public class CacheManager {
                 cacheResult = updateDataFunc.apply(cacheResult, tempData);
             }
         }
-        cacheFactory.put(cacheKey, cacheResult);
+        if(cacheResult != null){
+            cacheFactory.put(cacheKey, cacheResult);
+        }
         return cacheResult;
     }
 

@@ -110,7 +110,7 @@ public class Utils {
             , Integer... splitNum) {
 
         Integer splitLimitNum = optional(splitNum.length > 0 ? splitNum[0] : null, Constants.FORK_COUNT_LIMIT)
-                > objectList.size()
+                > objectList.size() && objectList.size() > 0
                 ? objectList.size() : optional(splitNum.length > 0 ? splitNum[0] : null, Constants.FORK_COUNT_LIMIT);
 
         objectList = optional(objectList, Collections.emptyList());

@@ -5,12 +5,12 @@ import com.ymatou.productprice.domain.model.Catalog;
 import com.ymatou.productprice.domain.model.ProductPriceData;
 import com.ymatou.productprice.domain.repo.Repository;
 import com.ymatou.productprice.infrastructure.util.ParallelUtil.ParallelProcessor;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -102,8 +102,8 @@ public class ParallelRepository implements Repository {
     }
 
     @Override
-    public List<ActivityProduct> getActivityProductList(ObjectId newestActivityObjectId) {
-        return mongoRepository.getActivityProductList(newestActivityObjectId);
+    public List<ActivityProduct> getActivityProductList(Date newestActivityUpdateTime) {
+        return mongoRepository.getActivityProductList(newestActivityUpdateTime);
     }
 
     @Override

@@ -10,7 +10,6 @@ import com.ymatou.productprice.domain.repo.Repository;
 import com.ymatou.productprice.infrastructure.config.props.BizProps;
 import com.ymatou.productprice.infrastructure.util.CacheUtil.CacheManager;
 import com.ymatou.productprice.infrastructure.util.LogWrapper;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -35,10 +34,10 @@ public class Cache {
     @Autowired
     private BizProps bizProps;
 
-    @Resource(name="mongoRepository")
+    @Resource(name = "mongoRepository")
     private Repository mongoRepository;
 
-    @Resource(name="parallelRepository")
+    @Resource(name = "parallelRepository")
     private Repository parallelRepository;
 
     @Autowired
@@ -57,9 +56,10 @@ public class Cache {
 
     /**
      * 获取缓存统计信息
+     *
      * @return
      */
-    public CacheStats getCacheStats(){
+    public CacheStats getCacheStats() {
         return cacheManager.getCacheStats();
     }
 
@@ -69,8 +69,8 @@ public class Cache {
      * @param productId
      * @return
      */
-    public List<Catalog> getCatalogListByProduct(String productId, Date catalogUpdateTime) {
-         ProductPriceData tempData = cacheManager.get(
+    public List<Catalog> getCatalogListByProduct(String productId, Date catalogUpdateTime) throws IllegalArgumentException {
+        ProductPriceData tempData = cacheManager.get(
                 productId,
 
                 obj -> obj,
@@ -91,23 +91,29 @@ public class Cache {
 
                 ((productPriceData, catalogList) -> {
                     if (productPriceData == null) {
-                        productPriceData = new ProductPriceData();
-                        productPriceData.setSellerId(catalogList.stream().findAny().get().getSellerId());
-                        productPriceData.setCatalogList(catalogList);
+                        if (catalogList != null && !catalogList.isEmpty()) {
+                            productPriceData = new ProductPriceData();
+                            productPriceData.setSellerId(catalogList.stream().findAny().get().getSellerId());
+                            productPriceData.setCatalogList(catalogList);
+                        }
+                        else{
+                            throw new IllegalArgumentException("catalog不能为空,ProductId为:" + productId);
+                        }
                     } else {
                         productPriceData.setCatalogList(catalogList);
                     }
                     return productPriceData;
                 })
         );
-        return tempData.getCatalogList();
+        return tempData != null ? tempData.getCatalogList() : null;
     }
 
     /**
      * 创建新缓存数据
+     *
      * @param catalogList
      */
-    private void createNewCacheData(List<Catalog> catalogList){
+    private void createNewCacheData(List<Catalog> catalogList) {
         //将从数据库取到的最新数据刷新缓存结构
         Map<String, List<Catalog>> cacheGroup = catalogList
                 .stream()
@@ -124,11 +130,12 @@ public class Cache {
 
     /**
      * 过滤有效数据
+     *
      * @param catalogList
      * @param catalogUpdateTimeMap
      */
     private List<Catalog> filterValidCacheData(List<Catalog> catalogList,
-                                Map<String, Date> catalogUpdateTimeMap){
+                                               Map<String, Date> catalogUpdateTimeMap) {
         //过滤有效的业务数据
         return catalogList
                 .stream()
@@ -138,7 +145,7 @@ public class Cache {
                             ? c.getUpdateTime().getTime() : 0L;
 
                     //时间戳表中规格更新时间戳
-                    Long catalogUpdateStamp =catalogUpdateTimeMap.get(c.getProductId()).getTime();
+                    Long catalogUpdateStamp = catalogUpdateTimeMap.get(c.getProductId()).getTime();
 
                     //时间戳比较，不相等则表示发生变更，业务数据需要重新到数据库拉取
                     return Long.compare(cacheCatalogUpdateStamp, catalogUpdateStamp) == 0;
@@ -148,10 +155,11 @@ public class Cache {
 
     /**
      * 更新缓存数据
+     *
      * @param reloadCatalogGroup
      */
     private void updateCacheData(List<ProductPriceData> cacheProductList,
-                                 Map<String, List<Catalog>> reloadCatalogGroup){
+                                 Map<String, List<Catalog>> reloadCatalogGroup) {
         //创建批量刷缓存的结构
         Map<String, ProductPriceData> batchRefreshCacheMap = new HashMap<>();
 
@@ -180,6 +188,7 @@ public class Cache {
 
     /**
      * 处理并组装商品规格缓存数据
+     *
      * @param productIdList
      * @param cacheProductList
      * @param catalogUpdateTimeMap
@@ -187,7 +196,7 @@ public class Cache {
      */
     private List<Catalog> processProductPriceDataCacheList(List<String> productIdList,
                                                            List<ProductPriceData> cacheProductList,
-                                                           Map<String, Date> catalogUpdateTimeMap){
+                                                           Map<String, Date> catalogUpdateTimeMap) {
         List<Catalog> result;
 
         //缓存全部没有命中的情况
@@ -206,10 +215,10 @@ public class Cache {
             List<Catalog> cacheCatalogList = new ArrayList<>();
             cacheProductList.forEach(x ->
                     x.getCatalogList()
-                    .forEach(cacheCatalogList::add));
+                            .forEach(cacheCatalogList::add));
 
             //过滤有效业务缓存数据
-            List<Catalog> validCatalogList = filterValidCacheData(cacheCatalogList,catalogUpdateTimeMap);
+            List<Catalog> validCatalogList = filterValidCacheData(cacheCatalogList, catalogUpdateTimeMap);
 
             //获取有效缓存数据
             List<String> validProductIdList = validCatalogList
@@ -218,25 +227,33 @@ public class Cache {
                     .distinct()
                     .collect(Collectors.toList());
 
+            //组装有效数据
+            result = new ArrayList<>();
+            result.addAll(validCatalogList);
+
             //传入的productId与有效数据对应的productId列表的差集就是需要重新拉取的数据
             List<String> needReloadCatalogIdList = new ArrayList<>();
 
             needReloadCatalogIdList.addAll(productIdList);
             needReloadCatalogIdList.removeAll(validProductIdList);
 
-            //需要重新刷缓存的数据
-            List<Catalog> reloadCatalogList = realBusinessRepository.getCatalogByCatalogId(needReloadCatalogIdList);
-            Map<String, List<Catalog>> reloadCatalogGroup = reloadCatalogList
-                    .stream()
-                    .collect(Collectors.groupingBy(Catalog::getProductId));
+            if (!needReloadCatalogIdList.isEmpty()) {
+                //需要重新刷缓存的数据
+                List<Catalog> reloadCatalogList = realBusinessRepository.getCatalogByCatalogId(needReloadCatalogIdList);
+                reloadCatalogList.removeAll(Collections.singleton(null));
+                if (reloadCatalogList != null && !reloadCatalogList.isEmpty()) {
+                    Map<String, List<Catalog>> reloadCatalogGroup = reloadCatalogList
+                            .stream()
+                            .collect(Collectors.groupingBy(Catalog::getProductId));
 
-            //更新缓存
-            updateCacheData(cacheProductList,reloadCatalogGroup);
+                    //更新缓存
+                    updateCacheData(cacheProductList, reloadCatalogGroup);
 
-            //组装有效数据并返回
-            result = new ArrayList<>();
-            result.addAll(validCatalogList);
-            result.addAll(reloadCatalogList);
+                    //添加重刷的有效数据
+                    result.addAll(reloadCatalogList);
+                }
+            }
+
             return result;
         }
     }
@@ -259,10 +276,10 @@ public class Cache {
         //根据商品id列表获取缓存信息
         List<ProductPriceData> cacheProductList = cacheManager.get(productIdList).values()
                 .stream()
-                .map(x -> (ProductPriceData)x)
+                .map(x -> (ProductPriceData) x)
                 .collect(Collectors.toList());
 
-        return processProductPriceDataCacheList(productIdList,cacheProductList,catalogUpdateTimeMap);
+        return processProductPriceDataCacheList(productIdList, cacheProductList, catalogUpdateTimeMap);
     }
 
     /**
@@ -282,20 +299,20 @@ public class Cache {
 
         List<ProductPriceData> cacheProductList = cacheManager.get(productIdList).values()
                 .stream()
-                .map(x -> (ProductPriceData)x)
+                .map(x -> (ProductPriceData) x)
                 .collect(Collectors.toList());
 
-        return processProductPriceDataCacheList(productIdList,cacheProductList,catalogUpdateTimeMap);
+        return processProductPriceDataCacheList(productIdList, cacheProductList, catalogUpdateTimeMap);
     }
 
     /**
      * 初始化活动商品缓存
      */
-    public int initActivityProductCache(){
+    public int initActivityProductCache() {
         List<ActivityProduct> activityProductList = realBusinessRepository.getAllValidActivityProductList();
         cacheManager.putActivityProduct(activityProductList
-        .stream()
-        .collect(Collectors.toMap(ActivityProduct::getProductId,y -> y,(key1,key2) -> key2))
+                .stream()
+                .collect(Collectors.toMap(ActivityProduct::getProductId, y -> y, (key1, key2) -> key2))
         );
         return activityProductList.size();
     }
@@ -303,21 +320,21 @@ public class Cache {
     /**
      * 添加活动商品增量信息
      */
-    public void addNewestActivityProductCache(){
+    public void addNewestActivityProductCache() {
         ConcurrentMap activityProductCache = cacheManager.getActivityProductCacheContainer();
 
         //从缓存中获取最后创建的活动商品数据的主键
-        ActivityProduct latestActivityProduct = (ActivityProduct)activityProductCache.values()
+        ActivityProduct latestActivityProduct = (ActivityProduct) activityProductCache.values()
                 .stream()
-                .max((x,y) ->
-                        Integer.compare(((ActivityProduct)x).getActivityProductId().getTimestamp()
-                                ,((ActivityProduct)y).getActivityProductId().getTimestamp()))
-                 .orElse(null);
+                .max((x, y) ->
+                        Long.compare(((ActivityProduct) x).getUpdateTime().getTime()
+                                , ((ActivityProduct) y).getUpdateTime().getTime()))
+                .orElse(null);
 
-        ObjectId newestCacheActivityProductPrimaryKey = latestActivityProduct != null ?
-                latestActivityProduct.getActivityProductId():null;
+        Date newestCacheActivityProductPrimaryKey = latestActivityProduct != null ?
+                latestActivityProduct.getUpdateTime() : null;
 
-        if(newestCacheActivityProductPrimaryKey != null) {
+        if (newestCacheActivityProductPrimaryKey != null) {
             //获取新增的mongo活动商品信息
             List<ActivityProduct> newestActivityProductList = realBusinessRepository
                     .getActivityProductList(newestCacheActivityProductPrimaryKey);
@@ -333,11 +350,12 @@ public class Cache {
 
     /**
      * 获取活动商品信息
+     *
      * @param productId
      * @param activityProductUpdateTime
      * @return
      */
-    public ActivityProduct getActivityProduct(String productId,Date activityProductUpdateTime) {
+    public ActivityProduct getActivityProduct(String productId, Date activityProductUpdateTime) {
         ActivityProduct result;
 
         String cacheKey = productId;
@@ -345,39 +363,40 @@ public class Cache {
         result = cacheManager.getActivityProduct(cacheKey);
 
         //如果缓存中没有命中，则认为此商品不是活动商品
-        if(result == null){
+        if (result == null) {
             return result;
-        }else{
-            result = processCacheActivityProduct(result,activityProductUpdateTime);
+        } else {
+            result = processCacheActivityProduct(result, activityProductUpdateTime);
             return result;
         }
     }
 
     /**
      * 缓存活动商品数据处理逻辑
+     *
      * @param activityProduct
      * @return
      */
-    private ActivityProduct processCacheActivityProduct(ActivityProduct activityProduct,Date activityProductUpdateTime){
+    private ActivityProduct processCacheActivityProduct(ActivityProduct activityProduct, Date activityProductUpdateTime) {
         Long startTime = activityProduct.getStartTime().getTime();
         Long endTime = activityProduct.getEndTime().getTime();
         Long now = new Date().getTime();
-        Long updateStamp = activityProductUpdateTime != null ? activityProductUpdateTime.getTime():0L;
+        Long updateStamp = activityProductUpdateTime != null ? activityProductUpdateTime.getTime() : 0L;
 
-        if(Long.compare(activityProduct.getUpdateTime().getTime(),updateStamp) != 0){
+        if (Long.compare(activityProduct.getUpdateTime().getTime(), updateStamp) != 0) {
             activityProduct = realBusinessRepository.getActivityProduct(activityProduct.getProductId());
-            cacheManager.putActivityProduct(activityProduct.getProductId(),activityProduct);
+            cacheManager.putActivityProduct(activityProduct.getProductId(), activityProduct);
             startTime = activityProduct.getStartTime().getTime();
             endTime = activityProduct.getEndTime().getTime();
         }
 
         //过期的活动商品
-        if(now > endTime){
+        if (now > endTime) {
             cacheManager.deleteActivityProduct(activityProduct.getProductId());
             return null;
         }
         //活动商品数据发生变化，取数据重新刷缓存
-        else if(now < startTime){
+        else if (now < startTime) {
             return null;
         }
         return activityProduct;
@@ -390,26 +409,25 @@ public class Cache {
      * @return
      */
     public List<ActivityProduct> getActivityProductList(List<String> productIdList,
-                                                        Map<String,Date> activityProductStampMap) {
-       productIdList = productIdList
-               .stream()
-               .distinct()
-               .collect(Collectors.toList());
+                                                        Map<String, Date> activityProductStampMap) {
+        productIdList = productIdList
+                .stream()
+                .distinct()
+                .collect(Collectors.toList());
 
         //从缓存中获取数据
         List<ActivityProduct> cacheList = cacheManager.getActivityProduct(productIdList);
         //针对Lists.newArrayList创建的列表 排除空元素
         cacheList.removeAll(Collections.singleton(null));
         //如果缓存为空 则认为都不是活动商品
-        if(cacheList == null || cacheList.isEmpty()){
+        if (cacheList == null || cacheList.isEmpty()) {
             return cacheList;
-        }
-        else{
+        } else {
             return cacheList
-                       .stream()
-                       .map(c ->
-                               processCacheActivityProduct(c,activityProductStampMap.get(c.getProductId()))
-                       )
+                    .stream()
+                    .map(c ->
+                            processCacheActivityProduct(c, activityProductStampMap.get(c.getProductId()))
+                    )
                     .collect(Collectors.toList());
         }
     }
@@ -421,7 +439,7 @@ public class Cache {
      * @return
      */
     public List<ProductPriceData> getPriceRangeListByProduct(List<String> productIdList,
-                                                             Map<String,Date> productUpdateStampMap) {
+                                                             Map<String, Date> productUpdateStampMap) {
         productIdList = productIdList
                 .stream()
                 .distinct()
@@ -432,29 +450,28 @@ public class Cache {
         //从缓存中获取数据
         List<ProductPriceData> cacheProductList = cacheManager.get(productIdList).values()
                 .stream()
-                .map(x -> (ProductPriceData)x)
+                .map(x -> (ProductPriceData) x)
                 .collect(Collectors.toList());
         //针对Lists.newArrayList创建的列表 排除空元素
         cacheProductList.removeAll(Collections.singleton(null));
         //缓存完全不命中
-        if(cacheProductList == null || cacheProductList.isEmpty()){
+        if (cacheProductList == null || cacheProductList.isEmpty()) {
             result = realBusinessRepository.getPriceRangeListByProduct(productIdList);
 
             cacheManager.put(result
-            .stream()
-            .collect(Collectors.toMap(ProductPriceData::getProductId,y -> y,(key1,key2) -> key2))
+                    .stream()
+                    .collect(Collectors.toMap(ProductPriceData::getProductId, y -> y, (key1, key2) -> key2))
             );
-        }
-        else{
+        } else {
             //获取有效的商品缓存数据
             List<ProductPriceData> validProductPriceDataList = cacheProductList
                     .stream()
                     .filter(x -> {
-                       Long cacheProductUpdateStamp = Optional.ofNullable(x.getUpdateTime())
-                               .orElse(new Date()).getTime();
+                        Long cacheProductUpdateStamp = Optional.ofNullable(x.getUpdateTime())
+                                .orElse(new Date()).getTime();
                         Long productUpdateStamp = productUpdateStampMap.get(x.getProductId()) != null ?
                                 productUpdateStampMap.get(x.getProductId()).getTime() : 0;
-                        return Long.compare(cacheProductUpdateStamp,productUpdateStamp) == 0;
+                        return Long.compare(cacheProductUpdateStamp, productUpdateStamp) == 0;
                     })
                     .collect(Collectors.toList());
 
@@ -495,8 +512,8 @@ public class Cache {
 
             //批量刷缓存
             cacheManager.put(reloadProductList
-            .stream()
-            .collect(Collectors.toMap(ProductPriceData::getProductId,y -> y,(key1,key2) -> key2)));
+                    .stream()
+                    .collect(Collectors.toMap(ProductPriceData::getProductId, y -> y, (key1, key2) -> key2)));
 
             //合并有效数据并返回
             result = new ArrayList<>();

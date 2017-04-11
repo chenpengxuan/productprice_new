@@ -3,9 +3,9 @@ package com.ymatou.productprice.domain.repo;
 import com.ymatou.productprice.domain.model.ActivityProduct;
 import com.ymatou.productprice.domain.model.Catalog;
 import com.ymatou.productprice.domain.model.ProductPriceData;
-import org.bson.types.ObjectId;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -85,10 +85,10 @@ public interface Repository {
     /**
      * 获取新增活动商品信息列表
      *
-     * @param newestActivityObjectId 最新主键
+     * @param newestActivityUpdateTime 最新活动商品更新时间
      * @return
      */
-    List<ActivityProduct> getActivityProductList(ObjectId newestActivityObjectId);
+    List<ActivityProduct> getActivityProductList(Date newestActivityUpdateTime);
 
     /**
      * 根据规格id列表获取商品id规格id映射关系

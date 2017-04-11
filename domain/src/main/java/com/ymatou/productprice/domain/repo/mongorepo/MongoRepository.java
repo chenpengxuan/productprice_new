@@ -370,10 +370,10 @@ public class MongoRepository implements Repository {
     /**
      * 获取新增活动商品信息列表
      *
-     * @param newestActivityObjectId 最新主键
+     * @param newestActivityUpdateTime 最新活动商品更新日期
      * @return
      */
-    public List<ActivityProduct> getActivityProductList(ObjectId newestActivityObjectId) {
+    public List<ActivityProduct> getActivityProductList(Date newestActivityUpdateTime) {
         MongoQueryData queryData = new MongoQueryData();
         Map<String, Boolean> projectionMap = new HashMap<>();
         projectionMap.put("spid", true);
@@ -390,8 +390,8 @@ public class MongoRepository implements Repository {
 
         Map<String, Object> matchConditionMap = new HashMap<>();
         Map<String, Object> tempGtMap = new HashMap<>();
-        tempGtMap.put("$gt", newestActivityObjectId);
-        matchConditionMap.put("_id", tempGtMap);
+        tempGtMap.put("$gt", newestActivityUpdateTime);
+        matchConditionMap.put("updatetime", tempGtMap);
         queryData.setMatchCondition(matchConditionMap);
 
         queryData.setTableName(Constants.ActivityProductDb);
