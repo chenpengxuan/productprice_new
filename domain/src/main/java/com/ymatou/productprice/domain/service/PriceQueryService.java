@@ -100,7 +100,7 @@ public class PriceQueryService {
         priceCoreService.calculateRealPriceCoreLogic(buyerId,
                 outputCatalogList,
                 Lists.newArrayList(productPrice),
-                Lists.newArrayList(activityProductInfo),
+                activityProductInfo != null ? Lists.newArrayList(activityProductInfo):null,
                 isTradeIsolation);
 
         return productPrice;
@@ -156,9 +156,9 @@ public class PriceQueryService {
         //填充活动商品与规格时间戳
         updateStampMapList.forEach(x -> {
             activityProductUpdateTimeMap.put(x.get("spid").toString(),
-                    Optional.ofNullable((Date) x.get("aut")).orElse(new Date()));
+                    Optional.ofNullable((Date) x.get("aut")).orElse(null));
             catalogUpdateTimeMap.put(x.get("spid").toString(),
-                    Optional.ofNullable((Date) x.get("cut")).orElse(new Date()));
+                    Optional.ofNullable((Date) x.get("cut")).orElse(null));
         });
 
 
@@ -298,6 +298,7 @@ public class PriceQueryService {
         List<String> productIdList = mapList
                 .stream()
                 .map(x -> x.get("spid").toString())
+                .distinct()
                 .collect(Collectors.toList());
 
         //获取活动商品与规格的变更时间戳

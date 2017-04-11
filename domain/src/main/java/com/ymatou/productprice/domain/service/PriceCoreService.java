@@ -52,12 +52,15 @@ public class PriceCoreService {
                     .stream().filter(x -> x.getProductId().equals(productPrice.getProductId()))
                     .collect(Collectors.toList());
             productPrice.setCatalogs(tempCatalogList);
-            productPrice.setSellerId(Optional.of(new Long(tempCatalogList
-            .stream()
-            .findAny()
-            .get()
-            .getSellerId()))
-            .orElse(0L));
+            productPrice.setSellerId(new Long(!tempCatalogList
+                    .stream()
+                    .findAny()
+                    .isPresent() ?
+                     tempCatalogList
+                    .stream()
+                    .findAny()
+                    .get()
+                    .getSellerId():0L));
         });
 
         //决定当前买家对不同的买手而言是新客还是老客

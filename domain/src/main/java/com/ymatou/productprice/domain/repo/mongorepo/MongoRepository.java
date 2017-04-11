@@ -320,7 +320,7 @@ public class MongoRepository implements Repository {
                 .stream()
                 .map(x -> convertMapToActivityProduct(x))
                 .findAny()
-                .get();
+                .orElse(null);
     }
 
     /**

@@ -35,8 +35,6 @@ public class ActivityCacheSchedule {
 
     private ScheduledFuture<?> future;
 
-    private ScheduledFuture<?> futureRefreshActivity;
-
     private static String cronSetting;
 
     @Bean
@@ -67,12 +65,6 @@ public class ActivityCacheSchedule {
             future = threadPoolTaskScheduler.schedule(() ->
                             cache.addNewestActivityProductCache(),
                     new CronTrigger(cronSetting));
-
-
-            futureRefreshActivity = threadPoolTaskScheduler.schedule(() ->
-                            cache.refreshActivityProductCache(),
-                    new CronTrigger(cronSetting));
-
         } catch (Exception ex) {
             logWrapper.recordErrorLog("活动商品缓存定时任务发生异常", ex);
         }

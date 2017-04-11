@@ -193,7 +193,7 @@ public class Cache {
         //缓存全部没有命中的情况
         if (cacheProductList == null || cacheProductList.isEmpty()) {
             //从数据库中获取数据
-            List<Catalog> catalogList = mongoRepository.getCatalogByCatalogId(productIdList);
+            List<Catalog> catalogList = mongoRepository.getCatalogListByProduct(productIdList);
 
             result = catalogList;
 
@@ -215,6 +215,7 @@ public class Cache {
             List<String> validProductIdList = validCatalogList
                     .stream()
                     .map(Catalog::getProductId)
+                    .distinct()
                     .collect(Collectors.toList());
 
             //传入的productId与有效数据对应的productId列表的差集就是需要重新拉取的数据
@@ -276,7 +277,9 @@ public class Cache {
         List<String> productIdList = mapList
                 .stream()
                 .map(x -> x.get("spid").toString())
+                .distinct()
                 .collect(Collectors.toList());
+
         List<ProductPriceData> cacheProductList = cacheManager.get(productIdList).values()
                 .stream()
                 .map(x -> (ProductPriceData)x)
@@ -295,39 +298,6 @@ public class Cache {
         .collect(Collectors.toMap(ActivityProduct::getProductId,y -> y,(key1,key2) -> key2))
         );
         return activityProductList.size();
-    }
-
-    /**
-     * 刷新活动商品缓存
-     * 去除过期商品缓存
-     */
-    public void refreshActivityProductCache(){
-        ConcurrentMap activityProductCache = cacheManager.getActivityProductCacheContainer();
-
-        //获取过期的活动商品缓存信息列表
-        List<ActivityProduct> invalidActivityProductCacheList = activityProductCache != null
-                && !activityProductCache.isEmpty() ?
-                (List<ActivityProduct>) activityProductCache.values()
-                .stream()
-                .filter(x -> {
-                    ActivityProduct tempProduct = (ActivityProduct)x;
-                    Long endTime = tempProduct.getEndTime().getTime();
-                    Long now = new Date().getTime();
-                    return now > endTime;
-                })
-                .collect(Collectors.toList()) : null;
-
-        if(invalidActivityProductCacheList != null && !invalidActivityProductCacheList.isEmpty()) {
-            //批量删除过期活动商品信息列表
-            List<String> invalidActivityProductCacheIdList = invalidActivityProductCacheList
-                    .stream()
-                    .map(x -> x.getProductId())
-                    .collect(Collectors.toList());
-            if (!invalidActivityProductCacheIdList.isEmpty()) {
-                cacheManager.deleteActivityProduct(invalidActivityProductCacheIdList);
-                logWrapper.recordInfoLog("定期删除过期活动商品缓存已执行,已删除{}条", invalidActivityProductCacheIdList.size());
-            }
-        }
     }
 
     /**
@@ -392,7 +362,7 @@ public class Cache {
         Long startTime = activityProduct.getStartTime().getTime();
         Long endTime = activityProduct.getEndTime().getTime();
         Long now = new Date().getTime();
-        Long updateStamp = activityProductUpdateTime.getTime();
+        Long updateStamp = activityProductUpdateTime != null ? activityProductUpdateTime.getTime():0L;
 
         if(Long.compare(activityProduct.getUpdateTime().getTime(),updateStamp) != 0){
             activityProduct = mongoRepository.getActivityProduct(activityProduct.getProductId());
