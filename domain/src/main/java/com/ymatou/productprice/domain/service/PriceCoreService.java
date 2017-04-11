@@ -16,7 +16,10 @@ import com.ymatou.useranalysis.facade.model.resp.GetBuyerOrderStatisticsResp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -56,17 +59,15 @@ public class PriceCoreService {
                     .stream()
                     .findAny()
                     .isPresent() ?
-                     tempCatalogList
-                    .stream()
-                    .findAny()
-                    .get()
-                    .getSellerId():0L));
+                    tempCatalogList
+                            .stream()
+                            .findAny()
+                            .get()
+                            .getSellerId() : 0L));
         });
 
         //决定当前买家对不同的买手而言是新客还是老客
         GetBuyerOrderStatisticsResp resp = determineVipOrNewCustomer(buyerId, productPriceList);
-
-        //
 
         //设置最终商品价格
         decideProductRealPrice(buyerId, productPriceList, activityProductList, resp, isTradeIsolation);
@@ -127,28 +128,28 @@ public class PriceCoreService {
             GetBuyerOrderStatisticsResp finalResp = resp;
             productPriceList
                     .forEach(x -> {
-                x.setHasConfirmedOrders(
-                        (Optional.of(finalResp != null
-                                && finalResp.getFromSeller() != null
-                                && finalResp.getFromSeller().get(x.getSellerId()) != null
-                                && finalResp.getFromSeller().get(x.getSellerId()).isHasConfirmedOrders())
-                                .orElse(false))
-                );
+                        x.setHasConfirmedOrders(
+                                (Optional.of(finalResp != null
+                                        && finalResp.getFromSeller() != null
+                                        && finalResp.getFromSeller().get(x.getSellerId()) != null
+                                        && finalResp.getFromSeller().get(x.getSellerId()).isHasConfirmedOrders())
+                                        .orElse(false))
+                        );
 
-                x.setNoOrdersOrAllCancelled(
-                        (Optional.of(finalResp != null
-                                && finalResp.getFromSeller() != null
-                                && finalResp.getFromSeller().get(x.getSellerId()) != null
-                                && finalResp.getFromSeller().get(x.getSellerId()).isNoOrdersOrAllCancelled())
-                                .orElse(false))
-                );
-            });
+                        x.setNoOrdersOrAllCancelled(
+                                (Optional.of(finalResp != null
+                                        && finalResp.getFromSeller() != null
+                                        && finalResp.getFromSeller().get(x.getSellerId()) != null
+                                        && finalResp.getFromSeller().get(x.getSellerId()).isNoOrdersOrAllCancelled())
+                                        .orElse(false))
+                        );
+                    });
         } else {
             productPriceList
                     .forEach(x -> {
-                x.setNoOrdersOrAllCancelled(false);
-                x.setHasConfirmedOrders(false);
-            });
+                        x.setNoOrdersOrAllCancelled(false);
+                        x.setHasConfirmedOrders(false);
+                    });
         }
         return resp;
     }
@@ -210,14 +211,14 @@ public class PriceCoreService {
      * @return
      */
     private boolean checkIsNewBuyer(long buyerId, List<ActivityProduct> activityProductInfoList) {
-        activityProductInfoList.removeAll(Collections.singleton(null));
         List<ActivityProduct> newBuyerActivityProductList = activityProductInfoList != null
                 && !activityProductInfoList.isEmpty() ?
-        activityProductInfoList.stream()
-                .filter(ActivityProduct::getNewBuyer)
-                .collect(Collectors.toList()) : null;
+                activityProductInfoList.stream()
+                        .filter(ActivityProduct::getNewBuyer)
+                        .collect(Collectors.toList()) : null;
 
         boolean isNewBuyerActivityProduct = buyerId > 0
+                && activityProductInfoList != null
                 && !activityProductInfoList.isEmpty()
                 && newBuyerActivityProductList != null
                 && !newBuyerActivityProductList.isEmpty();
@@ -267,9 +268,11 @@ public class PriceCoreService {
 
         productPriceList.stream().forEach(productPrice -> {
 
-            ActivityProduct tempActivityProduct = activityProductInfoList.stream()
-                    .filter(x -> x.getProductId().equals(productPrice.getProductId()))
-                    .findAny().orElse(null);
+            ActivityProduct tempActivityProduct = activityProductInfoList != null
+                    && !activityProductInfoList.isEmpty() ?
+                    activityProductInfoList.stream()
+                            .filter(x -> x.getProductId().equals(productPrice.getProductId()))
+                            .findAny().orElse(null) : null;
 
             productPrice.getCatalogs().forEach(catalog -> {
                 PriceEnum tempPriceEnum;
