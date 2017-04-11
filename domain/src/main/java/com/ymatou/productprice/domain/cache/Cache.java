@@ -323,7 +323,8 @@ public class Cache {
     public void addNewestActivityProductCache() {
         ConcurrentMap activityProductCache = cacheManager.getActivityProductCacheContainer();
 
-        //从缓存中获取最后创建的活动商品数据的主键
+        //从缓存中获取最后创建的活动商品数据的更新日期
+        //之前从Objectid取时间戳 发现只精确到秒 造成测试环境验证不正确
         ActivityProduct latestActivityProduct = (ActivityProduct) activityProductCache.values()
                 .stream()
                 .max((x, y) ->
@@ -331,13 +332,13 @@ public class Cache {
                                 , ((ActivityProduct) y).getUpdateTime().getTime()))
                 .orElse(null);
 
-        Date newestCacheActivityProductPrimaryKey = latestActivityProduct != null ?
+        Date newestCacheActivityUpdateTime = latestActivityProduct != null ?
                 latestActivityProduct.getUpdateTime() : null;
 
-        if (newestCacheActivityProductPrimaryKey != null) {
+        if (newestCacheActivityUpdateTime != null) {
             //获取新增的mongo活动商品信息
             List<ActivityProduct> newestActivityProductList = realBusinessRepository
-                    .getActivityProductList(newestCacheActivityProductPrimaryKey);
+                    .getActivityProductList(newestCacheActivityUpdateTime);
 
             //批量添加至缓存
             cacheManager.putActivityProduct(newestActivityProductList

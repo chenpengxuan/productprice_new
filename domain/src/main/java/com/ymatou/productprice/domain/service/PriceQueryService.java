@@ -259,7 +259,7 @@ public class PriceQueryService {
             tempPrice.setMinVipPrice(Doubles.tryParse(minPriceList[2]));
             tempPrice.setMaxVipPrice(Doubles.tryParse(maxPriceList[2]));
             //设置sellerId
-            tempPrice.setSellerId(new Long(x.getSellerId()));
+            tempPrice.setSellerId(Long.valueOf(x.getSellerId()));
         });
 
         Map<String, Date> activityUpdateStampMap = updateStampMapList

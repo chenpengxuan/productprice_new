@@ -33,8 +33,6 @@ public class ActivityCacheSchedule {
     @Autowired
     private LogWrapper logWrapper;
 
-    private ScheduledFuture<?> future;
-
     private static String cronSetting;
 
     @Bean
@@ -62,7 +60,7 @@ public class ActivityCacheSchedule {
      */
     public void scheduler() {
         try {
-            future = threadPoolTaskScheduler.schedule(() ->
+            threadPoolTaskScheduler.schedule(() ->
                             cache.addNewestActivityProductCache(),
                     new CronTrigger(cronSetting));
         } catch (Exception ex) {
