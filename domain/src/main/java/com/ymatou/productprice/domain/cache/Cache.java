@@ -386,9 +386,11 @@ public class Cache {
 
         if (Long.compare(activityProduct.getUpdateTime().getTime(), updateStamp) != 0) {
             activityProduct = realBusinessRepository.getActivityProduct(activityProduct.getProductId());
-            cacheManager.putActivityProduct(activityProduct.getProductId(), activityProduct);
-            startTime = activityProduct.getStartTime().getTime();
-            endTime = activityProduct.getEndTime().getTime();
+            if(activityProduct != null){
+                cacheManager.putActivityProduct(activityProduct.getProductId(), activityProduct);
+                startTime = activityProduct.getStartTime().getTime();
+                endTime = activityProduct.getEndTime().getTime();
+            }
         }
 
         //过期的活动商品

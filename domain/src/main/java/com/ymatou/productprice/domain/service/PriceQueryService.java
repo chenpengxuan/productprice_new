@@ -71,7 +71,7 @@ public class PriceQueryService {
                 .getTimeStampByProductId(productId, Lists.newArrayList("cut", "aut"));
 
         //如果时间戳为空，则取当前时间
-        Date catalogUpdateTime = Optional.ofNullable((Date) updateStampMap.get("cut")).orElse(new Date());
+        Date catalogUpdateTime = Optional.ofNullable((Date) updateStampMap.get("cut")).orElse(null);
 
         //查询商品规格信息列表
         List<com.ymatou.productprice.domain.model.Catalog> catalogList;
@@ -86,7 +86,7 @@ public class PriceQueryService {
         }
 
         //如果时间戳为空，则取当前时间
-        Date activityProductUpdateTime = Optional.ofNullable((Date) updateStampMap.get("aut")).orElse(new Date());
+        Date activityProductUpdateTime = Optional.ofNullable((Date) updateStampMap.get("aut")).orElse(null);
 
         //查询活动商品信息
         ActivityProduct activityProductInfo;
@@ -223,7 +223,7 @@ public class PriceQueryService {
                 .stream()
                 .collect(Collectors
                         .toMap(x -> (String) x.get("spid"),
-                                y -> Optional.ofNullable((Date) y.get("sut")).orElse(new Date()),
+                                y -> Optional.ofNullable((Date) y.get("sut")).orElse(null),
                                 (key1, key2) -> key2));
 
         //查询所有商品的价格区间信息并进行组装
@@ -266,7 +266,7 @@ public class PriceQueryService {
                 .stream()
                 .collect(Collectors
                         .toMap(x -> (String) x.get("spid"),
-                                y -> Optional.ofNullable((Date) y.get("aut")).orElse(new Date()),
+                                y -> Optional.ofNullable((Date) y.get("aut")).orElse(null),
                                 (key1, key2) -> key2));
         //查询活动商品列表
         List<ActivityProduct> activityProductList;
@@ -309,7 +309,7 @@ public class PriceQueryService {
                 .stream()
                 .collect(Collectors
                         .toMap(x -> (String) x.get("spid"),
-                                y -> Optional.ofNullable((Date) y.get("cut")).orElse(new Date()),
+                                y -> Optional.ofNullable((Date) y.get("cut")).orElse(null),
                                 (key1, key2) -> key2));
 
         //获取规格信息
@@ -336,7 +336,7 @@ public class PriceQueryService {
                 .stream()
                 .collect(Collectors
                         .toMap(x -> (String) x.get("spid"),
-                                y -> Optional.ofNullable((Date) y.get("aut")).orElse(new Date()),
+                                y -> Optional.ofNullable((Date) y.get("aut")).orElse(null),
                                 (key1, key2) -> key2));
 
         //查询活动商品列表
@@ -384,14 +384,14 @@ public class PriceQueryService {
                 .stream()
                 .collect(Collectors
                         .toMap(x -> x.get("spid").toString(),
-                                y -> Optional.ofNullable((Date) y.get("sut")).orElse(new Date()),
+                                y -> Optional.ofNullable((Date) y.get("sut")).orElse(null),
                                 (key1, key2) -> key2));
 
         Map<String, Date> activityStampMap = stampList
                 .stream()
                 .collect(Collectors
                         .toMap(x -> x.get("spid").toString(),
-                                y -> Optional.ofNullable((Date) y.get("aut")).orElse(new Date()),
+                                y -> Optional.ofNullable((Date) y.get("aut")).orElse(null),
                                 (key1, key2) -> key2));
 
         List<ProductPriceData> tempDataList = cache.getPriceRangeListByProduct(productIdList, stampMap);

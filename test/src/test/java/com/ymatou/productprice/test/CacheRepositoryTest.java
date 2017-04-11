@@ -21,6 +21,8 @@ public class CacheRepositoryTest {
     @Autowired
     private Cache cacheRepository;
 
+
+
     /**
      * 测试根据商品id获取规格信息列表
      * 商品存在的情况
