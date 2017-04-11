@@ -102,9 +102,10 @@ public class ParallelRepository implements Repository {
     }
 
     @Override
-    public List<ActivityProduct> getActivityProductList(Date newestActivityUpdateTime) {
-        return mongoRepository.getActivityProductList(newestActivityUpdateTime);
+    public List<String> getNewestActivityProductIdList(Date newestActivityUpdateTime) {
+        return mongoRepository.getNewestActivityProductIdList(newestActivityUpdateTime);
     }
+
 
     @Override
     public List<Map<String, Object>> getProductIdByCatalogIdList(List<String> catalogIdList) {

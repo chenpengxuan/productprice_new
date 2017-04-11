@@ -85,10 +85,10 @@ public interface Repository {
     /**
      * 获取新增活动商品信息列表
      *
-     * @param newestActivityUpdateTime 最新活动商品更新时间
+     * @param newestActivityUpdateTime 最新活动商品更新日期
      * @return
      */
-    List<ActivityProduct> getActivityProductList(Date newestActivityUpdateTime);
+    List<String> getNewestActivityProductIdList(Date newestActivityUpdateTime);
 
     /**
      * 根据规格id列表获取商品id规格id映射关系

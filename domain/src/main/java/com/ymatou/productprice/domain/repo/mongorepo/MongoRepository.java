@@ -373,34 +373,25 @@ public class MongoRepository implements Repository {
      * @param newestActivityUpdateTime 最新活动商品更新日期
      * @return
      */
-    public List<ActivityProduct> getActivityProductList(Date newestActivityUpdateTime) {
+    public List<String> getNewestActivityProductIdList(Date newestActivityUpdateTime) {
         MongoQueryData queryData = new MongoQueryData();
         Map<String, Boolean> projectionMap = new HashMap<>();
         projectionMap.put("spid", true);
-        projectionMap.put("start", true);
-        projectionMap.put("end", true);
-        projectionMap.put("inaid", true);
-        projectionMap.put("isolation", true);
-        projectionMap.put("catalogs", true);
-        projectionMap.put("nbuyer", true);
-        projectionMap.put("start", true);
-        projectionMap.put("end", true);
-        projectionMap.put("_id", true);
         queryData.setProjection(projectionMap);
 
         Map<String, Object> matchConditionMap = new HashMap<>();
         Map<String, Object> tempGtMap = new HashMap<>();
         tempGtMap.put("$gt", newestActivityUpdateTime);
-        matchConditionMap.put("updatetime", tempGtMap);
+        matchConditionMap.put("aut", tempGtMap);
         queryData.setMatchCondition(matchConditionMap);
 
-        queryData.setTableName(Constants.ActivityProductDb);
+        queryData.setTableName(Constants.ProductTimeStampDb);
 
         queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
 
         return mongoProcessor.queryMongo(queryData)
                 .stream()
-                .map(x -> convertMapToActivityProduct(x))
+                .map(x -> Optional.ofNullable((String)x.get("spid")).orElse(""))
                 .collect(Collectors.toList());
     }
 

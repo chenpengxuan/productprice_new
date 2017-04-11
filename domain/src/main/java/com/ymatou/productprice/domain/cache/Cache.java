@@ -337,8 +337,11 @@ public class Cache {
 
         if (newestCacheActivityUpdateTime != null) {
             //获取新增的mongo活动商品信息
+            List<String> newestActivityProductIdList = realBusinessRepository
+                    .getNewestActivityProductIdList(newestCacheActivityUpdateTime);
+
             List<ActivityProduct> newestActivityProductList = realBusinessRepository
-                    .getActivityProductList(newestCacheActivityUpdateTime);
+                    .getActivityProductList(newestActivityProductIdList);
 
             //批量添加至缓存
             cacheManager.putActivityProduct(newestActivityProductList
