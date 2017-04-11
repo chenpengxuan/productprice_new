@@ -193,7 +193,7 @@ public class Cache {
         //缓存全部没有命中的情况
         if (cacheProductList == null || cacheProductList.isEmpty()) {
             //从数据库中获取数据
-            List<Catalog> catalogList = mongoRepository.getCatalogListByProduct(productIdList);
+            List<Catalog> catalogList = realBusinessRepository.getCatalogListByProduct(productIdList);
 
             result = catalogList;
 
@@ -225,7 +225,7 @@ public class Cache {
             needReloadCatalogIdList.removeAll(validProductIdList);
 
             //需要重新刷缓存的数据
-            List<Catalog> reloadCatalogList = mongoRepository.getCatalogByCatalogId(needReloadCatalogIdList);
+            List<Catalog> reloadCatalogList = realBusinessRepository.getCatalogByCatalogId(needReloadCatalogIdList);
             Map<String, List<Catalog>> reloadCatalogGroup = reloadCatalogList
                     .stream()
                     .collect(Collectors.groupingBy(Catalog::getProductId));
@@ -365,7 +365,7 @@ public class Cache {
         Long updateStamp = activityProductUpdateTime != null ? activityProductUpdateTime.getTime():0L;
 
         if(Long.compare(activityProduct.getUpdateTime().getTime(),updateStamp) != 0){
-            activityProduct = mongoRepository.getActivityProduct(activityProduct.getProductId());
+            activityProduct = realBusinessRepository.getActivityProduct(activityProduct.getProductId());
             cacheManager.putActivityProduct(activityProduct.getProductId(),activityProduct);
             startTime = activityProduct.getStartTime().getTime();
             endTime = activityProduct.getEndTime().getTime();
@@ -438,7 +438,7 @@ public class Cache {
         cacheProductList.removeAll(Collections.singleton(null));
         //缓存完全不命中
         if(cacheProductList == null || cacheProductList.isEmpty()){
-            result = mongoRepository.getPriceRangeListByProduct(productIdList);
+            result = realBusinessRepository.getPriceRangeListByProduct(productIdList);
 
             cacheManager.put(result
             .stream()
@@ -474,7 +474,7 @@ public class Cache {
             List<String> needReloadProductIdList = new ArrayList<>();
             needReloadProductIdList.addAll(productIdList);
             needReloadProductIdList.removeAll(validProductIdList);
-            List<ProductPriceData> reloadProductList = mongoRepository
+            List<ProductPriceData> reloadProductList = realBusinessRepository
                     .getPriceRangeListByProduct(needReloadProductIdList);
 
             //去除空数据
