@@ -91,10 +91,10 @@ public class Catalog {
     }
 
     public Date getUpdateTime() {
-        return updateTime;
+        return updateTime == null ? null : (Date)updateTime.clone();
     }
 
     public void setUpdateTime(Date updateTime) {
-        this.updateTime = updateTime;
+        this.updateTime = updateTime == null ? null : (Date)updateTime.clone();
     }
 }

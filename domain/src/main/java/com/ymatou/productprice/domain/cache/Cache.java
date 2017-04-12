@@ -94,7 +94,9 @@ public class Cache {
                     if (productPriceData == null) {
                         if (catalogList != null && !catalogList.isEmpty()) {
                             productPriceData = new ProductPriceData();
-                            productPriceData.setSellerId(catalogList.stream().findAny().get().getSellerId());
+                            Optional<Catalog> catalogOptional = catalogList.stream().findAny();
+                            productPriceData.setSellerId(catalogOptional.isPresent() ?
+                                    catalogOptional.get().getSellerId():0);
                             productPriceData.setCatalogList(catalogList);
                         }
                         else{
@@ -440,8 +442,11 @@ public class Cache {
 
         //从缓存中获取数据
         List<ActivityProduct> cacheList = cacheManager.getActivityProduct(productIdList);
-        //针对Lists.newArrayList创建的列表 排除空元素
-        cacheList.removeAll(Collections.singleton(null));
+        if(cacheList != null && !cacheList.isEmpty()){
+            //针对Lists.newArrayList创建的列表 排除空元素
+            cacheList.removeAll(Collections.singleton(null));
+        }
+
         //如果缓存为空 则认为都不是活动商品
         if (cacheList == null || cacheList.isEmpty()) {
             return cacheList;

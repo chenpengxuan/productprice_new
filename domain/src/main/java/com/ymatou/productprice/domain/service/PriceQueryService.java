@@ -183,6 +183,7 @@ public class PriceQueryService {
         }
         List<Catalog> outputCatalogList = convertCatalogForOutput(catalogList);
 
+        activityProductList.removeAll(Collections.singleton(null));
         //价格核心逻辑
         priceCoreService.calculateRealPriceCoreLogic(buyerId,
                 outputCatalogList,
@@ -348,9 +349,13 @@ public class PriceQueryService {
         }
 
         List<Catalog> outputCatalogList = convertCatalogForOutput(catalogList);
-
+        activityProductList.removeAll(Collections.singleton(null));
         //价格核心逻辑
-        priceCoreService.calculateRealPriceCoreLogic(buyerId, outputCatalogList, productPriceList, activityProductList, isTradeIsolation);
+        priceCoreService.calculateRealPriceCoreLogic(buyerId,
+                outputCatalogList,
+                productPriceList,
+                activityProductList,
+                isTradeIsolation);
 
         //组装规格价格信息列表
         List<CatalogPrice> catalogPriceList = new ArrayList<>();
