@@ -1,5 +1,6 @@
 package com.ymatou.productprice.domain.cache;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.cache.CacheStats;
 import com.google.common.collect.Maps;
 import com.google.common.primitives.Longs;
@@ -198,6 +199,9 @@ public class Cache {
                                                            List<ProductPriceData> cacheProductList,
                                                            Map<String, Date> catalogUpdateTimeMap) {
         List<Catalog> result;
+
+        logWrapper.recordInfoLog("processProductPriceDataCacheList_cacheProductList:JsonInfo{}",
+                JSON.toJSONString(cacheProductList));
 
         //缓存全部没有命中的情况
         if (cacheProductList == null || cacheProductList.isEmpty()) {
