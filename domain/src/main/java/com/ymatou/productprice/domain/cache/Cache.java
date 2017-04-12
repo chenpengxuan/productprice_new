@@ -166,15 +166,17 @@ public class Cache {
 
         reloadCatalogGroup.entrySet()
                 .forEach(x -> {
-                    ProductPriceData tempData = cacheProductList
+                    ProductPriceData tempData = cacheProductList != null
+                            ? cacheProductList
                             .stream()
-                            .filter(xx -> xx.getProductId().equals(x.getKey()))
+                            .filter(xx -> Optional.ofNullable(xx.getProductId()).orElse("").equals(x.getKey()))
                             .findAny()
-                            .orElse(null);
+                            .orElse(null):null;
 
                     //针对没有命中的数据，构建缓存结构
                     if (tempData == null) {
                         tempData = new ProductPriceData();
+                        tempData.setProductId(x.getKey());
                     }
                     //不管业务数据过期还是缓存没有命中，都需要重新设置数据
                     tempData.setCatalogList(x.getValue());
