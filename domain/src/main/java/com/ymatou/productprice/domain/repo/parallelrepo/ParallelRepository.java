@@ -116,4 +116,9 @@ public class ParallelRepository implements Repository {
     public List<ActivityProduct> getAllValidActivityProductList() {
         return mongoRepository.getAllValidActivityProductList();
     }
+
+    @Override
+    public List<Map<String, Object>> getCatalogIdByProductIdList(List<String> catalogIdList){
+        return mongoRepository.getCatalogIdByProductIdList(catalogIdList);
+    }
 }

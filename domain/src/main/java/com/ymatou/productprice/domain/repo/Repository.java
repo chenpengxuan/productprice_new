@@ -98,6 +98,13 @@ public interface Repository {
     List<Map<String, Object>> getProductIdByCatalogIdList(List<String> catalogIdList);
 
     /**
+     * 根据商品id列表获取商品id规格id映射关系
+     * @param catalogIdList
+     * @return
+     */
+    List<Map<String, Object>> getCatalogIdByProductIdList(List<String> catalogIdList);
+
+    /**
      * 获取全部有效活动商品列表
      * @return
      */

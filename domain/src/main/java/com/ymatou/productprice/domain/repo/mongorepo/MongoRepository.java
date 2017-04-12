@@ -147,7 +147,34 @@ public class MongoRepository implements Repository {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 根据商品id列表获取商品id规格id映射关系
+     * @param catalogIdList
+     * @return
+     */
+    @Override
+    public List<Map<String, Object>> getCatalogIdByProductIdList(List<String> catalogIdList){
+        MongoQueryData queryData = new MongoQueryData();
 
+        Map<String, Object> matchConditionMap = new HashMap<>();
+        Map<String, Object> tempMap = new HashMap<>();
+        tempMap.put("$in", catalogIdList);
+        matchConditionMap.put("spid", tempMap);
+        queryData.setMatchCondition(matchConditionMap);
+
+        Map<String, Boolean> projectionMap = new HashMap<>();
+        projectionMap.put("cid", true);
+        projectionMap.put("_id", false);
+        queryData.setProjection(projectionMap);
+
+        queryData.setTableName(Constants.CatalogDb);
+
+        queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
+        return mongoProcessor
+                .queryMongo(queryData)
+                .stream()
+                .collect(Collectors.toList());
+    }
 
     /**
      * 根据商品id列表获取价格边界信息（用于新增接口->搜索商品列表）

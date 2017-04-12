@@ -217,17 +217,30 @@ public class Cache {
         } else {
             //从缓存中获取需要的数据
             List<Catalog> cacheCatalogList = new ArrayList<>();
+            List<String> catalogIdList = new ArrayList<>();
+
             cacheProductList.forEach(x ->
                     x.getCatalogList()
-                            .forEach(cacheCatalogList::add));
+                            .forEach(xx -> {
+                                cacheCatalogList.add(xx);
+                                catalogIdList.add(xx.getCatalogId());
+                            }));
+
+            //针对其他接口缓存场景的只缓存部分catalog的情况，需要从mongo中取完整的catalogIdList
+//            List<String> catalogIdList = realBusinessRepository.getCatalogIdByProductIdList(productIdList)
+//                    .stream()
+//                    .map(x -> Optional.ofNullable((String)x.get("cid")).orElse(""))
+//                    .filter(xx -> !xx.isEmpty())
+//                    .distinct()
+//                    .collect(Collectors.toList());
 
             //过滤有效业务缓存数据
             List<Catalog> validCatalogList = filterValidCacheData(cacheCatalogList, catalogUpdateTimeMap);
 
             //获取有效缓存数据
-            List<String> validProductIdList = validCatalogList
+            List<String> validCatalogIdList = validCatalogList
                     .stream()
-                    .map(Catalog::getProductId)
+                    .map(Catalog::getCatalogId)
                     .distinct()
                     .collect(Collectors.toList());
 
@@ -238,8 +251,8 @@ public class Cache {
             //传入的productId与有效数据对应的productId列表的差集就是需要重新拉取的数据
             List<String> needReloadCatalogIdList = new ArrayList<>();
 
-            needReloadCatalogIdList.addAll(productIdList);
-            needReloadCatalogIdList.removeAll(validProductIdList);
+            needReloadCatalogIdList.addAll(catalogIdList);
+            needReloadCatalogIdList.removeAll(validCatalogIdList);
 
             if (!needReloadCatalogIdList.isEmpty()) {
                 //需要重新刷缓存的数据
