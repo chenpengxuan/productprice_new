@@ -417,33 +417,40 @@ public class PriceCoreService {
         boolean needsCalculateActivityProductPrice = activityProductInfo != null
                 && (!activityProductInfo.getHasIsolation()
                 || isTradeIsolation);
-        List<ActivityCatalog> activityProductCatalogList = activityProductInfo.getActivityCatalogList();
+        List<ActivityCatalog> activityProductCatalogList = activityProductInfo != null ?
+                activityProductInfo.getActivityCatalogList() : null;
 
         //过滤掉无效的商品规格列表
-        List<ActivityCatalog> validActivityProductCatalogList = activityProductCatalogList
+        List<ActivityCatalog> validActivityProductCatalogList = activityProductCatalogList != null ? activityProductCatalogList
                 .stream()
                 .filter(catalog ->
                         catalog.getActivityStock() > 0
-                                && catalog.getActivityCatalogPrice() > 0).collect(Collectors.toList());
+                                && catalog.getActivityCatalogPrice() > 0).collect(Collectors.toList()) : null;
 
         if (needsCalculateActivityProductPrice
                 && validActivityProductCatalogList != null
                 && !validActivityProductCatalogList.isEmpty()
                 ) {
 
-            //最高活动商品规格活动价
-            double maxActivityPrice = validActivityProductCatalogList
+            Optional<ActivityCatalog> maxValidActivityCatalogOptional = validActivityProductCatalogList
                     .stream()
-                    .max((x, y) -> Double.compare(x.getActivityCatalogPrice(), y.getActivityCatalogPrice()))
-                    .get()
-                    .getActivityCatalogPrice();
+                    .max((x, y) -> Double.compare(x.getActivityCatalogPrice(), y.getActivityCatalogPrice()));
+
+            Optional<ActivityCatalog> minValidActivityCatalogOptional = validActivityProductCatalogList
+                    .stream()
+                    .min((x, y) -> Double.compare(x.getActivityCatalogPrice(), y.getActivityCatalogPrice()));
+
+            //最高活动商品规格活动价
+            double maxActivityPrice = maxValidActivityCatalogOptional.isPresent() ?
+                    maxValidActivityCatalogOptional
+                            .get()
+                            .getActivityCatalogPrice() : 0D;
 
             //最低活动商品规格活动价
-            double minActivityPrice = validActivityProductCatalogList
-                    .stream()
-                    .min((x, y) -> Double.compare(x.getActivityCatalogPrice(), y.getActivityCatalogPrice()))
-                    .get()
-                    .getActivityCatalogPrice();
+            double minActivityPrice = minValidActivityCatalogOptional.isPresent() ?
+                    minValidActivityCatalogOptional
+                            .get()
+                            .getActivityCatalogPrice() : 0D;
 
             //新人活动
             if (activityProductInfo.getNewBuyer()

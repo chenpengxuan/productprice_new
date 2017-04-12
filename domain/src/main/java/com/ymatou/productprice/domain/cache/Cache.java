@@ -259,8 +259,9 @@ public class Cache {
             if (!needReloadCatalogIdList.isEmpty()) {
                 //需要重新刷缓存的数据
                 List<Catalog> reloadCatalogList = realBusinessRepository.getCatalogByCatalogId(needReloadCatalogIdList);
-                reloadCatalogList.removeAll(Collections.singleton(null));
+
                 if (reloadCatalogList != null && !reloadCatalogList.isEmpty()) {
+                    reloadCatalogList.removeAll(Collections.singleton(null));
                     Map<String, List<Catalog>> reloadCatalogGroup = reloadCatalogList
                             .stream()
                             .collect(Collectors.groupingBy(Catalog::getProductId));
@@ -480,8 +481,12 @@ public class Cache {
                 .stream()
                 .map(x -> (ProductPriceData) x)
                 .collect(Collectors.toList());
-        //针对Lists.newArrayList创建的列表 排除空元素
-        cacheProductList.removeAll(Collections.singleton(null));
+
+        if(cacheProductList != null && !cacheProductList.isEmpty()){
+            //针对Lists.newArrayList创建的列表 排除空元素
+            cacheProductList.removeAll(Collections.singleton(null));
+        }
+
         //缓存完全不命中
         if (cacheProductList == null || cacheProductList.isEmpty()) {
             result = realBusinessRepository.getPriceRangeListByProduct(productIdList);

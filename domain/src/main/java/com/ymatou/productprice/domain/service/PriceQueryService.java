@@ -333,12 +333,10 @@ public class PriceQueryService {
             return tempProductPrice;
         }).collect(Collectors.toList());
 
-        Map<String, Date> activityProductUpdateStampMap = updateStampMapList
-                .stream()
-                .collect(Collectors
-                        .toMap(x -> (String) x.get("spid"),
-                                y -> Optional.ofNullable((Date) y.get("aut")).orElse(null),
-                                (key1, key2) -> key2));
+        Map<String, Date> activityProductUpdateStampMap = new HashMap<>();
+                updateStampMapList
+                .forEach(x -> activityProductUpdateStampMap.put(Optional.ofNullable((String)x.get("spid")).orElse(""),
+                        Optional.ofNullable((Date) x.get("aut")).orElse(null)));
 
         //查询活动商品列表
         List<ActivityProduct> activityProductList;

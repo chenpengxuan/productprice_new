@@ -26,13 +26,13 @@ public class ParallelProcessor<T extends List, R extends List> {
     @Autowired
     private LogWrapper logWrapper;
 
-    private static ParallelTask parallelTask;
+    private ParallelTask parallelTask;
 
-    private static ForkJoinPool forkJoinPool;
+    private ForkJoinPool forkJoinPool;
 
-    private static ThreadPoolExecutor threadPoolExecutor;
+    private ThreadPoolExecutor threadPoolExecutor;
 
-    private static ParallelTypeEnum parallelTypeEnum;
+    private ParallelTypeEnum parallelTypeEnum;
 
     @PostConstruct
     private void init() {

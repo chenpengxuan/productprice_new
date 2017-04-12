@@ -62,9 +62,10 @@ public class CacheManager {
 
     /**
      * 获取缓存统计信息
+     *
      * @return
      */
-    public CacheStats getCacheStats(){
+    public CacheStats getCacheStats() {
         return cacheFactory.stats();
     }
 
@@ -101,7 +102,7 @@ public class CacheManager {
                 cacheResult = updateDataFunc.apply(cacheResult, tempData);
             }
         }
-        if(cacheResult != null){
+        if (cacheResult != null) {
             cacheFactory.put(cacheKey, cacheResult);
         }
         return cacheResult;
@@ -121,112 +122,130 @@ public class CacheManager {
 
     /**
      * 获取活动商品
+     *
      * @param cacheKey
      * @param <K>
      * @param <V>
      * @return
      */
-    public <K,V> V getActivityProduct(K cacheKey){return
-            Optional.ofNullable((V)activityProductCacheFactory.get(cacheKey)).orElse(null);}
+    public <K, V> V getActivityProduct(K cacheKey) {
+        return
+                Optional.ofNullable((V) activityProductCacheFactory.get(cacheKey)).orElse(null);
+    }
 
     /**
      * 获取活动商品
+     *
      * @param <K>
      * @param <V>
      * @param cacheKeyList
      * @return
      */
-    public <K,V> List<V> getActivityProduct(List<K> cacheKeyList){
+    public <K, V> List<V> getActivityProduct(List<K> cacheKeyList) {
         return cacheKeyList
                 .stream()
-                .map(x -> (V)getActivityProduct(x))
+                .map(x -> (V) getActivityProduct(x))
                 .collect(Collectors.toList());
     }
 
     /**
      * 添加活动商品缓存
+     *
      * @param cacheKey
      * @param cacheVal
      * @param <K>
      * @param <V>
      */
-    public <K,V> void putActivityProduct(K cacheKey,V cacheVal){
-        synchronized (this){
+    public <K, V> void putActivityProduct(K cacheKey, V cacheVal) {
+        synchronized (this) {
             expectActivityCacheSize = activityProductCacheFactory.size() + 1;
         }
-        if(expectActivityCacheSize <= cacheProps.getActivityProductCacheSize()) {
+        if (expectActivityCacheSize <= cacheProps.getActivityProductCacheSize()) {
             activityProductCacheFactory.putIfAbsent(cacheKey, cacheVal);
         }
     }
 
     /**
      * 添加活动商品缓存
+     *
      * @param cacheList
      * @param <K>
      * @param <V>
      */
-    public <K,V> void putActivityProduct(Map<K,V> cacheList){
-        synchronized (this){
+    public <K, V> void putActivityProduct(Map<K, V> cacheList) {
+        synchronized (this) {
             expectActivityCacheSize = activityProductCacheFactory.size() + cacheList.size();
         }
-        if(expectActivityCacheSize <= cacheProps.getActivityProductCacheSize()) {
+        if (expectActivityCacheSize <= cacheProps.getActivityProductCacheSize()) {
             activityProductCacheFactory.putAll(cacheList);
         }
     }
 
     /**
      * 删除无效商品缓存数据
+     *
      * @param cacheKeyList
      * @param <K>
      */
-    public <K> void deleteActivityProduct(List<K> cacheKeyList){
+    public <K> void deleteActivityProduct(List<K> cacheKeyList) {
         cacheKeyList.forEach(x -> activityProductCacheFactory.remove(x));
     }
 
     /**
      * 删除无效商品缓存数据
+     *
      * @param cacheKey
      * @param <K>
      */
-    public <K> void deleteActivityProduct(K cacheKey){
+    public <K> void deleteActivityProduct(K cacheKey) {
         activityProductCacheFactory.remove(cacheKey);
     }
 
     /**
      * 获取活动商品容器
+     *
      * @param <K>
      * @param <V>
      * @return
      */
-    public <K,V> ConcurrentMap<K,V> getActivityProductCacheContainer(){
+    public <K, V> ConcurrentMap<K, V> getActivityProductCacheContainer() {
         return activityProductCacheFactory;
     }
 
     /**
      * 获取多个key的缓存
+     *
      * @param cacheKeyList
      * @param <K>
      * @param <V>
      * @return
      */
-    public <K, V> Map<K,V> get(List<K> cacheKeyList){return (Map<K,V>) cacheFactory.getAllPresent(cacheKeyList);}
+    public <K, V> Map<K, V> get(List<K> cacheKeyList) {
+        return (Map<K, V>) cacheFactory.getAllPresent(cacheKeyList);
+    }
 
     /**
      * 添加单个缓存信息
+     *
      * @param cacheKey
      * @param cacheVal
      * @param <K>
      * @param <V>
      */
-    public <K,V> void put(K cacheKey,V cacheVal){ cacheFactory.put(cacheKey,cacheVal);}
+    public <K, V> void put(K cacheKey, V cacheVal) {
+        cacheFactory.put(cacheKey, cacheVal);
+    }
 
     /**
      * 添加多个缓存信息
+     *
      * @param cacheMap
      * @param <K>
      * @param <V>
      */
-    public <K,V> void put(Map<K,V> cacheMap){cacheFactory.putAll(cacheMap);}
+    public <K, V> void put(Map<K, V> cacheMap) {
+        cacheFactory.putAll(cacheMap);
+    }
 
     /**
      * 获取多个key的缓存
@@ -234,6 +253,7 @@ public class CacheManager {
      * 高度抽象
      * 但是会造成代码阅读性较低
      * 废弃不用
+     *
      * @param queryParamList      queryParamList  查询数据的参数集合
      * @param generateKeyFunc     generateKeyFunc 创建缓存key的方法 返回map key为queryParam value为cacheKey
      * @param repositoryFunc      缓存没有命中获取数据的方法

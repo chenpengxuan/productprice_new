@@ -10,7 +10,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
 
 import javax.annotation.PostConstruct;
-import java.util.concurrent.ScheduledFuture;
 
 /**
  * 活动商品缓存定时器
@@ -33,7 +32,7 @@ public class ActivityCacheSchedule {
     @Autowired
     private LogWrapper logWrapper;
 
-    private static String cronSetting;
+    private String cronSetting;
 
     @Bean
     public ThreadPoolTaskScheduler threadPoolTaskScheduler() {

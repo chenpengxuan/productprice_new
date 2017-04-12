@@ -23,11 +23,11 @@ public class RestClient {
     @Autowired
     private LogWrapper logWrapper;
 
-    private static OkHttpClient client;
+    private OkHttpClient client;
 
-    private static OkHttpClient.Builder builder;
+    private OkHttpClient.Builder builder;
 
-    private static ConnectionPool pool;
+    private ConnectionPool pool;
 
     /**
      * 构造函数在set成员属性之前，所以需要显式传参
