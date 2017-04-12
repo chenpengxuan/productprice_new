@@ -234,6 +234,7 @@ public class MongoRepository implements Repository {
         projectionMap.put("price", true);
         projectionMap.put("vip", true);
         projectionMap.put("spid", true);
+        projectionMap.put("sid", true);
         projectionMap.put("_id", false);
         queryData.setProjection(projectionMap);
 
@@ -266,6 +267,7 @@ public class MongoRepository implements Repository {
         projectionMap.put("price", true);
         projectionMap.put("vip", true);
         projectionMap.put("spid", true);
+        projectionMap.put("sid", true);
         projectionMap.put("_id", false);
         queryData.setProjection(projectionMap);
 

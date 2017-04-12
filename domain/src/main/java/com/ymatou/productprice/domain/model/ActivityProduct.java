@@ -92,26 +92,26 @@ public class ActivityProduct {
     }
 
     public Date getStartTime() {
-        return startTime;
+        return startTime == null ? null : (Date)startTime.clone();
     }
 
     public void setStartTime(Date startTime) {
-        this.startTime = startTime;
+        this.startTime = startTime == null ? null :(Date) startTime.clone();
     }
 
     public Date getEndTime() {
-        return endTime;
+        return endTime == null ? null :(Date)endTime.clone();
     }
 
     public void setEndTime(Date endTime) {
-        this.endTime = endTime;
+        this.endTime = endTime == null ? null : (Date)endTime.clone();
     }
 
     public Date getUpdateTime() {
-        return updateTime;
+        return updateTime == null ? null : (Date)updateTime.clone();
     }
 
     public void setUpdateTime(Date updateTime) {
-        this.updateTime = updateTime;
+        this.updateTime = updateTime == null ? null : (Date)updateTime.clone();
     }
 }
