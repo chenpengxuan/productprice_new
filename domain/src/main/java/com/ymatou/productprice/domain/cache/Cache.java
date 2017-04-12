@@ -217,22 +217,20 @@ public class Cache {
         } else {
             //从缓存中获取需要的数据
             List<Catalog> cacheCatalogList = new ArrayList<>();
-            List<String> catalogIdList = new ArrayList<>();
 
             cacheProductList.forEach(x ->
                     x.getCatalogList()
                             .forEach(xx -> {
                                 cacheCatalogList.add(xx);
-                                catalogIdList.add(xx.getCatalogId());
                             }));
 
             //针对其他接口缓存场景的只缓存部分catalog的情况，需要从mongo中取完整的catalogIdList
-//            List<String> catalogIdList = realBusinessRepository.getCatalogIdByProductIdList(productIdList)
-//                    .stream()
-//                    .map(x -> Optional.ofNullable((String)x.get("cid")).orElse(""))
-//                    .filter(xx -> !xx.isEmpty())
-//                    .distinct()
-//                    .collect(Collectors.toList());
+            List<String> catalogIdList = realBusinessRepository.getCatalogIdByProductIdList(productIdList)
+                    .stream()
+                    .map(x -> Optional.ofNullable((String)x.get("cid")).orElse(""))
+                    .filter(xx -> !xx.isEmpty())
+                    .distinct()
+                    .collect(Collectors.toList());
 
             //过滤有效业务缓存数据
             List<Catalog> validCatalogList = filterValidCacheData(cacheCatalogList, catalogUpdateTimeMap);
