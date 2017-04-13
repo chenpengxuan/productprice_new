@@ -394,12 +394,10 @@ public class Cache {
         result = cacheManager.getActivityProduct(cacheKey);
 
         //如果缓存中没有命中，则认为此商品不是活动商品
-        if (result == null) {
-            return result;
-        } else {
+        if (result != null) {
             result = processCacheActivityProduct(result, activityProductUpdateTime);
-            return result;
         }
+        return result;
     }
 
     /**
