@@ -79,7 +79,7 @@ public class Cache {
                 obj -> realBusinessRepository.getCatalogListByProduct(productId),
 
                 (pid, productPriceData) -> {
-                    Long catalogUpdateStamp = catalogUpdateTime.getTime();
+                    Long catalogUpdateStamp = catalogUpdateTime != null ? catalogUpdateTime.getTime():0L;
                     return productPriceData != null
                             && productPriceData.getCatalogList() != null
                             && !productPriceData.getCatalogList().isEmpty()
@@ -344,12 +344,19 @@ public class Cache {
         ConcurrentMap activityProductCache = cacheManager.getActivityProductCacheContainer();
 
         //从缓存中获取最后创建的活动商品数据的更新日期
-        //之前从Objectid取时间戳 发现只精确到秒 造成测试环境验证不正确
+        //之前从ObjectId取时间戳 发现只精确到秒 造成测试环境验证不正确
         ActivityProduct latestActivityProduct = (ActivityProduct) activityProductCache.values()
                 .stream()
                 .max((x, y) ->
-                        Long.compare(((ActivityProduct) x).getUpdateTime().getTime()
-                                , ((ActivityProduct) y).getUpdateTime().getTime()))
+                        {
+                            long xDate= x != null && ((ActivityProduct) x).getUpdateTime() != null ?
+                                    ((ActivityProduct) x).getUpdateTime().getTime():0L;
+                            long yDate= y != null && ((ActivityProduct) y).getUpdateTime() != null ?
+                                    ((ActivityProduct) y).getUpdateTime().getTime():0L;
+                            return Long.compare(xDate,
+                                    yDate);
+                        }
+                )
                 .orElse(null);
 
         Date newestCacheActivityUpdateTime = latestActivityProduct != null ?
@@ -406,8 +413,9 @@ public class Cache {
         Long endTime = activityProduct.getEndTime().getTime();
         Long now = new Date().getTime();
         Long updateStamp = activityProductUpdateTime != null ? activityProductUpdateTime.getTime() : 0L;
-
-        if (Long.compare(activityProduct.getUpdateTime().getTime(), updateStamp) != 0) {
+        Long activityProductStamp = activityProduct.getUpdateTime() != null ? activityProduct.getUpdateTime().getTime():
+                0L;
+        if (Long.compare(activityProductStamp, updateStamp) != 0) {
             activityProduct = realBusinessRepository.getActivityProduct(activityProduct.getProductId());
             if(activityProduct != null){
                 cacheManager.putActivityProduct(activityProduct.getProductId(), activityProduct);
