@@ -36,6 +36,10 @@ public class CacheManager {
 
     private static final int CACHE_SIZE_UNIT = 10000;
 
+    public ConcurrentMap getActivityProductCacheFactory() {
+        return activityProductCacheFactory;
+    }
+
     /**
      * 预期活动商品缓存数量
      */

@@ -5,7 +5,6 @@ import com.ymatou.productprice.domain.model.Catalog;
 import com.ymatou.productprice.domain.model.ProductPriceData;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -85,10 +84,10 @@ public interface Repository {
     /**
      * 获取新增活动商品信息列表
      *
-     * @param newestActivityUpdateTime 最新活动商品更新日期
+     * @param newestProductInActivityId 最新活动商品关联id
      * @return
      */
-    List<String> getNewestActivityProductIdList(Date newestActivityUpdateTime);
+    List<ActivityProduct> getNewestActivityProductIdList(Integer newestProductInActivityId);
 
     /**
      * 根据规格id列表获取商品id规格id映射关系

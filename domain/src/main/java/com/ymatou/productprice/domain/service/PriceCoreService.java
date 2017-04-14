@@ -212,7 +212,8 @@ public class PriceCoreService {
      * @return
      */
     private boolean checkIsNewBuyer(long buyerId, List<ActivityProduct> activityProductInfoList) {
-        List<ActivityProduct> newBuyerActivityProductList = activityProductInfoList != null
+        List<ActivityProduct> newBuyerActivityProductList =
+                activityProductInfoList != null
                 && !activityProductInfoList.isEmpty() ?
                 activityProductInfoList.stream()
                         .filter(ActivityProduct::getNewBuyer)
@@ -225,7 +226,7 @@ public class PriceCoreService {
                 && !newBuyerActivityProductList.isEmpty();
         //如果前置条件都不符合，则没有必要调用用户行为服务
         if (!isNewBuyerActivityProduct) {
-            return isNewBuyerActivityProduct;
+            return false;
         }
         GetBuyerFirstOrderInfoReq req = new GetBuyerFirstOrderInfoReq();
         req.setBuyerIds(Lists.newArrayList(buyerId));
@@ -318,12 +319,14 @@ public class PriceCoreService {
                                                    boolean isTradeIsolation) {
         boolean isNewBuyer = checkIsNewBuyer(buyerId, activityProductInfoList);
 
-        productPriceForSearchedList.stream().forEach(productPrice -> {
-            ActivityProduct tempActivityProduct = activityProductInfoList.stream()
+        productPriceForSearchedList.forEach(productPrice -> {
+            ActivityProduct tempActivityProduct = activityProductInfoList != null
+            && !activityProductInfoList.isEmpty() ? activityProductInfoList.stream()
                     .filter(x -> x.getProductId().equals(productPrice.getProductId()))
-                    .findAny().orElse(null);
+                    .findAny().orElse(null):null;
 
-            productPriceForSearchedList.stream().forEach(productPriceForSearched -> {
+            //// FIXME: 2017/4/13 refactor
+            productPriceForSearchedList.forEach(productPriceForSearched -> {
                 PriceEnum priceEnum;
 
                 //活动商品价格逻辑(优先级最高)
@@ -360,6 +363,7 @@ public class PriceCoreService {
      * @param catalog
      * @param activityProductInfo
      */
+    //// TODO: 2017/4/13 活动商品库存逻辑待确认 
     private PriceEnum decideActivityPriceAsRealPriceLogic(boolean isNewBuyer,
                                                           boolean isTradeIsolation,
                                                           Catalog catalog,
@@ -551,6 +555,7 @@ public class PriceCoreService {
      * @param catalog
      * @return
      */
+    //// FIXME: 2017/4/13 class override for this 逻辑与简短 用变量代替
     private PriceEnum decideVipPriceAsRealPriceLogic(Long sellerId, GetBuyerOrderStatisticsResp resp, Catalog catalog) {
         //买家已经有确认的订单
         if (resp != null
@@ -598,6 +603,7 @@ public class PriceCoreService {
      * @param resp
      * @param catalog
      */
+    ////// FIXME: 2017/4/13 remove logic of this method name
     private PriceEnum decideNewCustomerPriceAsRealPriceLogic(Long sellerId, GetBuyerOrderStatisticsResp resp, Catalog catalog) {
         //买家如果没有订单或订单全部取消
         if (resp != null

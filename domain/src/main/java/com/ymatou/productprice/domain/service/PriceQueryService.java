@@ -70,7 +70,7 @@ public class PriceQueryService {
         Map<String, Object> updateStampMap = repository
                 .getTimeStampByProductId(productId, Lists.newArrayList("cut", "aut"));
 
-        //如果时间戳为空，则取当前时间
+        //如果时间戳为空
         Date catalogUpdateTime = Optional.ofNullable((Date) updateStampMap.get("cut")).orElse(null);
 
         //查询商品规格信息列表
@@ -209,7 +209,7 @@ public class PriceQueryService {
                 .distinct()
                 .collect(Collectors.toList());
 
-        //组装商品价格信息列表
+        //初始化商品价格信息列表
         List<ProductPriceForSearched> productPriceList = productIdList.stream().map(x -> {
             ProductPriceForSearched tempProductPrice = new ProductPriceForSearched();
             tempProductPrice.setProductId(x);
@@ -347,7 +347,11 @@ public class PriceQueryService {
         }
 
         List<Catalog> outputCatalogList = convertCatalogForOutput(catalogList);
-        activityProductList.removeAll(Collections.singleton(null));
+
+        if(activityProductList != null && !activityProductList.isEmpty()){
+            activityProductList.removeAll(Collections.singleton(null));
+        }
+
         //价格核心逻辑
         priceCoreService.calculateRealPriceCoreLogic(buyerId,
                 outputCatalogList,
@@ -390,12 +394,15 @@ public class PriceQueryService {
                                 y -> Optional.ofNullable((Date) y.get("sut")).orElse(null),
                                 (key1, key2) -> key2));
 
-        Map<String, Date> activityStampMap = stampList
-                .stream()
-                .collect(Collectors
-                        .toMap(x -> x.get("spid").toString(),
-                                y -> Optional.ofNullable((Date) y.get("aut")).orElse(null),
-                                (key1, key2) -> key2));
+        Map<String, Date> activityStampMap = new HashMap<>();
+        stampList.forEach(x -> {
+            if(x.get("spid") != null
+                    && x.get("aut") != null
+                    && !activityStampMap.containsKey(x.get("spid"))
+                    ){
+                activityStampMap.put(x.get("spid").toString(),(Date)x.get("aut"));
+            }
+        });
 
         List<ProductPriceData> tempDataList = cache.getPriceRangeListByProduct(productIdList, stampMap);
         List<ActivityProduct> tempActivityDataList = cache.getActivityProductList(productIdList, activityStampMap);

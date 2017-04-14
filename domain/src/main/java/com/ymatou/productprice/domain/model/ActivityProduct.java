@@ -1,7 +1,5 @@
 package com.ymatou.productprice.domain.model;
 
-import org.bson.types.ObjectId;
-
 import java.util.Date;
 import java.util.List;
 
@@ -11,9 +9,9 @@ import java.util.List;
  */
 public class ActivityProduct {
     /**
-     * 活动商品Mongo表主键
+     * 活动商品id
      */
-    private ObjectId activityProductId;
+    private Integer productInActivityId;
 
     /**
      * 商品id
@@ -50,13 +48,12 @@ public class ActivityProduct {
      */
     private Date updateTime;
 
-
-    public ObjectId getActivityProductId() {
-        return activityProductId;
+    public Integer getProductInActivityId() {
+        return productInActivityId;
     }
 
-    public void setActivityProductId(ObjectId activityProductId) {
-        this.activityProductId = activityProductId;
+    public void setProductInActivityId(Integer productInActivityId) {
+        this.productInActivityId = productInActivityId;
     }
 
     public String getProductId() {

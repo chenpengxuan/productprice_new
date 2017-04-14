@@ -11,7 +11,6 @@ import com.ymatou.productprice.infrastructure.dataprocess.mongo.MongoOperationTy
 import com.ymatou.productprice.infrastructure.dataprocess.mongo.MongoProcessor;
 import com.ymatou.productprice.infrastructure.dataprocess.mongo.MongoQueryData;
 import com.ymatou.productprice.infrastructure.util.Utils;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -370,7 +369,7 @@ public class MongoRepository implements Repository {
         projectionMap.put("nbuyer", true);
         projectionMap.put("start", true);
         projectionMap.put("end", true);
-        projectionMap.put("_id", true);
+        projectionMap.put("_id", false);
         queryData.setProjection(projectionMap);
 
         Map<String, Object> matchConditionMap = new HashMap<>();
@@ -399,28 +398,37 @@ public class MongoRepository implements Repository {
     /**
      * 获取新增活动商品信息列表
      *
-     * @param newestActivityUpdateTime 最新活动商品更新日期
+     * @param newestProductInActivityId 最新活动商品关联id
      * @return
      */
-    public List<String> getNewestActivityProductIdList(Date newestActivityUpdateTime) {
+    public List<ActivityProduct> getNewestActivityProductIdList(Integer newestProductInActivityId) {
         MongoQueryData queryData = new MongoQueryData();
         Map<String, Boolean> projectionMap = new HashMap<>();
         projectionMap.put("spid", true);
+        projectionMap.put("start", true);
+        projectionMap.put("end", true);
+        projectionMap.put("inaid", true);
+        projectionMap.put("isolation", true);
+        projectionMap.put("catalogs", true);
+        projectionMap.put("nbuyer", true);
+        projectionMap.put("start", true);
+        projectionMap.put("end", true);
+        projectionMap.put("_id", false);
         queryData.setProjection(projectionMap);
 
         Map<String, Object> matchConditionMap = new HashMap<>();
         Map<String, Object> tempGtMap = new HashMap<>();
-        tempGtMap.put("$gt", newestActivityUpdateTime);
-        matchConditionMap.put("aut", tempGtMap);
+        tempGtMap.put("$gt", newestProductInActivityId);
+        matchConditionMap.put("inaid", tempGtMap);
         queryData.setMatchCondition(matchConditionMap);
 
-        queryData.setTableName(Constants.ProductTimeStampDb);
+        queryData.setTableName(Constants.ActivityProductDb);
 
         queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
 
         return mongoProcessor.queryMongo(queryData)
                 .stream()
-                .map(x -> Optional.ofNullable((String)x.get("spid")).orElse(""))
+                .map(this::convertMapToActivityProduct)
                 .collect(Collectors.toList());
     }
 
@@ -440,7 +448,7 @@ public class MongoRepository implements Repository {
         projectionMap.put("nbuyer", true);
         projectionMap.put("start", true);
         projectionMap.put("end", true);
-        projectionMap.put("_id", true);
+        projectionMap.put("_id", false);
         queryData.setProjection(projectionMap);
 
         Map<String, Object> matchConditionMap = new HashMap<>();
@@ -529,12 +537,16 @@ public class MongoRepository implements Repository {
     private ActivityProduct convertMapToActivityProduct(Map<String, Object> activityProductMap) {
         ActivityProduct tempActivityProduct = new ActivityProduct();
 
-            tempActivityProduct.setActivityProductId(
-                    Optional.ofNullable((ObjectId) activityProductMap.get("_id")).orElse(null)
+            tempActivityProduct.setProductInActivityId(
+                    Optional.ofNullable((Integer) activityProductMap.get("inaid")).orElse(0)
             );
+
             tempActivityProduct.setProductId(Optional.ofNullable((String) activityProductMap.get("spid")).orElse(""));
+
             List<Map<String, Object>> tempCatalogs = Optional
-                    .ofNullable((List<Map<String, Object>>) activityProductMap.get("catalogs")).orElse(Lists.newArrayList());
+                    .ofNullable((List<Map<String, Object>>) activityProductMap.get("catalogs"))
+                    .orElse(Lists.newArrayList());
+
             tempActivityProduct.setActivityCatalogList(tempCatalogs.stream().map(x -> {
                 ActivityCatalog tempCatalog = new ActivityCatalog();
                 tempCatalog.setActivityCatalogId(Optional.ofNullable((String) x.get("cid")).orElse(""));
@@ -542,14 +554,20 @@ public class MongoRepository implements Repository {
                 tempCatalog.setActivityStock(Optional.ofNullable((Integer) x.get("stock")).orElse(0));
                 return tempCatalog;
             }).collect(Collectors.toList()));
+
             tempActivityProduct.setUpdateTime(
                     getUpdateTimeByProductId(Optional.ofNullable((String) activityProductMap.get("spid")).orElse(""), "aut")
             );
+
             tempActivityProduct.setHasIsolation(
                     Optional.ofNullable((Boolean) activityProductMap.get("isolation")).orElse(false)
             );
-            tempActivityProduct.setNewBuyer(Optional.ofNullable((Boolean) activityProductMap.get("nbuyer")).orElse(false));
+
+            tempActivityProduct.setNewBuyer(Optional.ofNullable((Boolean) activityProductMap.get("nbuyer"))
+                    .orElse(false));
+
             tempActivityProduct.setStartTime(Optional.ofNullable((Date) activityProductMap.get("start")).orElse(null));
+
             tempActivityProduct.setEndTime(Optional.ofNullable((Date) activityProductMap.get("end")).orElse(null));
 
         return tempActivityProduct;

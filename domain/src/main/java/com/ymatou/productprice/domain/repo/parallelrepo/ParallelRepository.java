@@ -10,7 +10,6 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -102,8 +101,8 @@ public class ParallelRepository implements Repository {
     }
 
     @Override
-    public List<String> getNewestActivityProductIdList(Date newestActivityUpdateTime) {
-        return mongoRepository.getNewestActivityProductIdList(newestActivityUpdateTime);
+    public List<ActivityProduct> getNewestActivityProductIdList(Integer newestProductInActivityId) {
+        return mongoRepository.getNewestActivityProductIdList(newestProductInActivityId);
     }
 
 
