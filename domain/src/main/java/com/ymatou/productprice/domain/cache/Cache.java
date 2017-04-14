@@ -390,12 +390,16 @@ public class Cache {
                 )
                 .orElse(null);
 
+        logWrapper.recordInfoLog("latestActivityProduct{}", JSON.toJSONString(latestActivityProduct));
+
         Integer newestCacheProductInActivityId = latestActivityProduct != null ?
                 latestActivityProduct.getProductInActivityId() : 0;
 
         //获取新增的mongo活动商品信息
         List<ActivityProduct> newestActivityProductList = realBusinessRepository
                 .getNewestActivityProductIdList(newestCacheProductInActivityId);
+
+        logWrapper.recordInfoLog("newestActivityProductList{}", JSON.toJSONString(newestActivityProductList));
 
         //批量添加至缓存
         cacheManager.putActivityProduct(newestActivityProductList
