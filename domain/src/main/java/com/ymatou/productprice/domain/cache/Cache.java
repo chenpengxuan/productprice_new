@@ -423,6 +423,15 @@ public class Cache {
         if (result != null) {
             result = processCacheActivityProduct(result, activityProductUpdateTime);
         }
+        else{
+            if(cacheManager.getActivityProductCacheFactory().size() < cacheProps.getActivityProductCacheSize()){
+                return null;
+            }
+            else{
+                result = realBusinessRepository.getActivityProduct(productId);
+                logWrapper.recordErrorLog("活动商品缓存size需要扩容，超出容量的活动商品已改为从mongo查询，不影响正常业务");
+            }
+        }
         return result;
     }
 
@@ -489,7 +498,7 @@ public class Cache {
                 return null;
             } else {
                 cacheList = realBusinessRepository.getActivityProductList(productIdList);
-                logWrapper.recordErrorLog("活动商品缓存size需要扩容，多出的活动商品已改为从mongo查询，不影响正常业务");
+                logWrapper.recordErrorLog("活动商品缓存size需要扩容，超出容量的活动商品已改为从mongo查询，不影响正常业务");
                 return cacheList;
             }
         } else {
