@@ -216,16 +216,21 @@ public class PriceQueryService {
             return tempProductPrice;
         }).collect(Collectors.toList());
 
-        //获取活动商品与规格的变更时间戳
+        //获取活动商品与商品的变更时间戳
         List<Map<String, Object>> updateStampMapList = repository
-                .getTimeStampByProductIdList(productIdList, Lists.newArrayList("sut,aut"));
+                .getTimeStampByProductIdList(productIdList, Lists.newArrayList("sut", "aut"));
 
-        Map<String, Date> productUpdateStampMap = updateStampMapList
-                .stream()
-                .collect(Collectors
-                        .toMap(x -> (String) x.get("spid"),
-                                y -> Optional.ofNullable((Date) y.get("sut")).orElse(null),
-                                (key1, key2) -> key2));
+        Map<String, Date> activityUpdateStampMap = new HashMap<>();
+        Map<String, Date> productUpdateStampMap = new HashMap<>();
+
+        //填充活动商品与规格时间戳
+        updateStampMapList.forEach(x -> {
+            activityUpdateStampMap.put(x.get("spid").toString(),
+                    Optional.ofNullable((Date) x.get("aut")).orElse(null));
+            productUpdateStampMap.put(x.get("spid").toString(),
+                    Optional.ofNullable((Date) x.get("sut")).orElse(null));
+        });
+
 
         //查询所有商品的价格区间信息并进行组装
         List<ProductPriceData> productList;
@@ -240,7 +245,7 @@ public class PriceQueryService {
             BizException.throwBizException("商品信息不存在");
         }
 
-        productList.stream().forEach(x -> {
+        productList.forEach(x -> {
             ProductPriceForSearched tempPrice = productPriceList
                     .stream()
                     .filter(p -> p.getProductId().equals(x.getProductId()))
@@ -263,12 +268,6 @@ public class PriceQueryService {
             tempPrice.setSellerId(Long.valueOf(x.getSellerId()));
         });
 
-        Map<String, Date> activityUpdateStampMap = updateStampMapList
-                .stream()
-                .collect(Collectors
-                        .toMap(x -> (String) x.get("spid"),
-                                y -> Optional.ofNullable((Date) y.get("aut")).orElse(null),
-                                (key1, key2) -> key2));
         //查询活动商品列表
         List<ActivityProduct> activityProductList;
         if (bizProps.isUseCache() && cacheProps.isUseActivityCache()) {
@@ -303,15 +302,19 @@ public class PriceQueryService {
                 .collect(Collectors.toList());
 
         //获取活动商品与规格的变更时间戳
-        List<Map<String, Object>> updateStampMapList = mongoRepository
+        List<Map<String, Object>> updateStampMapList = repository
                 .getTimeStampByProductIdList(productIdList, Lists.newArrayList("cut", "aut"));
 
-        Map<String, Date> catalogUpdateStampMap = updateStampMapList
-                .stream()
-                .collect(Collectors
-                        .toMap(x -> (String) x.get("spid"),
-                                y -> Optional.ofNullable((Date) y.get("cut")).orElse(null),
-                                (key1, key2) -> key2));
+        Map<String, Date> activityProductUpdateTimeMap = new HashMap<>();
+        Map<String, Date> catalogUpdateStampMap = new HashMap<>();
+
+        //填充活动商品与规格时间戳
+        updateStampMapList.forEach(x -> {
+            activityProductUpdateTimeMap.put(x.get("spid").toString(),
+                    Optional.ofNullable((Date) x.get("aut")).orElse(null));
+            catalogUpdateStampMap.put(x.get("spid").toString(),
+                    Optional.ofNullable((Date) x.get("cut")).orElse(null));
+        });
 
         //获取规格信息
         List<com.ymatou.productprice.domain.model.Catalog> catalogList;
@@ -384,28 +387,23 @@ public class PriceQueryService {
      * @return
      */
     public Tuple<List<ProductPriceData>, List<ActivityProduct>> getCacheInfoByProductIdList(List<String> productIdList) {
-        List<Map<String, Object>> stampList = mongoRepository
+        //获取活动商品与商品的变更时间戳
+        List<Map<String, Object>> updateStampMapList = repository
                 .getTimeStampByProductIdList(productIdList, Lists.newArrayList("sut", "aut"));
 
-        Map<String, Date> stampMap = stampList
-                .stream()
-                .collect(Collectors
-                        .toMap(x -> x.get("spid").toString(),
-                                y -> Optional.ofNullable((Date) y.get("sut")).orElse(null),
-                                (key1, key2) -> key2));
+        Map<String, Date> activityUpdateStampMap = new HashMap<>();
+        Map<String, Date> productUpdateStampMap = new HashMap<>();
 
-        Map<String, Date> activityStampMap = new HashMap<>();
-        stampList.forEach(x -> {
-            if(x.get("spid") != null
-                    && x.get("aut") != null
-                    && !activityStampMap.containsKey(x.get("spid"))
-                    ){
-                activityStampMap.put(x.get("spid").toString(),(Date)x.get("aut"));
-            }
+        //填充活动商品与规格时间戳
+        updateStampMapList.forEach(x -> {
+            activityUpdateStampMap.put(x.get("spid").toString(),
+                    Optional.ofNullable((Date) x.get("aut")).orElse(null));
+            productUpdateStampMap.put(x.get("spid").toString(),
+                    Optional.ofNullable((Date) x.get("sut")).orElse(null));
         });
 
-        List<ProductPriceData> tempDataList = cache.getPriceRangeListByProduct(productIdList, stampMap);
-        List<ActivityProduct> tempActivityDataList = cache.getActivityProductList(productIdList, activityStampMap);
+        List<ProductPriceData> tempDataList = cache.getPriceRangeListByProduct(productIdList, productUpdateStampMap);
+        List<ActivityProduct> tempActivityDataList = cache.getActivityProductList(productIdList, activityUpdateStampMap);
 
         Tuple<List<ProductPriceData>, List<ActivityProduct>> result = new Tuple(tempDataList, tempActivityDataList);
         return result;

@@ -363,7 +363,6 @@ public class PriceCoreService {
      * @param catalog
      * @param activityProductInfo
      */
-    //// TODO: 2017/4/13 活动商品库存逻辑待确认 
     private PriceEnum decideActivityPriceAsRealPriceLogic(boolean isNewBuyer,
                                                           boolean isTradeIsolation,
                                                           Catalog catalog,
@@ -381,7 +380,7 @@ public class PriceCoreService {
         if (needsCalculateActivityProductPrice
                 && activityCatalog != null
                 && activityCatalog.getActivityCatalogPrice() > 0
-                && activityCatalog.getActivityStock() > 0
+                && activityProductInfo.getActivityCatalogList().stream().anyMatch(ac -> ac.getActivityStock() > 0)
                 ) {
             //新人活动
             if (activityProductInfo.getNewBuyer()
