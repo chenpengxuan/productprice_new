@@ -75,18 +75,6 @@ public class CalcPriceServiceForSearch extends CalcPriceService{
     }
 
     /**
-     * 设置原价是否作为最终价格(用于新增接口->搜索商品列表)
-     *
-     * @param productPriceForSearched
-     */
-    private void setQuotePriceAsRealPriceLogic(ProductPriceForSearched productPriceForSearched) {
-        productPriceForSearched.setPriceType(PriceEnum.QUOTEPRICE.getCode());
-        productPriceForSearched.setMinPrice(productPriceForSearched.getMinOriginalPrice());
-        productPriceForSearched.setMaxPrice(productPriceForSearched.getMaxOriginalPrice());
-    }
-
-
-    /**
      * 检查新客价格是否作为最终价格(用于新增接口->搜索商品列表)
      *
      * @param sellerId
@@ -116,7 +104,7 @@ public class CalcPriceServiceForSearch extends CalcPriceService{
                 productPriceForSearched.getMinNewpersonPrice() : productPriceForSearched.getMinOriginalPrice());
         productPriceForSearched.setMaxPrice(productPriceForSearched.getMaxNewpersonPrice() > 0 ?
                 productPriceForSearched.getMaxNewpersonPrice() : productPriceForSearched.getMaxOriginalPrice());
-        productPriceForSearched.setPriceType(PriceEnum.VIPPRICE.getCode());
+        productPriceForSearched.setPriceType(PriceEnum.NEWCUSTOMERPRICE.getCode());
     }
 
     /**
@@ -265,6 +253,17 @@ public class CalcPriceServiceForSearch extends CalcPriceService{
         productPriceForSearched.setMaxPrice(maxActivityPrice);
         productPriceForSearched.setMinPrice(minActivityPrice);
         productPriceForSearched.setPriceType(PriceEnum.YMTACTIVITYPRICE.getCode());
+    }
+
+    /**
+     * 设置原价是否作为最终价格(用于新增接口->搜索商品列表)
+     *
+     * @param productPriceForSearched
+     */
+    private void setQuotePriceAsRealPriceLogic(ProductPriceForSearched productPriceForSearched) {
+        productPriceForSearched.setPriceType(PriceEnum.QUOTEPRICE.getCode());
+        productPriceForSearched.setMinPrice(productPriceForSearched.getMinOriginalPrice());
+        productPriceForSearched.setMaxPrice(productPriceForSearched.getMaxOriginalPrice());
     }
 
 }

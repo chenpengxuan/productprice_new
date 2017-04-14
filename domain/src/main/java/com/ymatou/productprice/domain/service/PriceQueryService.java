@@ -183,7 +183,10 @@ public class PriceQueryService {
         }
         List<Catalog> outputCatalogList = convertCatalogForOutput(catalogList);
 
-        activityProductList.removeAll(Collections.singleton(null));
+        if(activityProductList != null && !activityProductList.isEmpty()) {
+            activityProductList.removeAll(Collections.singleton(null));
+        }
+
         //价格核心逻辑
         priceCoreService.calculateRealPriceCoreLogic(buyerId,
                 outputCatalogList,
