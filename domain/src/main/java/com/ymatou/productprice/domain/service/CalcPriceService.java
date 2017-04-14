@@ -101,7 +101,6 @@ public class CalcPriceService {
      * @param resp
      * @param catalog
      */
-    ////// FIXME: 2017/4/13 remove logic of this method name
     private boolean checkNewCustomerPriceAsRealPrice(Long sellerId, GetBuyerOrderStatisticsResp resp, Catalog catalog) {
         //买家如果没有订单或订单全部取消
         if (resp != null
@@ -131,7 +130,6 @@ public class CalcPriceService {
      * @param catalog
      * @return
      */
-    //// FIXME: 2017/4/13 class override for this 逻辑与简短 用变量代替
     private boolean checkVipPriceAsRealPrice(Long sellerId, GetBuyerOrderStatisticsResp resp, Catalog catalog) {
         //买家已经有确认的订单
         if (resp != null
