@@ -230,7 +230,7 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
     @Produces({MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_JSON})
     public BaseResponseNetAdapter getCacheInfoByProductId(GetPriceCacheRequest request){
-        Tuple<List<ProductPriceData>,List<ActivityProduct>> cacheResult =
+        Tuple<Map<String,ProductPriceData>,List<ActivityProduct>> cacheResult =
                 priceQueryService.getCacheInfoByProductIdList(request.getProductIdList());
 
         Map<String, Object> cacheInfoList = new HashMap<>();

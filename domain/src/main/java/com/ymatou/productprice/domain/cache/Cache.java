@@ -69,6 +69,15 @@ public class Cache {
     }
 
     /**
+     * 获取商品缓存信息
+     * @param productIdList
+     * @return
+     */
+    public Map<String,ProductPriceData> getProductCacheList(List<String> productIdList){
+        return cacheManager.get(productIdList);
+    }
+
+    /**
      * 获取规格信息列表
      *
      * @param productId

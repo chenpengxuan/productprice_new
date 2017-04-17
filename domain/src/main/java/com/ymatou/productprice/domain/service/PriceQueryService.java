@@ -393,7 +393,7 @@ public class PriceQueryService {
      * @param productIdList
      * @return
      */
-    public Tuple<List<ProductPriceData>, List<ActivityProduct>> getCacheInfoByProductIdList(List<String> productIdList) {
+    public Tuple<Map<String,ProductPriceData>, List<ActivityProduct>> getCacheInfoByProductIdList(List<String> productIdList) {
         //获取活动商品与商品的变更时间戳
         List<Map<String, Object>> updateStampMapList = repository
                 .getTimeStampByProductIdList(productIdList, Lists.newArrayList("sut", "aut"));
@@ -409,10 +409,10 @@ public class PriceQueryService {
                     Optional.ofNullable((Date) x.get("sut")).orElse(null));
         });
 
-        List<ProductPriceData> tempDataList = cache.getPriceRangeListByProduct(productIdList, productUpdateStampMap);
+        Map<String,ProductPriceData> tempDataList = cache.getProductCacheList(productIdList);
         List<ActivityProduct> tempActivityDataList = cache.getActivityProductList(productIdList, activityUpdateStampMap);
 
-        Tuple<List<ProductPriceData>, List<ActivityProduct>> result = new Tuple(tempDataList, tempActivityDataList);
+        Tuple<Map<String,ProductPriceData>, List<ActivityProduct>> result = new Tuple(tempDataList, tempActivityDataList);
         return result;
     }
 
