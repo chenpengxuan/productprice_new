@@ -139,7 +139,7 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
         List<ProductPriceForSearched> productPriceList = priceQueryService.getPriceInfoByProductIdListForSearched(request.getBuyerId(),
                 request.getProductIdList()
                         .stream().distinct().collect(Collectors.toList()),
-                false);
+                true);
 
         Map<String, Object> priceInfoList = new HashMap<>();
         priceInfoList.put("ProductPriceList", productPriceList);
@@ -163,7 +163,7 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
         List<ProductPriceForSearched> productPriceList = priceQueryService.getPriceInfoByProductIdListForSearched(request.getBuyerId(),
                 request.getProductIdList()
                         .stream().distinct().collect(Collectors.toList()),
-                true);
+                false);
 
         Map<String, Object> priceInfoList = new HashMap<>();
         priceInfoList.put("ProductPriceList", productPriceList);
