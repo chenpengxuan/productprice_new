@@ -402,9 +402,11 @@ public class Cache {
         logWrapper.recordInfoLog("newestActivityProductList{}", JSON.toJSONString(newestActivityProductList));
 
         //批量添加至缓存
-        cacheManager.putActivityProduct(newestActivityProductList
+        Map tempMap = newestActivityProductList
                 .stream()
-                .collect(Collectors.toMap(ActivityProduct::getProductId, y -> y, (key1, key2) -> key2)));
+                .collect(Collectors.toMap(ActivityProduct::getProductId, y -> y, (key1, key2) -> key2));
+
+        cacheManager.putActivityProduct(tempMap);
 
         logWrapper.recordInfoLog("增量添加活动商品缓存已执行,新增{}条", newestActivityProductList.size());
     }
@@ -451,7 +453,7 @@ public class Cache {
         Long now = new Date().getTime();
         Long updateStamp = activityProductUpdateTime != null ? activityProductUpdateTime.getTime() : 0L;
         Long activityProductStamp = activityProduct.getUpdateTime() != null
-                ? activityProduct.getUpdateTime().getTime() : 0L;
+                ? activityProduct.getUpdateTime().getTime() : -1L;
 
         if (Long.compare(activityProductStamp, updateStamp) != 0) {
             activityProduct = realBusinessRepository.getActivityProduct(activityProduct.getProductId());

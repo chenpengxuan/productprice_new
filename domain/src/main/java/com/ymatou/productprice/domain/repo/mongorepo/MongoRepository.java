@@ -542,7 +542,6 @@ public class MongoRepository implements Repository {
             );
 
             tempActivityProduct.setProductId(Optional.ofNullable((String) activityProductMap.get("spid")).orElse(""));
-
             List<Map<String, Object>> tempCatalogs = Optional
                     .ofNullable((List<Map<String, Object>>) activityProductMap.get("catalogs"))
                     .orElse(Lists.newArrayList());
