@@ -42,7 +42,7 @@ public class MongoRepository implements Repository {
         queryData.setMatchCondition(matchConditionMap);
 
         Map<String, Boolean> projectionMap = new HashMap<>();
-        stampKeyList.stream().forEach(key -> projectionMap.put(key, true));
+        stampKeyList.forEach(key -> projectionMap.put(key, true));
         projectionMap.put("_id", false);
         queryData.setProjection(projectionMap);
 
@@ -72,7 +72,7 @@ public class MongoRepository implements Repository {
         queryData.setMatchCondition(matchConditionMap);
 
         Map<String, Boolean> projectionMap = new HashMap<>();
-        stampKeyList.stream().forEach(key -> projectionMap.put(key, true));
+        stampKeyList.forEach(key -> projectionMap.put(key, true));
         projectionMap.put("spid", true);
         projectionMap.put("_id", false);
         queryData.setProjection(projectionMap);
@@ -103,7 +103,7 @@ public class MongoRepository implements Repository {
         queryData.setMatchCondition(matchConditionMap);
 
         Map<String, Boolean> projectionMap = new HashMap<>();
-        stampKeyList.stream().forEach(key -> projectionMap.put(key, true));
+        stampKeyList.forEach(key -> projectionMap.put(key, true));
         projectionMap.put("cid", true);
         projectionMap.put("_id", false);
         queryData.setProjection(projectionMap);
@@ -201,11 +201,32 @@ public class MongoRepository implements Repository {
         queryData.setTableName(Constants.ProductDb);
 
         queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
-        return mongoProcessor
+        List<ProductPriceData> productPriceDataList = mongoProcessor
                 .queryMongo(queryData)
                 .stream()
-                .map(x -> convertMapToProductPriceData(x))
+                .map(this::convertMapToProductPriceData)
                 .collect(Collectors.toList());
+
+        setProductStamp(productPriceDataList);
+
+        return productPriceDataList;
+    }
+
+    private void setProductStamp(List<ProductPriceData> productPriceDataList){
+        if(productPriceDataList != null && !productPriceDataList.isEmpty()){
+            List<String> tempProductIdList = productPriceDataList.stream().map(ProductPriceData::getProductId)
+                    .collect(Collectors.toList());
+
+            List<Map<String,Object>> tempStampList = getTimeStampByProductIdList(tempProductIdList,Arrays.asList("sut"));
+
+            productPriceDataList.forEach(x -> {
+                Map<String,Object> tempStampMap = tempStampList.stream().filter(z ->
+                        Optional.ofNullable(z.get("spid")).orElse("").equals(x.getProductId()))
+                        .findAny().orElse(null);
+
+                x.setUpdateTime(tempStampMap != null ? Optional.ofNullable((Date)tempStampMap.get("sut")).orElse(null):null);
+            });
+        }
     }
 
     /**
@@ -234,9 +255,13 @@ public class MongoRepository implements Repository {
         queryData.setTableName(Constants.CatalogDb);
 
         queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
-        return mongoProcessor
+        List<Catalog> tempCatalogList = mongoProcessor
                 .queryMongo(queryData)
-                .stream().map(x -> convertMapToCatalog(x)).collect(Collectors.toList());
+                .stream().map(this::convertMapToCatalog).collect(Collectors.toList());
+
+        setCatalogStamp(tempCatalogList);
+
+        return tempCatalogList;
     }
 
     /**
@@ -268,9 +293,13 @@ public class MongoRepository implements Repository {
 
         queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
 
-        return mongoProcessor
+        List<Catalog> tempCatalogList = mongoProcessor
                 .queryMongo(queryData)
-                .stream().map(x -> convertMapToCatalog(x)).collect(Collectors.toList());
+                .stream().map(this::convertMapToCatalog).collect(Collectors.toList());
+
+        setCatalogStamp(tempCatalogList);
+
+        return tempCatalogList;
     }
 
     /**
@@ -301,9 +330,34 @@ public class MongoRepository implements Repository {
 
         queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
 
-        return mongoProcessor
+        List<Catalog> tempCatalogList = mongoProcessor
                 .queryMongo(queryData)
-                .stream().map(x -> convertMapToCatalog(x)).collect(Collectors.toList());
+                .stream().map(this::convertMapToCatalog).collect(Collectors.toList());
+
+        setCatalogStamp(tempCatalogList);
+
+        return tempCatalogList;
+    }
+
+    /**
+     * 组装规格更新时间
+     * @param tempCatalogList
+     */
+    private void setCatalogStamp(List<Catalog> tempCatalogList){
+        if(tempCatalogList != null && !tempCatalogList.isEmpty()){
+            List<String> tempCatalogIdList = tempCatalogList.stream().map(Catalog::getCatalogId)
+                    .collect(Collectors.toList());
+
+            List<Map<String,Object>> tempStampList = getTimeStampByCatalogIdList(tempCatalogIdList,Arrays.asList("cut"));
+
+            tempCatalogList.forEach(x -> {
+                Map<String,Object> tempStampMap = tempStampList.stream().filter(z ->
+                        Optional.ofNullable(z.get("cid")).orElse("").equals(x.getCatalogId()))
+                        .findAny().orElse(null);
+
+                x.setUpdateTime(tempStampMap != null ? Optional.ofNullable((Date)tempStampMap.get("cut")).orElse(null):null);
+            });
+        }
     }
 
     /**
@@ -344,11 +398,17 @@ public class MongoRepository implements Repository {
 
         queryData.setOperationType(MongoOperationTypeEnum.SELECTSINGLE);
 
-        return mongoProcessor.queryMongo(queryData)
+        ActivityProduct activityProduct = mongoProcessor.queryMongo(queryData)
                 .stream()
-                .map(x -> convertMapToActivityProduct(x))
+                .map(this::convertMapToActivityProduct)
                 .findAny()
                 .orElse(null);
+
+        if(activityProduct != null){
+            activityProduct.setUpdateTime(getUpdateTimeByProductId(activityProduct.getProductId(), "aut"));
+        }
+
+        return activityProduct;
     }
 
     /**
@@ -389,10 +449,14 @@ public class MongoRepository implements Repository {
 
         queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
 
-        return mongoProcessor.queryMongo(queryData)
+        List<ActivityProduct> activityProductList = mongoProcessor.queryMongo(queryData)
                 .stream()
-                .map(x -> convertMapToActivityProduct(x))
+                .map(this::convertMapToActivityProduct)
                 .collect(Collectors.toList());
+
+       setActivityProductStamp(activityProductList);
+
+        return activityProductList;
     }
 
     /**
@@ -426,11 +490,39 @@ public class MongoRepository implements Repository {
 
         queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
 
-        return mongoProcessor.queryMongo(queryData)
+        List<ActivityProduct> activityProductList = mongoProcessor.queryMongo(queryData)
                 .stream()
                 .map(this::convertMapToActivityProduct)
                 .collect(Collectors.toList());
+
+        setActivityProductStamp(activityProductList);
+
+        return activityProductList;
     }
+
+    /**
+     * 组装活动商品列表更新时间
+     * @param activityProductList
+     */
+    private void setActivityProductStamp(List<ActivityProduct> activityProductList){
+        if(activityProductList != null && !activityProductList.isEmpty()) {
+            activityProductList.removeAll(Collections.singleton(null));
+
+            List<String> activityProductIdList = activityProductList.stream().map(ActivityProduct::getProductId)
+                    .collect(Collectors.toList());
+
+            List<Map<String,Object>> tempStampList = getTimeStampByProductIdList(activityProductIdList,Arrays.asList("aut"));
+
+            activityProductList.forEach(x -> {
+                Map<String,Object> tempStampMap = tempStampList.stream().filter(z ->
+                        Optional.ofNullable(z.get("spid")).orElse("").equals(x.getProductId()))
+                        .findAny().orElse(null);
+
+                x.setUpdateTime(tempStampMap != null ? Optional.ofNullable((Date)tempStampMap.get("aut")).orElse(null):null);
+            });
+        }
+    }
+
 
     /**
      * 获取全部有效活动商品列表
@@ -465,10 +557,14 @@ public class MongoRepository implements Repository {
 
         queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
 
-        return mongoProcessor.queryMongo(queryData)
+        List<ActivityProduct> activityProductList = mongoProcessor.queryMongo(queryData)
                 .stream()
-                .map(this::convertMapToActivityProduct)
+                .map(x -> convertMapToActivityProduct(x))
                 .collect(Collectors.toList());
+
+       setActivityProductStamp(activityProductList);
+
+        return activityProductList;
     }
 
     /**
@@ -504,9 +600,7 @@ public class MongoRepository implements Repository {
         tempCatalog.setVipPrice(
                 Utils.doubleFormat(Optional.ofNullable(Double.valueOf(catalogMap.get("vip").toString())).orElse(0D), 2)
         );
-        tempCatalog.setUpdateTime(
-                getUpdateTimeByProductId(Optional.ofNullable((String) catalogMap.get("spid")).orElse(""), "cut")
-        );
+
         return tempCatalog;
     }
 
@@ -522,9 +616,7 @@ public class MongoRepository implements Repository {
         tempProductPriceData.setPriceMaxRange(Optional.ofNullable((String) productMap.get("maxp")).orElse(""));
         tempProductPriceData.setPriceMinRange(Optional.ofNullable((String) productMap.get("minp")).orElse(""));
         tempProductPriceData.setSellerId(Optional.ofNullable((Integer) productMap.get("sid")).orElse(0));
-        tempProductPriceData.setUpdateTime(
-                getUpdateTimeByProductId(Optional.ofNullable((String) productMap.get("spid")).orElse(""), "sut")
-        );
+
         return tempProductPriceData;
     }
 
@@ -553,10 +645,6 @@ public class MongoRepository implements Repository {
                 tempCatalog.setActivityStock(Optional.ofNullable((Integer) x.get("stock")).orElse(0));
                 return tempCatalog;
             }).collect(Collectors.toList()));
-
-            tempActivityProduct.setUpdateTime(
-                    getUpdateTimeByProductId(Optional.ofNullable((String) activityProductMap.get("spid")).orElse(""), "aut")
-            );
 
             tempActivityProduct.setHasIsolation(
                     Optional.ofNullable((Boolean) activityProductMap.get("isolation")).orElse(false)
