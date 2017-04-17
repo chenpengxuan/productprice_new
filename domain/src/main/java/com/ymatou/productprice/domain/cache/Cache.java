@@ -551,8 +551,7 @@ public class Cache {
             List<ProductPriceData> validProductPriceDataList = cacheProductList
                     .stream()
                     .filter(x -> {
-                        Long cacheProductUpdateStamp = Optional.ofNullable(x.getUpdateTime())
-                                .orElse(new Date()).getTime();
+                        Long cacheProductUpdateStamp = x.getUpdateTime() != null ? x.getUpdateTime().getTime() : -1L;
                         Long productUpdateStamp = productUpdateStampMap.get(x.getProductId()) != null ?
                                 productUpdateStampMap.get(x.getProductId()).getTime() : 0;
                         return Long.compare(cacheProductUpdateStamp, productUpdateStamp) == 0;
