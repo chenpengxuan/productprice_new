@@ -279,6 +279,10 @@ public class PriceQueryService {
             activityProductList = repository.getActivityProductList(productIdList);
         }
 
+        if(activityProductList != null && !activityProductList.isEmpty()){
+            activityProductList.removeAll(Collections.singleton(null));
+        }
+
         //价格核心逻辑
         priceCoreService.calculateRealPriceCoreLogic(buyerId, productPriceList, activityProductList, isTradeIsolation);
         return productPriceList;

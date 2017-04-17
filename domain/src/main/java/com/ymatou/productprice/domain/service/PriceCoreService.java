@@ -117,6 +117,7 @@ public class PriceCoreService {
      * @return
      */
     private boolean checkIsNewBuyer(long buyerId, List<ActivityProduct> activityProductInfoList) {
+
         List<ActivityProduct> newBuyerActivityProductList =
                 activityProductInfoList != null
                         && !activityProductInfoList.isEmpty() ?
