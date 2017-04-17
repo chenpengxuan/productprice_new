@@ -73,10 +73,13 @@ public class PriceQueryService {
         //如果时间戳为空
         Date catalogUpdateTime = Optional.ofNullable((Date) updateStampMap.get("cut")).orElse(null);
 
+        Map<String,Date> catalogUpdateMap = new HashMap<>();
+        catalogUpdateMap.put(productId,catalogUpdateTime);
+
         //查询商品规格信息列表
         List<com.ymatou.productprice.domain.model.Catalog> catalogList;
         if (bizProps.isUseCache()) {
-            catalogList = cache.getCatalogListByProduct(productId, catalogUpdateTime);
+            catalogList = cache.getCatalogListByProduct(Arrays.asList(productId), catalogUpdateMap);
         } else {
             catalogList = repository.getCatalogListByProduct(productId);
         }

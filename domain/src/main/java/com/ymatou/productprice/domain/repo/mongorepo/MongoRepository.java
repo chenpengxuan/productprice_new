@@ -87,37 +87,6 @@ public class MongoRepository implements Repository {
     }
 
     /**
-     * 根据商品id列表与时间戳列名获取对应时间戳
-     *
-     * @param catalogIdList
-     * @param stampKeyList
-     * @return
-     */
-    public List<Map<String, Object>> getTimeStampByCatalogIdList(List<String> catalogIdList, List<String> stampKeyList) {
-        MongoQueryData queryData = new MongoQueryData();
-
-        Map<String, Object> matchConditionMap = new HashMap<>();
-        Map<String, Object> tempMap = new HashMap<>();
-        tempMap.put("$in", catalogIdList);
-        matchConditionMap.put("cid", tempMap);
-        queryData.setMatchCondition(matchConditionMap);
-
-        Map<String, Boolean> projectionMap = new HashMap<>();
-        stampKeyList.forEach(key -> projectionMap.put(key, true));
-        projectionMap.put("cid", true);
-        projectionMap.put("_id", false);
-        queryData.setProjection(projectionMap);
-
-        queryData.setTableName(Constants.CatalogDb);
-
-        queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
-        return mongoProcessor
-                .queryMongo(queryData)
-                .stream()
-                .collect(Collectors.toList());
-    }
-
-    /**
      * 根据规格id列表获取商品id规格id映射关系
      * @param catalogIdList
      * @return
@@ -345,14 +314,14 @@ public class MongoRepository implements Repository {
      */
     private void setCatalogStamp(List<Catalog> tempCatalogList){
         if(tempCatalogList != null && !tempCatalogList.isEmpty()){
-            List<String> tempCatalogIdList = tempCatalogList.stream().map(Catalog::getCatalogId)
+            List<String> tempProductIdList = tempCatalogList.stream().map(Catalog::getProductId)
                     .collect(Collectors.toList());
 
-            List<Map<String,Object>> tempStampList = getTimeStampByCatalogIdList(tempCatalogIdList,Arrays.asList("cut"));
+            List<Map<String,Object>> tempStampList = getTimeStampByProductIdList(tempProductIdList,Arrays.asList("cut"));
 
             tempCatalogList.forEach(x -> {
                 Map<String,Object> tempStampMap = tempStampList.stream().filter(z ->
-                        Optional.ofNullable(z.get("cid")).orElse("").equals(x.getCatalogId()))
+                        Optional.ofNullable(z.get("spid")).orElse("").equals(x.getProductId()))
                         .findAny().orElse(null);
 
                 x.setUpdateTime(tempStampMap != null ? Optional.ofNullable((Date)tempStampMap.get("cut")).orElse(null):null);
