@@ -134,6 +134,8 @@ public class Cache {
                 .collect(Collectors.groupingBy(Catalog::getProductId));
         Map<String, ProductPriceData> cacheMap = Maps.transformValues(cacheGroup, v -> {
             ProductPriceData tempData = new ProductPriceData();
+            Catalog tempCatalog = v != null && !v.isEmpty() ? v.stream().findAny().get():null;
+            tempData.setProductId(tempCatalog != null ? tempCatalog.getProductId():String.valueOf(""));
             tempData.setCatalogList(v);
             return tempData;
         });
@@ -157,8 +159,11 @@ public class Cache {
                     //缓存中规格更新时间戳
                     //默认值设置为-1为了排除规格时间戳为空 mongo中的时间戳也为空 返回相等的情况
                     //由于时间戳by商品维度 当商品中任意规格发生变化 规格时间戳都会发生变化 只取一个规格进行比较即可
-                    Optional<Catalog> catalogOptional = p.getCatalogList().stream().findAny();
-                    Catalog tempCatalog = catalogOptional.isPresent() ? catalogOptional.get() : null;
+                    Optional<Catalog> catalogOptional = p.getCatalogList() != null ?
+                            p.getCatalogList().stream().findAny():null;
+
+                    Catalog tempCatalog = catalogOptional != null && catalogOptional.isPresent()
+                            ? catalogOptional.get() : null;
 
                     Long cacheCatalogUpdateStamp = tempCatalog != null && tempCatalog.getUpdateTime() != null
                             ? tempCatalog.getUpdateTime().getTime() : -1L;
