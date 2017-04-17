@@ -50,7 +50,6 @@ public class UserBehaviorAnalysisService {
 
         try {
             GetBuyerOrderStatisticsResp resp = buyerOrderStatisticsFacade.getBuyerOrderStatistics(req);
-            logWrapper.recordInfoLog("用户行为服务_getBuyerOrderStatistics,request为{},response为{}",req,resp);
             if (resp == null
                     || resp.getFromSeller() == null) {
                 logWrapper.recordErrorLog("用户行为服务_getBuyerOrderStatistics接口返回值不正确,response：{},buyerId:{},sellerIdList{}",
@@ -75,7 +74,6 @@ public class UserBehaviorAnalysisService {
 
         try {
             GetBuyerFirstOrderInfoResp resp = buyerFirstOrderFacade.getBuyerFirstOrderInfo(req);
-            logWrapper.recordInfoLog("用户行为服务_getBuyerFirstOrderInfo,request为{},response为{}",req,resp);
             if (resp == null
                     || resp.getFirstOrderInfos() == null
                     || resp.getFirstOrderInfos().get(buyerId) == null) {

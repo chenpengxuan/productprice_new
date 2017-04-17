@@ -1,6 +1,5 @@
 package com.ymatou.productprice.domain.cache;
 
-import com.alibaba.fastjson.JSON;
 import com.google.common.cache.CacheStats;
 import com.google.common.collect.Maps;
 import com.google.common.primitives.Longs;
@@ -223,9 +222,6 @@ public class Cache {
                                                            Map<String, Date> catalogUpdateTimeMap) {
         List<Catalog> result;
 
-        logWrapper.recordInfoLog("processProductPriceDataCacheList_cacheProductList:JsonInfo{}",
-                JSON.toJSONString(cacheProductList));
-
         //缓存全部没有命中的情况
         if (cacheProductList == null || cacheProductList.isEmpty()) {
             //从数据库中获取数据
@@ -399,16 +395,12 @@ public class Cache {
                 )
                 .orElse(null);
 
-        logWrapper.recordInfoLog("latestActivityProduct{}", JSON.toJSONString(latestActivityProduct));
-
         Integer newestCacheProductInActivityId = latestActivityProduct != null ?
                 latestActivityProduct.getProductInActivityId() : 0;
 
         //获取新增的mongo活动商品信息
         List<ActivityProduct> newestActivityProductList = realBusinessRepository
                 .getNewestActivityProductIdList(newestCacheProductInActivityId);
-
-        logWrapper.recordInfoLog("newestActivityProductList{}", JSON.toJSONString(newestActivityProductList));
 
         //批量添加至缓存
         Map tempMap = newestActivityProductList
