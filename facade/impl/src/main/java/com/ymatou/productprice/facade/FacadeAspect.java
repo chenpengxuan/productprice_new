@@ -71,11 +71,11 @@ public class FacadeAspect {
 
         } catch (IllegalArgumentException e) {
             resp = BaseResponseNetAdapter.newBusinessFailureInstance(e.getLocalizedMessage());
-            logWrapper.recordErrorLog("Invalid request: {}", req, e);
+            logWrapper.recordInfoLog("Invalid request: {}", req, e);
         } catch (BizException e) {
             //前端可能将错误msg直接抛给用户
             resp = BaseResponseNetAdapter.newBusinessFailureInstance(e.getLocalizedMessage());
-            logWrapper.recordErrorLog("Failed to execute request: {}, Error:{}", req,
+            logWrapper.recordInfoLog("Failed to execute request: {}, Error:{}", req,
                     e.getMessage(), e);
         } catch (Throwable e) {
             //前端可能将错误msg直接抛给用户

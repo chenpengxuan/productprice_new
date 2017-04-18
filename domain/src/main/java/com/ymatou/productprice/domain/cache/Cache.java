@@ -460,7 +460,8 @@ public class Cache {
         Long updateStamp = activityProductUpdateTime != null ? activityProductUpdateTime.getTime() : 0L;
         Long activityProductStamp = activityProduct.getUpdateTime() != null
                 ? activityProduct.getUpdateTime().getTime() : -1L;
-
+        //当活动商品发生变更时，有可能从mongo中根据限定条件取出来是空，所以先把productId取出来
+        String activityProductId = activityProduct.getProductId();
         if (Long.compare(activityProductStamp, updateStamp) != 0) {
             activityProduct = realBusinessRepository.getActivityProduct(activityProduct.getProductId());
 
@@ -473,7 +474,7 @@ public class Cache {
 
         //过期的活动商品
         if (now > endTime) {
-            cacheManager.deleteActivityProduct(activityProduct.getProductId());
+            cacheManager.deleteActivityProduct(activityProductId);
             return null;
         }
         //活动商品数据发生变化，取数据重新刷缓存

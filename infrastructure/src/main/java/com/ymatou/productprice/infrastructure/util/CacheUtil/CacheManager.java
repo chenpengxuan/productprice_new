@@ -202,7 +202,9 @@ public class CacheManager {
      * @param <K>
      */
     public <K> void deleteActivityProduct(K cacheKey) {
-        activityProductCacheFactory.remove(cacheKey);
+        if(activityProductCacheFactory.keySet().contains(cacheKey)){
+            activityProductCacheFactory.remove(cacheKey);
+        }
     }
 
     /**
