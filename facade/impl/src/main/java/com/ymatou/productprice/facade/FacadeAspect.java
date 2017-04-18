@@ -75,7 +75,7 @@ public class FacadeAspect {
         } catch (BizException e) {
             //前端可能将错误msg直接抛给用户
             resp = BaseResponseNetAdapter.newBusinessFailureInstance(e.getLocalizedMessage());
-            logWrapper.recordErrorLog("Failed to execute request: {}, Error:{}", req.getRequestId(),
+            logWrapper.recordErrorLog("Failed to execute request: {}, Error:{}", req,
                     e.getMessage(), e);
         } catch (Throwable e) {
             //前端可能将错误msg直接抛给用户
