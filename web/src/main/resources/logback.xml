@@ -17,8 +17,6 @@
     <property name="charset" value="UTF-8"/>
     <property name="immediateFlush" value="true"/>
     <property name="queueSize" value="1024"/>
-    <property name="fileSize" value="100MB"/>
-    <property name="maxBackupIndex" value="500"/>
 
     <appender name="HTTP-POST-ERROR-APPENDER"
               class="com.ymatou.errorreporter.logbackappender.HttpPostErrorAppender">
@@ -40,8 +38,6 @@
             <fileNamePattern>${baseDir}/error.%d{yyyy-MM-dd}
             </fileNamePattern>
             <maxHistory>30</maxHistory>
-            <maxFileSize>${fileSize}</maxFileSize>
-            <maxBackupIndex>${maxBackupIndex}</maxBackupIndex>
         </rollingPolicy>
         <encoder>
             <charset>${charset}</charset>
@@ -62,8 +58,6 @@
             <fileNamePattern>${baseDir}/default.%d{yyyy-MM-dd}
             </fileNamePattern>
             <maxHistory>30</maxHistory>
-            <maxFileSize>${fileSize}</maxFileSize>
-            <maxBackupIndex>${maxBackupIndex}</maxBackupIndex>
         </rollingPolicy>
         <encoder>
             <charset>${charset}</charset>
@@ -84,8 +78,6 @@
             <fileNamePattern>${baseDir}/biz.%d{yyyy-MM-dd}
             </fileNamePattern>
             <maxHistory>30</maxHistory>
-            <maxFileSize>${fileSize}</maxFileSize>
-            <maxBackupIndex>${maxBackupIndex}</maxBackupIndex>
         </rollingPolicy>
         <encoder>
             <charset>${charset}</charset>
@@ -106,8 +98,6 @@
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${baseDir}/facade.%d{yyyy-MM-dd}</fileNamePattern>
             <maxHistory>30</maxHistory>
-            <maxFileSize>${fileSize}</maxFileSize>
-            <maxBackupIndex>${maxBackupIndex}</maxBackupIndex>
         </rollingPolicy>
         <encoder>
             <charset>${charset}</charset>
@@ -132,7 +122,7 @@
 
     <!-- biz -->
     <logger name="${basePackage}" additivity="false">
-        <level value="debug"/>
+        <level value="${level}"/>
         <appender-ref ref="ASYNC-BIZ-APPENDER"/>
         <appender-ref ref="ASYNC-ERROR-APPENDER"/>
         <appender-ref ref="HTTP-POST-ERROR-APPENDER"/>
