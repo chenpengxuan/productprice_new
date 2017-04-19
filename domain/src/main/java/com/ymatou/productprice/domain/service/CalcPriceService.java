@@ -216,8 +216,7 @@ public class CalcPriceService {
         if (needsCalculateActivityProductPrice
                 && activityCatalog != null
                 && activityCatalog.getActivityCatalogPrice() > 0
-                && activityProductInfo.getActivityCatalogList().stream().anyMatch(ac -> ac.getActivityStock() > 0)
-                ) {
+                && activityCatalog.getActivityStock() > 0) {
             //新人活动
             if (activityProductInfo.getNewBuyer()
                     && isNewBuyer) {
