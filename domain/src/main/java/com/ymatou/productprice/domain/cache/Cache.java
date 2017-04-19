@@ -581,29 +581,36 @@ public class Cache {
             List<String> needReloadProductIdList = new ArrayList<>();
             needReloadProductIdList.addAll(productIdList);
             needReloadProductIdList.removeAll(validProductIdList);
-            List<ProductPriceData> reloadProductList = realBusinessRepository
-                    .getPriceRangeListByProduct(needReloadProductIdList);
 
-            //去除空数据
-            reloadProductList.removeAll(Collections.singleton(null));
-            //组装需要刷缓存的数据
-            reloadProductList.forEach(x -> {
-                //针对缓存结构中 商品数据过期 但是商品中规格数据可能有效的情况，保留其规格缓存数据
-                ProductPriceData invalidProductCacheData = invalidProductPriceDataList
+            List<ProductPriceData> reloadProductList = new ArrayList<>();
+
+            if(needReloadProductIdList != null && !needReloadProductIdList.isEmpty()){
+                reloadProductList = realBusinessRepository
+                        .getPriceRangeListByProduct(needReloadProductIdList);
+            }
+
+            if(reloadProductList != null && !reloadProductList.isEmpty()) {
+                //去除空数据
+                reloadProductList.removeAll(Collections.singleton(null));
+                //组装需要刷缓存的数据
+                reloadProductList.forEach(x -> {
+                    //针对缓存结构中 商品数据过期 但是商品中规格数据可能有效的情况，保留其规格缓存数据
+                    ProductPriceData invalidProductCacheData = invalidProductPriceDataList
+                            .stream()
+                            .filter(z -> Optional.ofNullable(z.getProductId()).orElse("").equals(x.getProductId()))
+                            .findAny()
+                            .orElse(null);
+
+                    if (invalidProductCacheData != null) {
+                        x.setCatalogList(invalidProductCacheData.getCatalogList());
+                    }
+                });
+
+                //批量刷缓存
+                cacheManager.put(reloadProductList
                         .stream()
-                        .filter(z -> Optional.ofNullable(z.getProductId()).orElse("").equals(x.getProductId()))
-                        .findAny()
-                        .orElse(null);
-
-                if (invalidProductCacheData != null) {
-                    x.setCatalogList(invalidProductCacheData.getCatalogList());
-                }
-            });
-
-            //批量刷缓存
-            cacheManager.put(reloadProductList
-                    .stream()
-                    .collect(Collectors.toMap(ProductPriceData::getProductId, y -> y, (key1, key2) -> key2)));
+                        .collect(Collectors.toMap(ProductPriceData::getProductId, y -> y, (key1, key2) -> key2)));
+            }
 
             //合并有效数据并返回
             result = new ArrayList<>();
