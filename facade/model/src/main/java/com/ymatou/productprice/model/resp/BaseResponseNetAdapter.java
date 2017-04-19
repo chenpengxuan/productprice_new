@@ -3,12 +3,13 @@ package com.ymatou.productprice.model.resp;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.ymatou.productprice.model.PrintFriendliness;
 
 /**
  * .net 返回风格匹配器
  * Created by chenpengxuan on 2017/3/6.
  */
-public class BaseResponseNetAdapter<T> {
+public class BaseResponseNetAdapter<T> extends PrintFriendliness {
     /**
      * 系统状态码 成功为200 失败为500
      */
