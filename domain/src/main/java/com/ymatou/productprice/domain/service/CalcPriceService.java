@@ -40,7 +40,7 @@ public class CalcPriceService {
                                           boolean isNewBuyer,
                                           boolean isTradeIsolation) {
         long now = new Date().getTime();
-        productPriceList.stream().forEach(productPrice -> {
+        productPriceList.forEach(productPrice -> {
 
             ActivityProduct tempActivityProduct = activityProductInfoList != null
                     && !activityProductInfoList.isEmpty() ?
