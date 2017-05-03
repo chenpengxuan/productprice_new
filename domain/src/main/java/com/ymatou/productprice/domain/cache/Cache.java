@@ -386,26 +386,17 @@ public class Cache {
     public void addNewestActivityProductCache() {
         ConcurrentMap activityProductCache = cacheManager.getActivityProductCacheContainer();
 
-        ActivityProduct latestActivityProduct = (ActivityProduct) activityProductCache.values()
-                .stream()
-                .max((x, y) ->
-                        {
-                            long xProductInActivityId = x != null ?
-                                    ((ActivityProduct) x).getProductInActivityId() : 0L;
-                            long yProductInActivityId = y != null ?
-                                    ((ActivityProduct) y).getProductInActivityId() : 0L;
-                            return Long.compare(xProductInActivityId,
-                                    yProductInActivityId);
-                        }
-                )
-                .orElse(null);
+        List<String> cacheProductIdList = (List<String>) activityProductCache.keySet()
+                .stream().map(x -> x.toString()).collect(Collectors.toList());
+        List<String> validProductIdList = realBusinessRepository.getValidActivityProductIdList();
 
-        Integer newestCacheProductInActivityId = latestActivityProduct != null ?
-                latestActivityProduct.getProductInActivityId() : 0;
+        List<String> needReloadProductIdList = new ArrayList<>();
+        needReloadProductIdList.addAll(validProductIdList);
+        needReloadProductIdList.removeAll(cacheProductIdList);
 
         //获取新增的mongo活动商品信息
         List<ActivityProduct> newestActivityProductList = realBusinessRepository
-                .getNewestActivityProductIdList(newestCacheProductInActivityId);
+                .getActivityProductList(needReloadProductIdList);
 
         //批量添加至缓存
         Map tempMap = newestActivityProductList
@@ -436,7 +427,7 @@ public class Cache {
             result = processCacheActivityProduct(result, activityProductUpdateTime);
         }
         else{
-            if(cacheManager.getActivityProductCacheFactory().size() < cacheProps.getActivityProductCacheSize()){
+            if(cacheManager.getActivityProductCacheContainer().size() < cacheProps.getActivityProductCacheSize()){
                 return null;
             }
             else{
@@ -507,7 +498,7 @@ public class Cache {
         //如果缓存为空 则认为都不是活动商品
         if (cacheList == null || cacheList.isEmpty()) {
             //如果缓存为空，但是缓存容器没有满的情况下则认为不是活动商品
-            if (cacheManager.getActivityProductCacheFactory().size() < cacheProps.getActivityProductCacheSize()) {
+            if (cacheManager.getActivityProductCacheContainer().size() < cacheProps.getActivityProductCacheSize()) {
                 return null;
             } else {
                 cacheList = realBusinessRepository.getActivityProductList(productIdList);

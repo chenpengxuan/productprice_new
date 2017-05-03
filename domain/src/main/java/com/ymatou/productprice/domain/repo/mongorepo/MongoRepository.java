@@ -407,9 +407,6 @@ public class MongoRepository implements Repository {
         matchConditionMap.put("spid", tempProductIdMap);
         Map<String, Object> tempGteMap = new HashMap<>();
         tempGteMap.put("$gte", new Date());
-        Map<String, Object> tempLteMap = new HashMap<>();
-        tempLteMap.put("$lte", new Date());
-        matchConditionMap.put("start", tempLteMap);
         matchConditionMap.put("end", tempGteMap);
         queryData.setMatchCondition(matchConditionMap);
 
@@ -426,6 +423,30 @@ public class MongoRepository implements Repository {
        setActivityProductStamp(activityProductList);
 
         return activityProductList;
+    }
+
+    @Override
+    public List<String> getValidActivityProductIdList() {
+        MongoQueryData queryData = new MongoQueryData();
+        Map<String, Boolean> projectionMap = new HashMap<>();
+        projectionMap.put("spid", true);
+        projectionMap.put("_id", false);
+        queryData.setProjection(projectionMap);
+
+        Map<String, Object> matchConditionMap = new HashMap<>();
+        Map<String, Object> tempGteMap = new HashMap<>();
+        tempGteMap.put("$gte", new Date());
+        matchConditionMap.put("end", tempGteMap);
+        queryData.setMatchCondition(matchConditionMap);
+
+        queryData.setTableName(Constants.ActivityProductDb);
+
+        queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
+
+        return mongoProcessor.queryMongo(queryData)
+                .stream()
+                .map(x -> x.get("spid").toString())
+                .collect(Collectors.toList());
     }
 
     /**

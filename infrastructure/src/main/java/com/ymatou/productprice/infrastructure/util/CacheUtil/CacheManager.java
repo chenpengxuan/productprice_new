@@ -30,15 +30,11 @@ public class CacheManager {
     @Autowired
     private CacheProps cacheProps;
 
-    private Cache cacheFactory;
+    private Cache cacheContainer;
 
-    private ConcurrentMap activityProductCacheFactory;
+    private ConcurrentMap activityProductCacheContainer;
 
     private static final int CACHE_SIZE_UNIT = 10000;
-
-    public ConcurrentMap getActivityProductCacheFactory() {
-        return activityProductCacheFactory;
-    }
 
     /**
      * 预期活动商品缓存数量
@@ -49,13 +45,13 @@ public class CacheManager {
     public void init() {
         switch (CacheTypeEnum.valueOf(cacheProps.getCacheType().toUpperCase())) {
             case GUAVACACHE:
-                cacheFactory = CacheBuilder.newBuilder()
+                cacheContainer = CacheBuilder.newBuilder()
                         .maximumSize(cacheProps.getCacheSize() * CACHE_SIZE_UNIT)
                         .expireAfterAccess(cacheProps.getExpireTime(), TimeUnit.HOURS)
                         .concurrencyLevel(cacheProps.getWriteConcurrencyNum())
                         .recordStats()
                         .build();
-                activityProductCacheFactory = new ConcurrentHashMap(cacheProps.getActivityProductCacheSize());
+                activityProductCacheContainer = new ConcurrentHashMap(cacheProps.getActivityProductCacheSize());
                 break;
             case EHCACHE:
                 break;
@@ -70,7 +66,7 @@ public class CacheManager {
      * @return
      */
     public CacheStats getCacheStats() {
-        return cacheFactory.stats();
+        return cacheContainer.stats();
     }
 
     /**
@@ -93,7 +89,7 @@ public class CacheManager {
 
         K cacheKey = generateKeyFunc.apply(queryParam);
 
-        V cacheResult = (V) cacheFactory.getIfPresent(cacheKey);
+        V cacheResult = (V) cacheContainer.getIfPresent(cacheKey);
 
         if (cacheResult == null) {
             Z tempData = repositoryFunc.apply(queryParam);
@@ -107,7 +103,7 @@ public class CacheManager {
             }
         }
         if (cacheResult != null) {
-            cacheFactory.put(cacheKey, cacheResult);
+            cacheContainer.put(cacheKey, cacheResult);
         }
         return cacheResult;
     }
@@ -121,7 +117,7 @@ public class CacheManager {
      */
     public <K, V> V get(K cacheKey) {
         return
-                Optional.ofNullable((V) cacheFactory.getIfPresent(cacheKey)).orElse(null);
+                Optional.ofNullable((V) cacheContainer.getIfPresent(cacheKey)).orElse(null);
     }
 
     /**
@@ -134,7 +130,7 @@ public class CacheManager {
      */
     public <K, V> V getActivityProduct(K cacheKey) {
         return
-                Optional.ofNullable((V) activityProductCacheFactory.get(cacheKey)).orElse(null);
+                Optional.ofNullable((V) activityProductCacheContainer.get(cacheKey)).orElse(null);
     }
 
     /**
@@ -162,10 +158,10 @@ public class CacheManager {
      */
     public <K, V> void putActivityProduct(K cacheKey, V cacheVal) {
         synchronized (this) {
-            expectActivityCacheSize = activityProductCacheFactory.size() + 1;
+            expectActivityCacheSize = activityProductCacheContainer.size() + 1;
         }
         if (expectActivityCacheSize <= cacheProps.getActivityProductCacheSize()) {
-            activityProductCacheFactory.putIfAbsent(cacheKey, cacheVal);
+            activityProductCacheContainer.putIfAbsent(cacheKey, cacheVal);
         }
     }
 
@@ -178,10 +174,10 @@ public class CacheManager {
      */
     public <K, V> void putActivityProduct(Map<K, V> cacheList) {
         synchronized (this) {
-            expectActivityCacheSize = activityProductCacheFactory.size() + cacheList.size();
+            expectActivityCacheSize = activityProductCacheContainer.size() + cacheList.size();
         }
         if (expectActivityCacheSize <= cacheProps.getActivityProductCacheSize()) {
-            activityProductCacheFactory.putAll(cacheList);
+            activityProductCacheContainer.putAll(cacheList);
         }
     }
 
@@ -192,7 +188,7 @@ public class CacheManager {
      * @param <K>
      */
     public <K> void deleteActivityProduct(List<K> cacheKeyList) {
-        cacheKeyList.forEach(x -> activityProductCacheFactory.remove(x));
+        cacheKeyList.forEach(x -> activityProductCacheContainer.remove(x));
     }
 
     /**
@@ -202,8 +198,8 @@ public class CacheManager {
      * @param <K>
      */
     public <K> void deleteActivityProduct(K cacheKey) {
-        if(activityProductCacheFactory.keySet().contains(cacheKey)){
-            activityProductCacheFactory.remove(cacheKey);
+        if(activityProductCacheContainer.keySet().contains(cacheKey)){
+            activityProductCacheContainer.remove(cacheKey);
         }
     }
 
@@ -215,7 +211,7 @@ public class CacheManager {
      * @return
      */
     public <K, V> ConcurrentMap<K, V> getActivityProductCacheContainer() {
-        return activityProductCacheFactory;
+        return activityProductCacheContainer;
     }
 
     /**
@@ -227,7 +223,7 @@ public class CacheManager {
      * @return
      */
     public <K, V> Map<K, V> get(List<K> cacheKeyList) {
-        return (Map<K, V>) cacheFactory.getAllPresent(cacheKeyList);
+        return (Map<K, V>) cacheContainer.getAllPresent(cacheKeyList);
     }
 
     /**
@@ -239,7 +235,7 @@ public class CacheManager {
      * @param <V>
      */
     public <K, V> void put(K cacheKey, V cacheVal) {
-        cacheFactory.put(cacheKey, cacheVal);
+        cacheContainer.put(cacheKey, cacheVal);
     }
 
     /**
@@ -250,7 +246,7 @@ public class CacheManager {
      * @param <V>
      */
     public <K, V> void put(Map<K, V> cacheMap) {
-        cacheFactory.putAll(cacheMap);
+        cacheContainer.putAll(cacheMap);
     }
 
     /**
@@ -281,7 +277,7 @@ public class CacheManager {
         Map<List<K>, CK> cacheKeyMap = generateKeyFunc.apply(queryParamList);
         List<V> cacheResultList = new ArrayList<>();
 
-        Map<K, List<V>> cacheResultMap = cacheFactory.getAllPresent(cacheKeyMap.values());
+        Map<K, List<V>> cacheResultMap = cacheContainer.getAllPresent(cacheKeyMap.values());
         cacheResultList.addAll(Lists.newArrayList((V[]) cacheResultMap.values().toArray()));
 
         Set<K> cachedKeyList = cacheResultMap.keySet();
@@ -345,7 +341,7 @@ public class CacheManager {
 
                 List<V> mapResult = mapperFunc.apply(reload.getKey(), result);
                 if (mapResult != null && !mapResult.isEmpty()) {
-                    cacheFactory.put(reload.getValue(), mapResult);
+                    cacheContainer.put(reload.getValue(), mapResult);
                 }
             });
         }
