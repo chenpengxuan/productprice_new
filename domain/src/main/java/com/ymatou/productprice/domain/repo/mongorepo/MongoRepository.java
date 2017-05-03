@@ -515,9 +515,6 @@ public class MongoRepository implements Repository {
         Map<String, Object> matchConditionMap = new HashMap<>();
         Map<String, Object> tempGteMap = new HashMap<>();
         tempGteMap.put("$gte", new Date());
-        Map<String, Object> tempLteMap = new HashMap<>();
-        tempLteMap.put("$lte", new Date());
-        matchConditionMap.put("start", tempLteMap);
         matchConditionMap.put("end", tempGteMap);
         queryData.setMatchCondition(matchConditionMap);
 

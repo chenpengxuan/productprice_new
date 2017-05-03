@@ -10,6 +10,7 @@ import com.ymatou.useranalysis.facade.model.resp.GetBuyerOrderStatisticsResp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,12 +39,14 @@ public class CalcPriceService {
                                           GetBuyerOrderStatisticsResp resp,
                                           boolean isNewBuyer,
                                           boolean isTradeIsolation) {
+        long now = new Date().getTime();
         productPriceList.stream().forEach(productPrice -> {
 
             ActivityProduct tempActivityProduct = activityProductInfoList != null
                     && !activityProductInfoList.isEmpty() ?
                     activityProductInfoList.stream()
-                            .filter(x -> x.getProductId().equals(productPrice.getProductId()))
+                            .filter(x -> x.getProductId().equals(productPrice.getProductId())
+                             && x.getStartTime().getTime() <= now && x.getEndTime().getTime() >= now)
                             .findAny().orElse(null) : null;
 
             productPrice.getCatalogs().forEach(catalog -> {

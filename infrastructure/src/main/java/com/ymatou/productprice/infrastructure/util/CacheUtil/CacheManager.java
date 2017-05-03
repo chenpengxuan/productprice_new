@@ -335,13 +335,13 @@ public class CacheManager {
 
         if (!queryParamWithCacheKeyMap.isEmpty()) {
             List<K> paramList = Lists.newArrayList();
-            queryParamWithCacheKeyMap.keySet().stream().forEach(x -> paramList.addAll(x));
+            queryParamWithCacheKeyMap.keySet().forEach(x -> paramList.addAll(x));
             Z repositoryResultList = repositoryFunc
                     .apply(paramList);
             List<V> result = updateDataFunc.apply(partialInvalidCacheDataList, repositoryResultList);
             cacheResultList.addAll(result);
 
-            queryParamWithCacheKeyMap.entrySet().stream().forEach(reload -> {
+            queryParamWithCacheKeyMap.entrySet().forEach(reload -> {
 
                 List<V> mapResult = mapperFunc.apply(reload.getKey(), result);
                 if (mapResult != null && !mapResult.isEmpty()) {
