@@ -74,6 +74,24 @@ public class Catalog {
     @JsonIgnore
     private Integer SellerId;
 
+    /**
+     * 该规格是否支持多物流
+     */
+    @JsonProperty("IsExtraDelivery")
+    private boolean extraDelivery;
+
+    /**
+     * 多物流类型
+     */
+    @JsonIgnore
+    private int multiLogistics;
+
+    /**
+     * 运费差价
+     */
+    @JsonIgnore
+    private Double flightBalance;
+
     @JsonIgnore
     public String getCatalogId() {
         return catalogId;
@@ -182,5 +200,35 @@ public class Catalog {
     @JsonIgnore
     public void setSellerId(Integer sellerId) {
         SellerId = sellerId;
+    }
+
+    @JsonIgnore
+    public boolean isExtraDelivery() {
+        return extraDelivery;
+    }
+
+    @JsonIgnore
+    public void setExtraDelivery(boolean extraDelivery) {
+        this.extraDelivery = extraDelivery;
+    }
+
+    @JsonIgnore
+    public Double getFlightBalance() {
+        return flightBalance;
+    }
+
+    @JsonIgnore
+    public void setFlightBalance(Double flightBalance) {
+        this.flightBalance = flightBalance;
+    }
+
+    @JsonIgnore
+    public int getMultiLogistics() {
+        return multiLogistics;
+    }
+
+    @JsonIgnore
+    public void setMultiLogistics(int multiLogistics) {
+        this.multiLogistics = multiLogistics;
     }
 }

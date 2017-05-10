@@ -114,4 +114,11 @@ public interface Repository {
      * @return
      */
     List<ActivityProduct> getAllValidActivityProductList();
+
+    /**
+     * 获取商品多物流信息
+     * @param productIdList
+     * @return
+     */
+    List<Map<String, Object>> getMultiLogisticsByProductIdList(List<String> productIdList);
 }

@@ -9,16 +9,14 @@ import com.ymatou.productprice.infrastructure.util.Tuple;
 import com.ymatou.productprice.model.CatalogPrice;
 import com.ymatou.productprice.model.ProductPrice;
 import com.ymatou.productprice.model.ProductPriceForSearched;
-import com.ymatou.productprice.model.req.GetPriceByCatalogIdListRequest;
-import com.ymatou.productprice.model.req.GetPriceByProdIdRequest;
-import com.ymatou.productprice.model.req.GetPriceByProductIdListRequest;
-import com.ymatou.productprice.model.req.GetPriceCacheRequest;
+import com.ymatou.productprice.model.req.*;
 import com.ymatou.productprice.model.resp.BaseResponseNetAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -213,6 +211,67 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
                         .stream().distinct().collect(Collectors.toList()),
                 true);
 
+        Map<String, Object> priceInfoList = new HashMap<>();
+        priceInfoList.put("CatalogPriceList", catalogPriceList);
+
+        return BaseResponseNetAdapter.newSuccessInstance(priceInfoList);
+    }
+
+    /**
+     * 根据规格id列表获取交易隔离价格信息(多物流)
+     *
+     * @param request buyerId and catalogIdList
+     * @return catalogPriceList
+     */
+    @Override
+    @POST
+    @Path("/{api:(?i:api)}/{Price:(?i:Price)}/{GetCatalogPriceListByDeliveryTradeIsolation:(?i:GetCatalogPriceListByDeliveryTradeIsolation)}")
+    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON})
+    public BaseResponseNetAdapter getPriceByCatalogIdListByDeliveryExtraWithTradeIsolation(GetCatalogPriceListByDeliveryExtraRequest request) {
+        List<String> catalogIdList = new ArrayList<>();
+        if(request.getCatalogDeliveryInfoList() != null && !request.getCatalogDeliveryInfoList().isEmpty()){
+            catalogIdList = request.getCatalogDeliveryInfoList().stream().map(x -> x.getCatalogId()).collect(Collectors.toList());
+        }
+
+        List<CatalogPrice> catalogPriceList = priceQueryService.getPriceInfoByCatalogIdList(
+                request.getBuyerId(),
+                catalogIdList
+                        .stream().distinct().collect(Collectors.toList()),
+                true);
+
+        //多物流处理逻辑
+        priceQueryService.processMultiLogistics(request.getCatalogDeliveryInfoList(),catalogPriceList);
+        Map<String, Object> priceInfoList = new HashMap<>();
+        priceInfoList.put("CatalogPriceList", catalogPriceList);
+
+        return BaseResponseNetAdapter.newSuccessInstance(priceInfoList);
+    }
+
+    /**
+     * 根据规格id列表获取价格信息(多物流)
+     * @param request
+     * @return
+     */
+    @Override
+    @POST
+    @Path("/{api:(?i:api)}/{Price:(?i:Price)}/{GetCatalogPriceListByDeliveryExtra:(?i:GetCatalogPriceListByDeliveryExtra)}")
+    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON})
+    public BaseResponseNetAdapter getPriceByCatalogIdListByDeliveryExtra(GetCatalogPriceListByDeliveryExtraRequest request) {
+        List<String> catalogIdList = new ArrayList<>();
+        if(request.getCatalogDeliveryInfoList() != null && !request.getCatalogDeliveryInfoList().isEmpty()){
+            catalogIdList = request.getCatalogDeliveryInfoList().stream().map(x -> x.getCatalogId()).collect(Collectors.toList());
+        }
+
+        List<CatalogPrice> catalogPriceList = priceQueryService.getPriceInfoByCatalogIdList(
+                request.getBuyerId(),
+                catalogIdList
+                        .stream().distinct().collect(Collectors.toList()),
+                false);
+
+        //多物流处理逻辑
+        priceQueryService.processMultiLogistics(request.getCatalogDeliveryInfoList(),catalogPriceList);
         Map<String, Object> priceInfoList = new HashMap<>();
         priceInfoList.put("CatalogPriceList", catalogPriceList);
 

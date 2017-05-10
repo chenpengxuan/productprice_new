@@ -122,6 +122,12 @@ public class ParallelRepository implements Repository {
     }
 
     @Override
+    public List<Map<String, Object>> getMultiLogisticsByProductIdList(List<String> productIdList) {
+        return parallelProcessor.doParallelProcess(productIdList,obj ->
+                mongoRepository.getMultiLogisticsByProductIdList((List<String>) obj));
+    }
+
+    @Override
     public List<Map<String, Object>> getCatalogIdByProductIdList(List<String> catalogIdList){
         return mongoRepository.getCatalogIdByProductIdList(catalogIdList);
     }

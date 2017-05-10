@@ -217,6 +217,8 @@ public class MongoRepository implements Repository {
         projectionMap.put("price", true);
         projectionMap.put("vip", true);
         projectionMap.put("spid", true);
+        projectionMap.put("mdeliv", true);
+        projectionMap.put("mflight", true);
         projectionMap.put("sid", true);
         projectionMap.put("_id", false);
         queryData.setProjection(projectionMap);
@@ -254,6 +256,8 @@ public class MongoRepository implements Repository {
         projectionMap.put("price", true);
         projectionMap.put("vip", true);
         projectionMap.put("spid", true);
+        projectionMap.put("mdeliv", true);
+        projectionMap.put("mflight", true);
         projectionMap.put("sid", true);
         projectionMap.put("_id", false);
         queryData.setProjection(projectionMap);
@@ -290,6 +294,8 @@ public class MongoRepository implements Repository {
         projectionMap.put("newp", true);
         projectionMap.put("price", true);
         projectionMap.put("vip", true);
+        projectionMap.put("mdeliv", true);
+        projectionMap.put("mflight", true);
         projectionMap.put("spid", true);
         projectionMap.put("sid", true);
         projectionMap.put("_id", false);
@@ -554,6 +560,32 @@ public class MongoRepository implements Repository {
         return activityProductList;
     }
 
+    @Override
+    public List<Map<String, Object>> getMultiLogisticsByProductIdList(List<String> productIdList) {
+        MongoQueryData queryData = new MongoQueryData();
+        Map<String, Boolean> projectionMap = new HashMap<>();
+        projectionMap.put("spid", true);
+        projectionMap.put("mdeliv", true);
+        projectionMap.put("mflight", true);
+        projectionMap.put("_id", false);
+        queryData.setProjection(projectionMap);
+
+        Map<String, Object> matchConditionMap = new HashMap<>();
+        Map<String, Object> tempMap = new HashMap<>();
+        tempMap.put("$in",productIdList);
+        matchConditionMap.put("spid",tempMap);
+        queryData.setMatchCondition(matchConditionMap);
+
+
+        queryData.setTableName(Constants.ProductDb);
+
+        queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
+
+        List<Map<String,Object>> productLogisticsInfoList = mongoProcessor.queryMongo(queryData);
+
+        return productLogisticsInfoList;
+    }
+
     /**
      * 根据商品id获取对应变更表的updateTime
      *
@@ -587,6 +619,10 @@ public class MongoRepository implements Repository {
         tempCatalog.setVipPrice(
                 Utils.doubleFormat(Optional.ofNullable(Double.valueOf(catalogMap.get("vip").toString())).orElse(0D), 2)
         );
+        tempCatalog.setFlightBalance(
+                Utils.doubleFormat(Optional.ofNullable(Double.valueOf(catalogMap.get("mflight").toString())).orElse(0D), 2)
+        );
+        tempCatalog.setExtraDelivery(Optional.ofNullable(Integer.valueOf(catalogMap.get("mdeliv").toString())).orElse(0));
 
         return tempCatalog;
     }

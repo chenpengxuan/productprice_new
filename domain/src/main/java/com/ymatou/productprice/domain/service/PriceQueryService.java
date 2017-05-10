@@ -11,6 +11,7 @@ import com.ymatou.productprice.domain.repo.RepositoryProxy;
 import com.ymatou.productprice.infrastructure.config.props.BizProps;
 import com.ymatou.productprice.infrastructure.config.props.CacheProps;
 import com.ymatou.productprice.infrastructure.util.Tuple;
+import com.ymatou.productprice.infrastructure.util.Utils;
 import com.ymatou.productprice.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -66,6 +67,9 @@ public class PriceQueryService {
         ProductPrice productPrice = new ProductPrice();
         productPrice.setProductId(productId);
 
+        //组装商品多物流信息
+        setProductMultiLogisticsInfo(Lists.newArrayList(productPrice));
+
         //获取活动商品与规格的变更时间戳
         Map<String, Object> updateStampMap = repository
                 .getTimeStampByProductId(productId, Lists.newArrayList("cut", "aut"));
@@ -73,8 +77,8 @@ public class PriceQueryService {
         //如果时间戳为空
         Date catalogUpdateTime = Optional.ofNullable((Date) updateStampMap.get("cut")).orElse(null);
 
-        Map<String,Date> catalogUpdateMap = new HashMap<>();
-        catalogUpdateMap.put(productId,catalogUpdateTime);
+        Map<String, Date> catalogUpdateMap = new HashMap<>();
+        catalogUpdateMap.put(productId, catalogUpdateTime);
 
         //查询商品规格信息列表
         List<com.ymatou.productprice.domain.model.Catalog> catalogList;
@@ -98,12 +102,14 @@ public class PriceQueryService {
         } else {
             activityProductInfo = repository.getActivityProduct(productId);
         }
+
         List<Catalog> outputCatalogList = convertCatalogForOutput(catalogList);
+
         //价格核心逻辑
         priceCoreService.calculateRealPriceCoreLogic(buyerId,
                 outputCatalogList,
                 Lists.newArrayList(productPrice),
-                activityProductInfo != null ? Lists.newArrayList(activityProductInfo):null,
+                activityProductInfo != null ? Lists.newArrayList(activityProductInfo) : null,
                 isTradeIsolation);
 
         return productPrice;
@@ -116,19 +122,19 @@ public class PriceQueryService {
      * @return
      */
     private List<Catalog> convertCatalogForOutput(List<com.ymatou.productprice.domain.model.Catalog> inputCatalogList) {
-        return inputCatalogList
-                .stream()
-                .map(x -> {
+        List<Catalog> catalogList = new ArrayList<>();
+        if (inputCatalogList != null && !inputCatalogList.isEmpty()) {
+            inputCatalogList.removeAll(Collections.singleton(null));
+        }
+
+        inputCatalogList
+                .forEach(x -> {
                     Catalog tempOutputCatalog = new Catalog();
-                    tempOutputCatalog.setProductId(x.getProductId());
-                    tempOutputCatalog.setSellerId(x.getSellerId());
-                    tempOutputCatalog.setCatalogId(x.getCatalogId());
-                    tempOutputCatalog.setNewCustomerPrice(x.getNewCustomerPrice());
-                    tempOutputCatalog.setVipPrice(x.getVipPrice());
-                    tempOutputCatalog.setQuotePrice(x.getQuotePrice());
-                    return tempOutputCatalog;
-                })
-                .collect(Collectors.toList());
+                    Utils.copyProperties(tempOutputCatalog, x);
+                    tempOutputCatalog.setExtraDelivery(x.getExtraDelivery() > 0);
+                    catalogList.add(tempOutputCatalog);
+                });
+        return catalogList;
     }
 
     /**
@@ -148,6 +154,9 @@ public class PriceQueryService {
             tempProductPrice.setProductId(x);
             return tempProductPrice;
         }).collect(Collectors.toList());
+
+        //组装商品多物流信息
+        setProductMultiLogisticsInfo(Lists.newArrayList(productPriceList));
 
         //获取活动商品与规格的变更时间戳
         List<Map<String, Object>> updateStampMapList = repository
@@ -186,7 +195,7 @@ public class PriceQueryService {
         }
         List<Catalog> outputCatalogList = convertCatalogForOutput(catalogList);
 
-        if(activityProductList != null && !activityProductList.isEmpty()) {
+        if (activityProductList != null && !activityProductList.isEmpty()) {
             activityProductList.removeAll(Collections.singleton(null));
         }
 
@@ -282,7 +291,7 @@ public class PriceQueryService {
             activityProductList = repository.getActivityProductList(productIdList);
         }
 
-        if(activityProductList != null && !activityProductList.isEmpty()){
+        if (activityProductList != null && !activityProductList.isEmpty()) {
             activityProductList.removeAll(Collections.singleton(null));
         }
 
@@ -347,8 +356,8 @@ public class PriceQueryService {
         }).collect(Collectors.toList());
 
         Map<String, Date> activityProductUpdateStampMap = new HashMap<>();
-                updateStampMapList
-                .forEach(x -> activityProductUpdateStampMap.put(Optional.ofNullable((String)x.get("spid")).orElse(""),
+        updateStampMapList
+                .forEach(x -> activityProductUpdateStampMap.put(Optional.ofNullable((String) x.get("spid")).orElse(""),
                         Optional.ofNullable((Date) x.get("aut")).orElse(null)));
 
         //查询活动商品列表
@@ -361,7 +370,7 @@ public class PriceQueryService {
 
         List<Catalog> outputCatalogList = convertCatalogForOutput(catalogList);
 
-        if(activityProductList != null && !activityProductList.isEmpty()){
+        if (activityProductList != null && !activityProductList.isEmpty()) {
             activityProductList.removeAll(Collections.singleton(null));
         }
 
@@ -382,6 +391,8 @@ public class PriceQueryService {
                 catalogPrice.setCatalogInfo(catalog);
                 catalogPrice.setHasConfirmedOrders(productPrice.getHasConfirmedOrders());
                 catalogPrice.setNoOrdersOrAllCancelled(productPrice.getNoOrdersOrAllCancelled());
+                catalogPrice.setMultiLogistics(productPrice.getExtraDeliveryType());
+                catalogPrice.setFlightBalance(productPrice.getExtraDeliveryFee());
                 return catalogPrice;
             }).collect(Collectors.toList());
 
@@ -396,7 +407,7 @@ public class PriceQueryService {
      * @param productIdList
      * @return
      */
-    public Tuple<Map<String,ProductPriceData>, List<ActivityProduct>> getCacheInfoByProductIdList(List<String> productIdList) {
+    public Tuple<Map<String, ProductPriceData>, List<ActivityProduct>> getCacheInfoByProductIdList(List<String> productIdList) {
         //获取活动商品与商品的变更时间戳
         List<Map<String, Object>> updateStampMapList = repository
                 .getTimeStampByProductIdList(productIdList, Lists.newArrayList("sut", "aut"));
@@ -412,10 +423,10 @@ public class PriceQueryService {
                     Optional.ofNullable((Date) x.get("sut")).orElse(null));
         });
 
-        Map<String,ProductPriceData> tempDataList = cache.getProductCacheList(productIdList);
+        Map<String, ProductPriceData> tempDataList = cache.getProductCacheList(productIdList);
         List<ActivityProduct> tempActivityDataList = cache.getActivityProductList(productIdList, activityUpdateStampMap);
 
-        Tuple<Map<String,ProductPriceData>, List<ActivityProduct>> result = new Tuple(tempDataList, tempActivityDataList);
+        Tuple<Map<String, ProductPriceData>, List<ActivityProduct>> result = new Tuple(tempDataList, tempActivityDataList);
         return result;
     }
 
@@ -424,5 +435,76 @@ public class PriceQueryService {
      */
     public CacheStats getCacheStatisticsInfo() {
         return cache.getCacheStats();
+    }
+
+    /**
+     * 处理多物流逻辑
+     * @param catalogDeliveryInfoList
+     * @param catalogList
+     */
+    public void processMultiLogistics(List<CatalogDeliveryInfo> catalogDeliveryInfoList,List<CatalogPrice> catalogList){
+        if(catalogDeliveryInfoList != null && !catalogDeliveryInfoList.isEmpty()){
+            catalogDeliveryInfoList.removeAll(Collections.singleton(null));
+            catalogDeliveryInfoList = catalogDeliveryInfoList.stream().distinct().collect(Collectors.toList());
+        }
+
+        if(catalogList != null && !catalogList.isEmpty()){
+            catalogList.removeAll(Collections.singleton(null));
+            catalogList = catalogList.stream().distinct().collect(Collectors.toList());
+        }
+
+        List<CatalogDeliveryInfo> tempCatalogDeliveryInfoList = catalogDeliveryInfoList;
+        catalogList.forEach(x -> {
+
+            CatalogDeliveryInfo catalogDeliveryInfo = tempCatalogDeliveryInfoList.stream()
+                    .filter(z -> z.getCatalogId().equals(x.getCatalogInfo().getCatalogId())).findAny().orElse(null);
+
+            if(catalogDeliveryInfo != null && x.getCatalogInfo().isExtraDelivery()){
+                //如果物流类型相等则将多物流运费差价加上
+                if(Integer.compare(catalogDeliveryInfo.getDeliveryType(),x.getCatalogInfo().getMultiLogistics()) == 0){
+                    x.getCatalogInfo().setPrice(x.getCatalogInfo().getPrice() + x.getFlightBalance());
+                    x.setFlightBalance(x.getCatalogInfo().getFlightBalance());
+                    x.setMultiLogistics(x.getCatalogInfo().getMultiLogistics());
+                }else{
+                    x.getCatalogInfo().setPrice(x.getCatalogInfo().getQuotePrice());
+                    x.getCatalogInfo().setPriceType(PriceEnum.QUOTEPRICE.getCode());
+                }
+            }
+            //如果没有多物流信息，则也给到原价
+            else{
+                x.getCatalogInfo().setPrice(x.getCatalogInfo().getQuotePrice());
+                x.getCatalogInfo().setPriceType(PriceEnum.QUOTEPRICE.getCode());
+            }
+        });
+    }
+
+    /**
+     * 组装商品多物流信息
+     *
+     * @param productPriceList
+     */
+    private void setProductMultiLogisticsInfo(List<ProductPrice> productPriceList) {
+        List<String> productIdList = new ArrayList<>();
+
+        if (productPriceList != null && !productPriceList.isEmpty()) {
+            productPriceList.removeAll(Collections.singleton(null));
+            productIdList = productPriceList.stream().map(ProductPrice::getProductId).distinct().collect(Collectors.toList());
+        }
+
+        List<Map<String, Object>> multiLogisticsInfoList = repository.getMultiLogisticsByProductIdList(productIdList);
+        if (multiLogisticsInfoList != null && !multiLogisticsInfoList.isEmpty()) {
+            multiLogisticsInfoList.removeAll(Collections.singleton(null));
+            multiLogisticsInfoList.forEach(z -> {
+                ProductPrice productPrice = productPriceList.stream()
+                        .filter(x -> x.getProductId().equals(Optional.ofNullable(z.get("spid").toString()).orElse(""))).findAny().orElse(null);
+
+                if (productPrice != null) {
+                    productPrice.setExtraDeliveryType(Optional.ofNullable(Integer.valueOf(z.get("mdeliv").toString())).orElse(0));
+
+                    productPrice.setExtraDeliveryFee(Optional.ofNullable(Double.valueOf(z.get("mflight").toString())).orElse(0D));
+                }
+            });
+
+        }
     }
 }

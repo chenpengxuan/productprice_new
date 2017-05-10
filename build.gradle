@@ -76,6 +76,7 @@ allprojects {
 
         validationApiVersion = "1.1.0.Final"
         hibernateValidatorVersion = "5.2.4.Final"
+        beanutilsversion = "1.9.2"
 
         kryoVersion = "3.0.3"
         kryoSerializersVersion = "0.37"

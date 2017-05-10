@@ -53,6 +53,7 @@ dependencies {
 	compile "com.ymatou.messagebus:messagebus-client:${messagebusVersion}"
 	compile "com.ymatou.messagebus:messagebus-facade:${messagebusVersion}"
 	compile "com.ymatou.messagebus:messagebus-facade-model:${messagebusVersion}"
+	compile "commons-beanutils:commons-beanutils:${beanutilsversion}"
 }
 
 configurations {

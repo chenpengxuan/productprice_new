@@ -32,6 +32,18 @@ public class CatalogPrice {
     @JsonProperty("HasConfirmedOrders")
     private Boolean hasConfirmedOrders;
 
+    /**
+     * 多物流类型
+     */
+    @JsonProperty("ExtraDeliveryType")
+    private int multiLogistics;
+
+    /**
+     * 运费差价
+     */
+    @JsonProperty("ExtraDeliveryFee")
+    private Double flightBalance;
+
     @JsonIgnore
     public String getProductId() {
         return productId;
@@ -70,5 +82,25 @@ public class CatalogPrice {
     @JsonIgnore
     public void setHasConfirmedOrders(Boolean hasConfirmedOrders) {
         this.hasConfirmedOrders = hasConfirmedOrders;
+    }
+
+    @JsonIgnore
+    public int getMultiLogistics() {
+        return multiLogistics;
+    }
+
+    @JsonIgnore
+    public void setMultiLogistics(int multiLogistics) {
+        this.multiLogistics = multiLogistics;
+    }
+
+    @JsonIgnore
+    public Double getFlightBalance() {
+        return flightBalance;
+    }
+
+    @JsonIgnore
+    public void setFlightBalance(Double flightBalance) {
+        this.flightBalance = flightBalance;
     }
 }

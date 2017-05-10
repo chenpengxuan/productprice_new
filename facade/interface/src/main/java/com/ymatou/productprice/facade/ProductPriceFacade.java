@@ -1,9 +1,6 @@
 package com.ymatou.productprice.facade;
 
-import com.ymatou.productprice.model.req.GetPriceByCatalogIdListRequest;
-import com.ymatou.productprice.model.req.GetPriceByProdIdRequest;
-import com.ymatou.productprice.model.req.GetPriceByProductIdListRequest;
-import com.ymatou.productprice.model.req.GetPriceCacheRequest;
+import com.ymatou.productprice.model.req.*;
 import com.ymatou.productprice.model.resp.BaseResponseNetAdapter;
 
 /**
@@ -81,4 +78,18 @@ public interface ProductPriceFacade {
      * @return
      */
     BaseResponseNetAdapter getCacheInfoStatsInfo();
+
+    /**
+     * 根据规格id列表获取交易隔离价格信息(多物流)
+     * @param request
+     * @return
+     */
+    BaseResponseNetAdapter getPriceByCatalogIdListByDeliveryExtraWithTradeIsolation(GetCatalogPriceListByDeliveryExtraRequest request);
+
+    /**
+     * 根据规格id列表获取价格信息(多物流)
+     * @param request
+     * @return
+     */
+    BaseResponseNetAdapter getPriceByCatalogIdListByDeliveryExtra(GetCatalogPriceListByDeliveryExtraRequest request);
 }

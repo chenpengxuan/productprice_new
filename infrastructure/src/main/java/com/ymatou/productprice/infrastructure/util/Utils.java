@@ -3,14 +3,14 @@ package com.ymatou.productprice.infrastructure.util;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.google.common.base.Optional;
+import org.apache.commons.beanutils.BeanUtils;
 import com.ymatou.productprice.infrastructure.constants.Constants;
 import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -27,12 +27,27 @@ public class Utils {
      */
     public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Utils.class);
+    private static final LogWrapper logWrapper = new LogWrapper();
 
     private static volatile String localIp;
 
     public static String uuid() {
         return new ObjectId().toHexString();
+    }
+
+    /**
+     * Bean 拷贝
+     * @param destObj
+     * @param oriObj
+     */
+    public static void copyProperties(Object destObj,Object oriObj){
+        try {
+            BeanUtils.copyProperties(destObj,oriObj);
+        } catch (IllegalAccessException e) {
+            logWrapper.recordErrorLog("数据转换发生异常destObj:{},oriObj:{}",destObj,oriObj,e);
+        } catch (InvocationTargetException e) {
+            logWrapper.recordErrorLog("数据转换发生异常destObj:{},oriObj:{}",destObj,oriObj,e);
+        }
     }
 
     /**

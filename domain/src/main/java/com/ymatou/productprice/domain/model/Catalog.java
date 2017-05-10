@@ -42,6 +42,16 @@ public class Catalog {
      */
     private Date updateTime;
 
+    /**
+     * 该规格是否支持多物流
+     */
+    private int extraDelivery;
+
+    /**
+     * 运费差价（默认值为 0）
+     */
+    private Double flightBalance;
+
     public String getCatalogId() {
         return catalogId;
     }
@@ -96,5 +106,21 @@ public class Catalog {
 
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime == null ? null : (Date)updateTime.clone();
+    }
+
+    public int getExtraDelivery() {
+        return extraDelivery;
+    }
+
+    public void setExtraDelivery(int extraDelivery) {
+        this.extraDelivery = extraDelivery;
+    }
+
+    public Double getFlightBalance() {
+        return flightBalance;
+    }
+
+    public void setFlightBalance(Double flightBalance) {
+        this.flightBalance = flightBalance;
     }
 }

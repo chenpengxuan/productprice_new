@@ -37,6 +37,24 @@ public class ProductPrice {
     private Boolean hasConfirmedOrders;
 
     /**
+     * 商品上默认的物流方式
+     */
+    @JsonProperty("DeliveryMethod")
+    private int deliveryMethod;
+
+    /**
+     * 多物流方式（0-不支持， 3- 贝海直邮）
+     */
+    @JsonProperty("ExtraDeliveryType")
+    private int extraDeliveryType;
+
+    /**
+     * 运费差价
+     */
+    @JsonProperty("ExtraDeliveryFee")
+    private double extraDeliveryFee;
+
+    /**
      * 买手id
      */
     @JsonIgnore
@@ -90,5 +108,29 @@ public class ProductPrice {
     @JsonIgnore
     public void setSellerId(Long sellerId) {
         this.sellerId = sellerId;
+    }
+
+    public int getDeliveryMethod() {
+        return deliveryMethod;
+    }
+
+    public void setDeliveryMethod(int deliveryMethod) {
+        this.deliveryMethod = deliveryMethod;
+    }
+
+    public int getExtraDeliveryType() {
+        return extraDeliveryType;
+    }
+
+    public void setExtraDeliveryType(int extraDeliveryType) {
+        this.extraDeliveryType = extraDeliveryType;
+    }
+
+    public double getExtraDeliveryFee() {
+        return extraDeliveryFee;
+    }
+
+    public void setExtraDeliveryFee(double extraDeliveryFee) {
+        this.extraDeliveryFee = extraDeliveryFee;
     }
 }
