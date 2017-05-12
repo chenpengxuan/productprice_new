@@ -614,15 +614,15 @@ public class MongoRepository implements Repository {
         );
         tempCatalog.setNewCustomerPrice(
                 Utils.doubleFormat(
-                        Optional.ofNullable(Double.valueOf(catalogMap.get("newp").toString())).orElse(0D), 2)
+                        Optional.of(Double.valueOf(catalogMap.get("newp") != null ? catalogMap.get("newp").toString():"0")).orElse(0D), 2)
         );
         tempCatalog.setVipPrice(
-                Utils.doubleFormat(Optional.ofNullable(Double.valueOf(catalogMap.get("vip").toString())).orElse(0D), 2)
+                Utils.doubleFormat(Optional.of(Double.valueOf(catalogMap.get("vip") != null ? catalogMap.get("vip").toString():"0")).orElse(0D), 2)
         );
         tempCatalog.setFlightBalance(
-                Utils.doubleFormat(Optional.ofNullable(Double.valueOf(catalogMap.get("mflight").toString())).orElse(0D), 2)
+                Utils.doubleFormat(Optional.of(Double.valueOf(catalogMap.get("mflight") != null ? catalogMap.get("mflight").toString():"0")).orElse(0D), 2)
         );
-        tempCatalog.setExtraDelivery(Optional.ofNullable(Integer.valueOf(catalogMap.get("mdeliv").toString())).orElse(0));
+        tempCatalog.setExtraDelivery(Optional.ofNullable(Integer.valueOf(catalogMap.get("mdeliv") != null ? catalogMap.get("mdeliv").toString():"0")).orElse(0));
 
         return tempCatalog;
     }
