@@ -622,7 +622,7 @@ public class MongoRepository implements Repository {
         tempCatalog.setFlightBalance(
                 Utils.doubleFormat(Optional.of(Double.valueOf(catalogMap.get("mflight") != null ? catalogMap.get("mflight").toString():"0")).orElse(0D), 2)
         );
-        tempCatalog.setExtraDelivery(Optional.ofNullable(Integer.valueOf(catalogMap.get("mdeliv") != null ? catalogMap.get("mdeliv").toString():"0")).orElse(0));
+        tempCatalog.setMultiLogistics(Optional.ofNullable(Integer.valueOf(catalogMap.get("mdeliv") != null ? catalogMap.get("mdeliv").toString():"0")).orElse(0));
 
         return tempCatalog;
     }

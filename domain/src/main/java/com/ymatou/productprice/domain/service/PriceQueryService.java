@@ -131,7 +131,7 @@ public class PriceQueryService {
                 .forEach(x -> {
                     Catalog tempOutputCatalog = new Catalog();
                     Utils.copyProperties(tempOutputCatalog, x);
-                    tempOutputCatalog.setExtraDelivery(x.getExtraDelivery() > 0);
+                    tempOutputCatalog.setExtraDelivery(x.getMultiLogistics() > 0);
                     catalogList.add(tempOutputCatalog);
                 });
         return catalogList;
@@ -384,6 +384,13 @@ public class PriceQueryService {
         //组装规格价格信息列表
         List<CatalogPrice> catalogPriceList = new ArrayList<>();
         productPriceList.stream().forEach(productPrice -> {
+            //将规格中的多物流信息给到商品，基于多物流的物流差价by商品的前提下，不查询商品表，从规格表中获取多物流信息
+            Catalog catalogInfo = outputCatalogList.stream().filter(x -> x.getProductId().equals(productPrice.getProductId())).findAny().orElse(null);
+
+            if(catalogInfo != null){
+                productPrice.setExtraDeliveryFee(catalogInfo.getFlightBalance());
+                productPrice.setExtraDeliveryType(catalogInfo.getMultiLogistics());
+            }
             List<CatalogPrice> tempCatalogPriceList = productPrice.getCatalogs().stream().map(catalog -> {
 
                 CatalogPrice catalogPrice = new CatalogPrice();

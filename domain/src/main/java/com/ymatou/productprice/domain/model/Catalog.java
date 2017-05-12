@@ -43,12 +43,12 @@ public class Catalog {
     private Date updateTime;
 
     /**
-     * 该规格是否支持多物流
+     * 多物流类型
      */
-    private int extraDelivery;
+    private int multiLogistics;
 
     /**
-     * 运费差价（默认值为 0）
+     * 运费差价
      */
     private Double flightBalance;
 
@@ -107,20 +107,19 @@ public class Catalog {
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime == null ? null : (Date)updateTime.clone();
     }
-
-    public int getExtraDelivery() {
-        return extraDelivery;
-    }
-
-    public void setExtraDelivery(int extraDelivery) {
-        this.extraDelivery = extraDelivery;
-    }
-
     public Double getFlightBalance() {
         return flightBalance;
     }
 
     public void setFlightBalance(Double flightBalance) {
         this.flightBalance = flightBalance;
+    }
+
+    public int getMultiLogistics() {
+        return multiLogistics;
+    }
+
+    public void setMultiLogistics(int multiLogistics) {
+        this.multiLogistics = multiLogistics;
     }
 }
