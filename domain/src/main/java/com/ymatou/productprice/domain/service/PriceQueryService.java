@@ -472,15 +472,7 @@ public class PriceQueryService {
                     x.getCatalogInfo().setPrice(x.getCatalogInfo().getPrice() + x.getFlightBalance());
                     x.setFlightBalance(x.getCatalogInfo().getFlightBalance());
                     x.setMultiLogistics(x.getCatalogInfo().getMultiLogistics());
-                }else{
-                    x.getCatalogInfo().setPrice(x.getCatalogInfo().getQuotePrice());
-                    x.getCatalogInfo().setPriceType(PriceEnum.QUOTEPRICE.getCode());
                 }
-            }
-            //如果没有多物流信息，则也给到原价
-            else{
-                x.getCatalogInfo().setPrice(x.getCatalogInfo().getQuotePrice());
-                x.getCatalogInfo().setPriceType(PriceEnum.QUOTEPRICE.getCode());
             }
         });
     }
