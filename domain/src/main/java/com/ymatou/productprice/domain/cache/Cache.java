@@ -386,17 +386,16 @@ public class Cache {
     public void addNewestActivityProductCache() {
         ConcurrentMap activityProductCache = cacheManager.getActivityProductCacheContainer();
 
-        List<String> cacheProductIdList = (List<String>) activityProductCache.keySet()
-                .stream().map(x -> x.toString()).collect(Collectors.toList());
-        List<String> validProductIdList = realBusinessRepository.getValidActivityProductIdList();
+        List<Integer> cacheInActivityIdList = (List<Integer>) activityProductCache.values().stream().map(x -> ((ActivityProduct)x).getProductInActivityId()).collect(Collectors.toList());
+        List<Integer> validInActivityIdList = realBusinessRepository.getValidProductInActivityIdList();
 
-        List<String> needReloadProductIdList = new ArrayList<>();
-        needReloadProductIdList.addAll(validProductIdList);
-        needReloadProductIdList.removeAll(cacheProductIdList);
+        List<Integer> needReloadInActivityIdList = new ArrayList<>();
+        needReloadInActivityIdList.addAll(validInActivityIdList);
+        needReloadInActivityIdList.removeAll(cacheInActivityIdList);
 
         //获取新增的mongo活动商品信息
         List<ActivityProduct> newestActivityProductList = realBusinessRepository
-                .getActivityProductList(needReloadProductIdList);
+                .getActivityProductListByInActivityIdList(needReloadInActivityIdList);
 
         //批量添加至缓存
         Map tempMap = newestActivityProductList

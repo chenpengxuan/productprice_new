@@ -432,10 +432,50 @@ public class MongoRepository implements Repository {
     }
 
     @Override
-    public List<String> getValidActivityProductIdList() {
+    public List<ActivityProduct> getActivityProductListByInActivityIdList(List<Integer> productInActivityIdList) {
         MongoQueryData queryData = new MongoQueryData();
         Map<String, Boolean> projectionMap = new HashMap<>();
         projectionMap.put("spid", true);
+        projectionMap.put("start", true);
+        projectionMap.put("end", true);
+        projectionMap.put("inaid", true);
+        projectionMap.put("isolation", true);
+        projectionMap.put("catalogs", true);
+        projectionMap.put("nbuyer", true);
+        projectionMap.put("start", true);
+        projectionMap.put("end", true);
+        projectionMap.put("_id", false);
+        queryData.setProjection(projectionMap);
+
+        Map<String, Object> matchConditionMap = new HashMap<>();
+        Map<String, Object> tempProductIdMap = new HashMap<>();
+        tempProductIdMap.put("$in", productInActivityIdList);
+        matchConditionMap.put("inaid", tempProductIdMap);
+        Map<String, Object> tempGteMap = new HashMap<>();
+        tempGteMap.put("$gte", new Date());
+        matchConditionMap.put("end", tempGteMap);
+        queryData.setMatchCondition(matchConditionMap);
+
+
+        queryData.setTableName(Constants.ActivityProductDb);
+
+        queryData.setOperationType(MongoOperationTypeEnum.SELECTMANY);
+
+        List<ActivityProduct> activityProductList = mongoProcessor.queryMongo(queryData)
+                .stream()
+                .map(this::convertMapToActivityProduct)
+                .collect(Collectors.toList());
+
+        setActivityProductStamp(activityProductList);
+
+        return activityProductList;
+    }
+
+    @Override
+    public List<Integer> getValidProductInActivityIdList() {
+        MongoQueryData queryData = new MongoQueryData();
+        Map<String, Boolean> projectionMap = new HashMap<>();
+        projectionMap.put("inaid", true);
         projectionMap.put("_id", false);
         queryData.setProjection(projectionMap);
 
@@ -451,7 +491,7 @@ public class MongoRepository implements Repository {
 
         return mongoProcessor.queryMongo(queryData)
                 .stream()
-                .map(x -> x.get("spid").toString())
+                .map(x -> x.get("inaid") != null ? Integer.valueOf(x.get("inaid").toString()):0)
                 .collect(Collectors.toList());
     }
 

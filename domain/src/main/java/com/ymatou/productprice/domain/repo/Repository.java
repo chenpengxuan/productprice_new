@@ -56,10 +56,17 @@ public interface Repository {
     List<ActivityProduct> getActivityProductList(List<String> productIdList);
 
     /**
+     * 获取活动商品信息列表
+     * @param productInActivityIdList
+     * @return
+     */
+    List<ActivityProduct> getActivityProductListByInActivityIdList(List<Integer> productInActivityIdList);
+
+    /**
      * 获取活动商品表中所有有效的活动商品id
      * @return
      */
-    List<String> getValidActivityProductIdList();
+    List<Integer> getValidProductInActivityIdList();
 
     /**
      * 根据商品id列表获取价格边界信息（用于新增接口->搜索商品列表）

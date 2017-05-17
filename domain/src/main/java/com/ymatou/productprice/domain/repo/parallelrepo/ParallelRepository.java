@@ -80,8 +80,14 @@ public class ParallelRepository implements Repository {
     }
 
     @Override
-    public List<String> getValidActivityProductIdList() {
-        return parallelProcessor.doParallelProcess(null,obj -> mongoRepository.getValidActivityProductIdList());
+    public List<ActivityProduct> getActivityProductListByInActivityIdList(List<Integer> productInActivityIdList) {
+        return parallelProcessor.doParallelProcess(productInActivityIdList, obj ->
+                mongoRepository.getActivityProductListByInActivityIdList((List<Integer>) obj));
+    }
+
+    @Override
+    public List<Integer> getValidProductInActivityIdList() {
+        return mongoRepository.getValidProductInActivityIdList();
     }
 
     /**
