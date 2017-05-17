@@ -124,13 +124,13 @@ public class Utils {
     public static <T> List<List<T>> splitCollectionToCollectionList(List<T> objectList
             , Integer... splitNum) {
 
-        Integer splitLimitNum = optional(splitNum.length > 0 ? splitNum[0] : null, Constants.FORK_COUNT_LIMIT)
-                > objectList.size() && objectList.size() > 0
-                ? objectList.size() : optional(splitNum.length > 0 ? splitNum[0] : null, Constants.FORK_COUNT_LIMIT);
+        Integer tempSplitNum = optional(splitNum.length > 0 ? splitNum[0] : null, Constants.FORK_COUNT_LIMIT);
+        Integer realSize = objectList != null ? objectList.size():0;
+        Integer splitLimitNum = realSize > tempSplitNum ? Constants.FORK_COUNT_LIMIT : realSize;
 
         objectList = optional(objectList, Collections.emptyList());
 
-        int splitTimes = (objectList.size() + splitLimitNum - 1) / splitLimitNum;
+        int splitTimes = (objectList.size() + splitLimitNum - 1) / (splitLimitNum == 0 ? Constants.FORK_COUNT_LIMIT:splitLimitNum);
 
         List<List<T>> resultCollection = new ArrayList<>();
 
