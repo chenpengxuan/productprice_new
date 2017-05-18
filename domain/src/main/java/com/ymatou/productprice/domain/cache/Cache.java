@@ -69,10 +69,11 @@ public class Cache {
 
     /**
      * 获取商品缓存信息
+     *
      * @param productIdList
      * @return
      */
-    public Map<String,ProductPriceData> getProductCacheList(List<String> productIdList){
+    public Map<String, ProductPriceData> getProductCacheList(List<String> productIdList) {
         return cacheManager.get(productIdList);
     }
 
@@ -134,8 +135,8 @@ public class Cache {
                 .collect(Collectors.groupingBy(Catalog::getProductId));
         Map<String, ProductPriceData> cacheMap = Maps.transformValues(cacheGroup, v -> {
             ProductPriceData tempData = new ProductPriceData();
-            Catalog tempCatalog = v != null && !v.isEmpty() ? v.stream().findAny().get():null;
-            tempData.setProductId(tempCatalog != null ? tempCatalog.getProductId():String.valueOf(""));
+            Catalog tempCatalog = v != null && !v.isEmpty() ? v.stream().findAny().get() : null;
+            tempData.setProductId(tempCatalog != null ? tempCatalog.getProductId() : String.valueOf(""));
             tempData.setCatalogList(v);
             return tempData;
         });
@@ -160,7 +161,7 @@ public class Cache {
                     //默认值设置为-1为了排除规格时间戳为空 mongo中的时间戳也为空 返回相等的情况
                     //由于时间戳by商品维度 当商品中任意规格发生变化 规格时间戳都会发生变化 只取一个规格进行比较即可
                     Optional<Catalog> catalogOptional = p.getCatalogList() != null ?
-                            p.getCatalogList().stream().findAny():null;
+                            p.getCatalogList().stream().findAny() : null;
 
                     Catalog tempCatalog = catalogOptional != null && catalogOptional.isPresent()
                             ? catalogOptional.get() : null;
@@ -345,7 +346,7 @@ public class Cache {
         List<String> validCatalogIdList = new ArrayList<>();
         List<Catalog> validCatalogList = new ArrayList<>();
         validProductList.forEach(p -> p.getCatalogList().forEach(c -> {
-            if(catalogIdList.contains(c.getCatalogId())){
+            if (catalogIdList.contains(c.getCatalogId())) {
                 validCatalogIdList.add(c.getCatalogId());
                 validCatalogList.add(c);
             }
@@ -359,7 +360,7 @@ public class Cache {
         List<Catalog> resultList = new ArrayList<>();
 
         //如果有未命中或者无效的规格数据,则重新取mongo中取
-        if(!needReloadCatalogIdList.isEmpty()){
+        if (!needReloadCatalogIdList.isEmpty()) {
             resultList.addAll(realBusinessRepository.getCatalogByCatalogId(needReloadCatalogIdList));
         }
 
@@ -373,10 +374,13 @@ public class Cache {
      */
     public int initActivityProductCache() {
         List<ActivityProduct> activityProductList = realBusinessRepository.getAllValidActivityProductList();
-        cacheManager.putActivityProduct(activityProductList
-                .stream()
-                .collect(Collectors.toMap(ActivityProduct::getProductId, y -> y, (key1, key2) -> key2))
-        );
+        if (activityProductList != null && !activityProductList.isEmpty()) {
+            Map activityProductMap = new HashMap();
+
+            activityProductList.stream().collect(Collectors.groupingBy(ActivityProduct::getProductId)).forEach((x, y) -> activityProductMap.put(x, y));
+
+            cacheManager.putActivityProduct(activityProductMap);
+        }
         return activityProductList.size();
     }
 
@@ -386,7 +390,9 @@ public class Cache {
     public void addNewestActivityProductCache() {
         ConcurrentMap activityProductCache = cacheManager.getActivityProductCacheContainer();
 
-        List<Integer> cacheInActivityIdList = (List<Integer>) activityProductCache.values().stream().map(x -> ((ActivityProduct)x).getProductInActivityId()).collect(Collectors.toList());
+        List<Integer> cacheInActivityIdList = (List<Integer>) activityProductCache.values().stream()
+                .map(x -> ((List<ActivityProduct>) x).stream().map(z -> z.getProductInActivityId()).collect(Collectors.toList())).collect(Collectors.toList());
+
         List<Integer> validInActivityIdList = realBusinessRepository.getValidProductInActivityIdList();
 
         List<Integer> needReloadInActivityIdList = new ArrayList<>();
@@ -397,14 +403,26 @@ public class Cache {
         List<ActivityProduct> newestActivityProductList = realBusinessRepository
                 .getActivityProductListByInActivityIdList(needReloadInActivityIdList);
 
-        //批量添加至缓存
-        Map tempMap = newestActivityProductList
-                .stream()
-                .collect(Collectors.toMap(ActivityProduct::getProductId, y -> y, (key1, key2) -> key2));
+        if(newestActivityProductList != null && !newestActivityProductList.isEmpty()){
+            List<String> productIdList = newestActivityProductList.stream().map(ActivityProduct::getProductId).collect(Collectors.toList());
 
-        cacheManager.putActivityProduct(tempMap);
+            List<ActivityProduct> cacheActivityProductList = new ArrayList<>();
+            productIdList.forEach(x -> {
+                if (activityProductCache.get(x) != null) {
+                    cacheActivityProductList.addAll((List) activityProductCache.get(x));
+                }
+            });
 
-        logWrapper.recordInfoLog("增量添加活动商品缓存已执行,新增{}条", newestActivityProductList.size());
+            cacheActivityProductList.addAll(newestActivityProductList);
+
+            Map tempMap = new HashMap();
+            cacheActivityProductList.stream().collect(Collectors.groupingBy(ActivityProduct::getProductId)).forEach((key,valList) ->tempMap.put(key,valList));
+
+            //批量添加至缓存
+            cacheManager.putActivityProduct(tempMap);
+
+            logWrapper.recordInfoLog("增量添加活动商品缓存已执行,新增{}条", newestActivityProductList.size());
+        }
     }
 
     /**
@@ -424,12 +442,10 @@ public class Cache {
         //如果缓存中没有命中，则认为此商品不是活动商品
         if (result != null) {
             result = processCacheActivityProduct(result, activityProductUpdateTime);
-        }
-        else{
-            if(cacheManager.getActivityProductCacheContainer().size() < cacheProps.getActivityProductCacheSize()){
+        } else {
+            if (cacheManager.getActivityProductCacheContainer().size() < cacheProps.getActivityProductCacheSize()) {
                 return null;
-            }
-            else{
+            } else {
                 result = realBusinessRepository.getActivityProduct(productId);
                 logWrapper.recordErrorLog("活动商品缓存size需要扩容，超出容量的活动商品已改为从mongo查询，不影响正常业务");
             }
@@ -574,12 +590,12 @@ public class Cache {
 
             List<ProductPriceData> reloadProductList = new ArrayList<>();
 
-            if(needReloadProductIdList != null && !needReloadProductIdList.isEmpty()){
+            if (needReloadProductIdList != null && !needReloadProductIdList.isEmpty()) {
                 reloadProductList = realBusinessRepository
                         .getPriceRangeListByProduct(needReloadProductIdList);
             }
 
-            if(reloadProductList != null && !reloadProductList.isEmpty()) {
+            if (reloadProductList != null && !reloadProductList.isEmpty()) {
                 //去除空数据
                 reloadProductList.removeAll(Collections.singleton(null));
                 //组装需要刷缓存的数据

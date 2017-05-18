@@ -15,6 +15,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -158,7 +159,7 @@ public class CacheManager {
      */
     public <K, V> void putActivityProduct(K cacheKey, V cacheVal) {
         synchronized (this) {
-            expectActivityCacheSize = activityProductCacheContainer.size() + 1;
+            expectActivityCacheSize = activityProductCacheContainer.size() + ((List)(cacheVal)).size();
         }
         if (expectActivityCacheSize <= cacheProps.getActivityProductCacheSize()) {
             activityProductCacheContainer.putIfAbsent(cacheKey, cacheVal);
@@ -173,11 +174,15 @@ public class CacheManager {
      * @param <V>
      */
     public <K, V> void putActivityProduct(Map<K, V> cacheList) {
-        synchronized (this) {
-            expectActivityCacheSize = activityProductCacheContainer.size() + cacheList.size();
-        }
-        if (expectActivityCacheSize <= cacheProps.getActivityProductCacheSize()) {
-            activityProductCacheContainer.putAll(cacheList);
+        if(cacheList != null && !cacheList.isEmpty()){
+            AtomicInteger tempSizeCount = new AtomicInteger(0);
+                    cacheList.forEach((k,v) -> tempSizeCount.getAndAdd(v != null ? ((List)v).size():0));
+            synchronized (this) {
+                expectActivityCacheSize = activityProductCacheContainer.size() + tempSizeCount.get();
+            }
+            if (expectActivityCacheSize <= cacheProps.getActivityProductCacheSize()) {
+                activityProductCacheContainer.putAll(cacheList);
+            }
         }
     }
 
