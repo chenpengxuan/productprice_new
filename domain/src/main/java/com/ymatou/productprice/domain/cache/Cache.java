@@ -486,12 +486,21 @@ public class Cache {
                 List<String> reloadActivityProductIdList = reloadActivityProductList.stream().map(ActivityProduct::getProductId).collect(Collectors.toList());
 
                 List<List<ActivityProduct>> tempCacheActivityProductList = cacheManager.getActivityProduct(reloadActivityProductIdList);
+                List<ActivityProduct> plainCacheActivityProductList = new ArrayList<>();
+                        tempCacheActivityProductList.forEach(z -> plainCacheActivityProductList.addAll(z));
 
+                if(reloadActivityProductList != null && !reloadActivityProductList.isEmpty()){
+                    reloadActivityProductList.forEach(x -> {
+                       ActivityProduct tempActivityProduct = plainCacheActivityProductList.stream().filter(z -> z.getProductInActivityId().equals(x.getProductInActivityId())).findAny().orElse(null);
 
-                if(tempCacheActivityProductList != null && !tempCacheActivityProductList.isEmpty()){
-                    tempCacheActivityProductList.forEach(x -> cacheActivityProductList.addAll(x));
+                        if(tempActivityProduct != null){
+                            plainCacheActivityProductList.remove(tempActivityProduct);
+                        }
+                    });
                 }
+
                 cacheActivityProductList.addAll(reloadActivityProductList);
+                cacheActivityProductList.addAll(plainCacheActivityProductList);
 
                 Map tempCacheMap = cacheActivityProductList.stream().collect(Collectors.groupingBy(ActivityProduct::getProductId));
 
