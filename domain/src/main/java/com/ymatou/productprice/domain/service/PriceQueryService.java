@@ -467,6 +467,8 @@ public class PriceQueryService {
                     .filter(z -> z.getCatalogId().equals(x.getCatalogInfo().getCatalogId())).findAny().orElse(null);
 
             if(catalogDeliveryInfo != null && x.getCatalogInfo().isExtraDelivery()){
+                x.setDeliveryType(catalogDeliveryInfo.getDeliveryType());
+
                 //如果物流类型相等则将多物流运费差价加上
                 if(Integer.compare(catalogDeliveryInfo.getDeliveryType(),x.getCatalogInfo().getMultiLogistics()) == 0){
                     x.getCatalogInfo().setPrice(x.getCatalogInfo().getPrice() + x.getFlightBalance());

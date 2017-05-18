@@ -44,6 +44,12 @@ public class CatalogPrice {
     @JsonProperty("ExtraDeliveryFee")
     private Double flightBalance;
 
+    /**
+     * 多物流类型
+     */
+    @JsonProperty("DeliveryType")
+    private Integer deliveryType;
+
     @JsonIgnore
     public String getProductId() {
         return productId;
@@ -102,5 +108,13 @@ public class CatalogPrice {
     @JsonIgnore
     public void setFlightBalance(Double flightBalance) {
         this.flightBalance = flightBalance;
+    }
+
+    public Integer getDeliveryType() {
+        return deliveryType;
+    }
+
+    public void setDeliveryType(Integer deliveryType) {
+        this.deliveryType = deliveryType;
     }
 }

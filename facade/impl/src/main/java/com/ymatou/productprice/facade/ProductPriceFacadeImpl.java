@@ -6,6 +6,7 @@ import com.ymatou.productprice.domain.model.ActivityProduct;
 import com.ymatou.productprice.domain.model.ProductPriceData;
 import com.ymatou.productprice.domain.service.PriceQueryService;
 import com.ymatou.productprice.infrastructure.util.Tuple;
+import com.ymatou.productprice.model.CatalogDeliveryInfo;
 import com.ymatou.productprice.model.CatalogPrice;
 import com.ymatou.productprice.model.ProductPrice;
 import com.ymatou.productprice.model.ProductPriceForSearched;
@@ -242,6 +243,7 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
 
         //多物流处理逻辑
         priceQueryService.processMultiLogistics(request.getCatalogDeliveryInfoList(),catalogPriceList);
+
         Map<String, Object> priceInfoList = new HashMap<>();
         priceInfoList.put("CatalogPriceList", catalogPriceList);
 
@@ -272,6 +274,15 @@ public class ProductPriceFacadeImpl implements ProductPriceFacade {
 
         //多物流处理逻辑
         priceQueryService.processMultiLogistics(request.getCatalogDeliveryInfoList(),catalogPriceList);
+
+        catalogPriceList.forEach(x -> {
+            CatalogDeliveryInfo tempDeliveryInfo = request.getCatalogDeliveryInfoList().stream()
+                    .filter(z -> z.getCatalogId().equals(x.getCatalogInfo().getCatalogId())).findAny().orElse(null);
+
+            if(tempDeliveryInfo != null){
+                x.setDeliveryType(tempDeliveryInfo.getDeliveryType());
+            }
+        });
         Map<String, Object> priceInfoList = new HashMap<>();
         priceInfoList.put("CatalogPriceList", catalogPriceList);
 
