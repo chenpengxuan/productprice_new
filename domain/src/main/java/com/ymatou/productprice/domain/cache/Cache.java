@@ -295,7 +295,6 @@ public class Cache {
      */
     public List<Catalog> getCatalogListByProduct(List<String> productIdList,
                                                  Map<String, Date> catalogUpdateTimeMap) {
-
         //过滤重复商品id
         productIdList = productIdList
                 .stream()
@@ -375,9 +374,8 @@ public class Cache {
     public int initActivityProductCache() {
         List<ActivityProduct> activityProductList = realBusinessRepository.getAllValidActivityProductList();
         if (activityProductList != null && !activityProductList.isEmpty()) {
-            Map activityProductMap = new HashMap();
 
-            activityProductList.stream().collect(Collectors.groupingBy(ActivityProduct::getProductId)).forEach((x, y) -> activityProductMap.put(x, y));
+            Map activityProductMap = activityProductList.stream().collect(Collectors.groupingBy(ActivityProduct::getProductId));
 
             cacheManager.putActivityProduct(activityProductMap);
         }
@@ -417,8 +415,7 @@ public class Cache {
 
             cacheActivityProductList.addAll(newestActivityProductList);
 
-            Map tempMap = new HashMap();
-            cacheActivityProductList.stream().collect(Collectors.groupingBy(ActivityProduct::getProductId)).forEach((key, valList) -> tempMap.put(key, valList));
+            Map tempMap = cacheActivityProductList.stream().collect(Collectors.groupingBy(ActivityProduct::getProductId));
 
             //批量添加至缓存
             cacheManager.putActivityProduct(tempMap);
@@ -496,8 +493,7 @@ public class Cache {
                 }
                 cacheActivityProductList.addAll(reloadActivityProductList);
 
-                Map tempCacheMap = new HashMap();
-                cacheActivityProductList.stream().collect(Collectors.groupingBy(ActivityProduct::getProductId)).forEach((key,valList) ->tempCacheMap.put(key,valList));
+                Map tempCacheMap = cacheActivityProductList.stream().collect(Collectors.groupingBy(ActivityProduct::getProductId));
 
                 cacheManager.putActivityProduct(tempCacheMap);
             }
