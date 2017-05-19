@@ -405,13 +405,26 @@ public class Cache {
 
         if (newestActivityProductList != null && !newestActivityProductList.isEmpty()) {
             List<String> productIdList = newestActivityProductList.stream().map(ActivityProduct::getProductId).collect(Collectors.toList());
-
             List<ActivityProduct> cacheActivityProductList = new ArrayList<>();
             productIdList.forEach(x -> {
                 if (activityProductCache.get(x) != null) {
                     cacheActivityProductList.addAll((List) activityProductCache.get(x));
                 }
             });
+            //针对mongo中已经删除但是缓存中存在的数据
+            List<Integer> needCacheRemoveIdList = new ArrayList<>();
+            List<Integer> newestProductInActivityIdList = newestActivityProductList.stream().map(ActivityProduct::getProductInActivityId).collect(Collectors.toList());
+            needCacheRemoveIdList.addAll(needReloadInActivityIdList);
+            needCacheRemoveIdList.removeAll(newestProductInActivityIdList);
+
+            if(!needCacheRemoveIdList.isEmpty()){
+                needCacheRemoveIdList.forEach(z -> {
+                    ActivityProduct tempProduct = cacheActivityProductList.stream().filter(x -> x.getProductInActivityId().equals(z)).findAny().orElse(null);
+                    if(tempProduct != null){
+                        cacheActivityProductList.remove(tempProduct);
+                    }
+                });
+            }
 
             cacheActivityProductList.addAll(newestActivityProductList);
 
