@@ -407,8 +407,9 @@ public class Cache {
             List<String> productIdList = newestActivityProductList.stream().map(ActivityProduct::getProductId).collect(Collectors.toList());
             List<ActivityProduct> cacheActivityProductList = new ArrayList<>();
             productIdList.forEach(x -> {
-                if (activityProductCache.get(x) != null) {
-                    cacheActivityProductList.addAll((List) activityProductCache.get(x));
+                List<ActivityProduct> tempCacheList = (List)activityProductCache.get(x);
+                if (tempCacheList != null) {
+                    cacheActivityProductList.addAll(tempCacheList);
                 }
             });
             //针对mongo中已经删除但是缓存中存在的数据
@@ -497,10 +498,20 @@ public class Cache {
             if (!needReloadActivityProductIdList.isEmpty()) {
                 List<ActivityProduct> reloadActivityProductList = realBusinessRepository.getActivityProductList(needReloadActivityProductIdList);
                 List<String> reloadActivityProductIdList = reloadActivityProductList.stream().map(ActivityProduct::getProductId).collect(Collectors.toList());
+                reloadActivityProductIdList = reloadActivityProductIdList.stream().distinct().collect(Collectors.toList());
 
                 List<List<ActivityProduct>> tempCacheActivityProductList = cacheManager.getActivityProduct(reloadActivityProductIdList);
                 List<ActivityProduct> plainCacheActivityProductList = new ArrayList<>();
-                tempCacheActivityProductList.forEach(z -> plainCacheActivityProductList.addAll(z));
+                tempCacheActivityProductList.forEach(z -> {
+                   z.forEach(x -> {
+                       ActivityProduct tempProduct = plainCacheActivityProductList.stream().filter(pa -> pa.getProductInActivityId().equals(x.getProductInActivityId())
+                       && pa.getProductId().equals(x.getProductId())).findAny().orElse(null);
+
+                       if(tempProduct == null){
+                           plainCacheActivityProductList.add(x);
+                       }
+                   });
+                });
 
                 if (reloadActivityProductList != null && !reloadActivityProductList.isEmpty()) {
                     reloadActivityProductList.forEach(x -> {
