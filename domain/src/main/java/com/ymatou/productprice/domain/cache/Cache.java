@@ -485,10 +485,10 @@ public class Cache {
             List<ActivityProduct> validProductList = activityProductList.stream().filter(ap -> checkValidActivityProduct(ap, activityProductUpdateTimeMap.get(ap.getProductId())))
                     .collect(Collectors.toList());
 
-            List<String> activityProductIdList = activityProductList.stream().map(ActivityProduct::getProductId).collect(Collectors.toList());
-            List<String> validProductIdList = validProductList.stream().map(ActivityProduct::getProductId).collect(Collectors.toList());
+            List<Integer> activityProductIdList = activityProductList.stream().map(ActivityProduct::getProductInActivityId).collect(Collectors.toList());
+            List<Integer> validProductIdList = validProductList.stream().map(ActivityProduct::getProductInActivityId).collect(Collectors.toList());
 
-            List<String> needReloadActivityProductIdList = new ArrayList<>();
+            List<Integer> needReloadActivityProductIdList = new ArrayList<>();
             needReloadActivityProductIdList.addAll(activityProductIdList);
             needReloadActivityProductIdList.removeAll(validProductIdList);
 
@@ -496,7 +496,7 @@ public class Cache {
             cacheActivityProductList.addAll(validProductList);
 
             if (!needReloadActivityProductIdList.isEmpty()) {
-                List<ActivityProduct> reloadActivityProductList = realBusinessRepository.getActivityProductList(needReloadActivityProductIdList);
+                List<ActivityProduct> reloadActivityProductList = realBusinessRepository.getActivityProductListByInActivityIdList(needReloadActivityProductIdList);
                 List<String> reloadActivityProductIdList = reloadActivityProductList.stream().map(ActivityProduct::getProductId).collect(Collectors.toList());
                 reloadActivityProductIdList = reloadActivityProductIdList.stream().distinct().collect(Collectors.toList());
 
