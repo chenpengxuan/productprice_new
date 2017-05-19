@@ -441,7 +441,7 @@ public class Cache {
         //如果缓存中没有命中，则认为此商品不是活动商品
         if (cacheActivityList != null && !cacheActivityList.isEmpty()) {
             Map tempUpdateTimeMap = new HashMap();
-            tempUpdateTimeMap.put(productId,activityProductUpdateTime);
+            tempUpdateTimeMap.put(productId, activityProductUpdateTime);
             List<ActivityProduct> tempResultList = processCacheActivityProduct(cacheActivityList, tempUpdateTimeMap);
             return tempResultList.stream().filter(x -> {
                 Long startTime = x.getStartTime().getTime();
@@ -466,10 +466,10 @@ public class Cache {
      * @param activityProductList
      * @return
      */
-    private List<ActivityProduct> processCacheActivityProduct(List<ActivityProduct> activityProductList, Map<String,Date> activityProductUpdateTimeMap) {
-        if(activityProductList != null && !activityProductList.isEmpty()){
-           List<ActivityProduct> validProductList = activityProductList.stream().filter(ap -> checkValidActivityProduct(ap,activityProductUpdateTimeMap.get(ap.getProductId())))
-                   .collect(Collectors.toList());
+    private List<ActivityProduct> processCacheActivityProduct(List<ActivityProduct> activityProductList, Map<String, Date> activityProductUpdateTimeMap) {
+        if (activityProductList != null && !activityProductList.isEmpty()) {
+            List<ActivityProduct> validProductList = activityProductList.stream().filter(ap -> checkValidActivityProduct(ap, activityProductUpdateTimeMap.get(ap.getProductId())))
+                    .collect(Collectors.toList());
 
             List<String> activityProductIdList = activityProductList.stream().map(ActivityProduct::getProductId).collect(Collectors.toList());
             List<String> validProductIdList = validProductList.stream().map(ActivityProduct::getProductId).collect(Collectors.toList());
@@ -481,19 +481,19 @@ public class Cache {
             List<ActivityProduct> cacheActivityProductList = new ArrayList<>();
             cacheActivityProductList.addAll(validProductList);
 
-            if(!needReloadActivityProductIdList.isEmpty()){
+            if (!needReloadActivityProductIdList.isEmpty()) {
                 List<ActivityProduct> reloadActivityProductList = realBusinessRepository.getActivityProductList(needReloadActivityProductIdList);
                 List<String> reloadActivityProductIdList = reloadActivityProductList.stream().map(ActivityProduct::getProductId).collect(Collectors.toList());
 
                 List<List<ActivityProduct>> tempCacheActivityProductList = cacheManager.getActivityProduct(reloadActivityProductIdList);
                 List<ActivityProduct> plainCacheActivityProductList = new ArrayList<>();
-                        tempCacheActivityProductList.forEach(z -> plainCacheActivityProductList.addAll(z));
+                tempCacheActivityProductList.forEach(z -> plainCacheActivityProductList.addAll(z));
 
-                if(reloadActivityProductList != null && !reloadActivityProductList.isEmpty()){
+                if (reloadActivityProductList != null && !reloadActivityProductList.isEmpty()) {
                     reloadActivityProductList.forEach(x -> {
-                       ActivityProduct tempActivityProduct = plainCacheActivityProductList.stream().filter(z -> z.getProductInActivityId().equals(x.getProductInActivityId())).findAny().orElse(null);
+                        ActivityProduct tempActivityProduct = plainCacheActivityProductList.stream().filter(z -> z.getProductInActivityId().equals(x.getProductInActivityId())).findAny().orElse(null);
 
-                        if(tempActivityProduct != null){
+                        if (tempActivityProduct != null) {
                             plainCacheActivityProductList.remove(tempActivityProduct);
                         }
                     });
@@ -507,18 +507,18 @@ public class Cache {
                 cacheManager.putActivityProduct(tempCacheMap);
             }
             return cacheActivityProductList;
-         }
+        }
         return null;
     }
 
     /**
      * 活动商品有效性检查
+     *
      * @param activityProduct
      * @param activityProductUpdateTime
      * @return
      */
-    private boolean checkValidActivityProduct(ActivityProduct activityProduct, Date activityProductUpdateTime){
-        Long startTime = activityProduct.getStartTime().getTime();
+    private boolean checkValidActivityProduct(ActivityProduct activityProduct, Date activityProductUpdateTime) {
         Long endTime = activityProduct.getEndTime().getTime();
         Long now = new Date().getTime();
         Long updateStamp = activityProductUpdateTime != null ? activityProductUpdateTime.getTime() : 0L;
@@ -527,16 +527,12 @@ public class Cache {
         //当活动商品发生变更时，有可能从mongo中根据限定条件取出来是空，所以先把productId取出来
         String activityProductId = activityProduct.getProductId();
         if (Long.compare(activityProductStamp, updateStamp) != 0) {
-           return false;
+            return false;
         }
 
         //过期的活动商品
         if (now > endTime) {
             cacheManager.deleteActivityProduct(activityProductId);
-            return false;
-        }
-        //活动商品数据发生变化，取数据重新刷缓存
-        else if (now < startTime) {
             return false;
         }
         return true;
@@ -577,7 +573,7 @@ public class Cache {
                 return cacheActivityList;
             }
         } else {
-            return processCacheActivityProduct(finalCacheActivityList,activityProductStampMap);
+            return processCacheActivityProduct(finalCacheActivityList, activityProductStampMap);
         }
     }
 
