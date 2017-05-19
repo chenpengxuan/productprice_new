@@ -428,8 +428,7 @@ public class Cache {
             }
 
             cacheActivityProductList.addAll(newestActivityProductList);
-
-            Map tempMap = cacheActivityProductList.stream().collect(Collectors.groupingBy(ActivityProduct::getProductId));
+            Map tempMap = cacheActivityProductList.stream().distinct().collect(Collectors.groupingBy(ActivityProduct::getProductId));
 
             //批量添加至缓存
             cacheManager.putActivityProduct(tempMap);
