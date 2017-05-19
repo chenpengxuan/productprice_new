@@ -11,6 +11,7 @@ import com.ymatou.productprice.infrastructure.config.props.BizProps;
 import com.ymatou.productprice.infrastructure.config.props.CacheProps;
 import com.ymatou.productprice.infrastructure.util.CacheUtil.CacheManager;
 import com.ymatou.productprice.infrastructure.util.LogWrapper;
+import com.ymatou.productprice.infrastructure.util.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -433,6 +434,7 @@ public class Cache {
             //批量添加至缓存
             cacheManager.putActivityProduct(tempMap);
 
+            logWrapper.recordErrorLog("addNewestActivityProductCache_newestActivityProductList:{}", Utils.toJSONString(newestActivityProductList));
             logWrapper.recordInfoLog("增量添加活动商品缓存已执行,新增{}条", newestActivityProductList.size());
         }
     }
