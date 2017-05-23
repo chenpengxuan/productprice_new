@@ -500,9 +500,9 @@ public class PriceQueryService {
                         .filter(x -> x.getProductId().equals(Optional.ofNullable(z.get("spid").toString()).orElse(""))).findAny().orElse(null);
 
                 if (productPrice != null) {
-                    productPrice.setExtraDeliveryType(Optional.ofNullable(Integer.valueOf(z.get("mdeliv").toString())).orElse(0));
+                    productPrice.setExtraDeliveryType(z.get("mdeliv") != null ? Integer.valueOf(z.get("mdeliv").toString()):0);
 
-                    productPrice.setExtraDeliveryFee(Optional.ofNullable(Double.valueOf(z.get("mflight").toString())).orElse(0D));
+                    productPrice.setExtraDeliveryFee(z.get("mflight") != null ? Double.valueOf(z.get("mflight").toString()):0D);
                 }
             });
 
